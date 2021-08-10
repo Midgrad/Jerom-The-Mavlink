@@ -15,8 +15,3 @@ void ModuleJeromTheMavlink::init()
 void ModuleJeromTheMavlink::done()
 {
 }
-
-QJsonObject ModuleJeromTheMavlink::qmlEntries() const
-{
-    return QJsonObject();
-}

@@ -18,8 +18,6 @@ public:
 
     void init() override;
     void done() override;
-
-    QJsonObject qmlEntries() const override;
 };
 } // namespace jerom_mavlink::app
 
