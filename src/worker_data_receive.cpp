@@ -1,16 +1,22 @@
 #include "worker_data_receive.h"
+#include "link_factory.h"
 #include <QDebug>
 
 using namespace jerom_mavlink::receive;
+using namespace loodsman;
 
-WorkerDataReceive::WorkerDataReceive(QObject* parent) : QObject(parent)
+WorkerDataReceive::WorkerDataReceive(link_type l_type, int port, QObject* parent) : QObject(parent)
 {
+    int result = factory(m_link, l_type, port);
+    Q_ASSERT(result == 0);
 }
 
 void WorkerDataReceive::run()
 {
-    //    std::string received_data(link_listen->receive());
-    //    qDebug() << received_data.c_str();
-    //
-    //    emit result(received_data);
+    while (true)
+    {
+        std::string received_data(m_link->receive());
+        emit result(received_data);
+        //        qDebug() << "Data received";
+    }
 }

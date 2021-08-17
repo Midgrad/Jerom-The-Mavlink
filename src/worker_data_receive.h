@@ -1,10 +1,10 @@
-#ifndef DATA_RECEIVE_H
-#define DATA_RECEIVE_H
+#ifndef JEROM_WORKER_DATA_RECEIVE_H
+#define JEROM_WORKER_DATA_RECEIVE_H
 
-// clang-format off
+#include "link_factory.h"
+#include <string>
 #include <QObject>
 #include <QRunnable>
-#include <string>
 
 namespace jerom_mavlink::receive
 {
@@ -15,13 +15,14 @@ class WorkerDataReceive
     Q_OBJECT
 
 public:
-    explicit WorkerDataReceive(QObject* parent = nullptr);
+    explicit WorkerDataReceive(loodsman::link_type l_type, int port, QObject* parent = nullptr);
     void run() override;
 signals:
-    void result(std::string);
+    void result(const std::string& data);
 
 protected:
     std::string m_data;
+    loodsman::link_ptr m_link;
 };
 
 } // namespace jerom_mavlink::receive
