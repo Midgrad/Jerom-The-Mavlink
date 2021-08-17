@@ -21,7 +21,7 @@ public:
     void done() override;
 
 public slots:
-    void on_message(const std::string& data);
+    void on_message(const QByteArray& data);
 };
 } // namespace jerom_mavlink::app
 

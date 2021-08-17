@@ -16,7 +16,7 @@ void WorkerDataReceive::run()
     while (true)
     {
         std::string received_data(m_link->receive());
-        emit result(received_data);
+        emit result(QByteArray::fromStdString(received_data));
         //        qDebug() << "Data received";
     }
 }

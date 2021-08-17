@@ -1,5 +1,6 @@
 #include "module_jerom_the_mavlink.h"
 
+#include "common/mavlink.h"
 #include "worker_data_receive.h"
 #include <QDebug>
 #include <QFile>
@@ -9,7 +10,7 @@
 #include <QObject>
 #include <QThreadPool>
 
-Q_DECLARE_METATYPE(std::string)
+//Q_DECLARE_METATYPE(std::string)
 
 namespace
 {
@@ -25,7 +26,7 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 
 void ModuleJeromTheMavlink::init()
 {
-    qRegisterMetaType<std::string>("std::string");
+    //    qRegisterMetaType<std::string>("std::string");
 
     QFile file(::path);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -33,20 +34,21 @@ void ModuleJeromTheMavlink::init()
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
 
+    QJsonObject linkConfig = doc.object();
+
     // TODO:Create herder/configurator for managing loodsman with json
     // -------------------------------
     loodsman::link_type l_type;
-
-    if (doc["type"].toString() == "udp")
+    if (linkConfig["type"].toString() == "udp")
         l_type = loodsman::link_type::udp;
-    else if (doc["type"].toString() == "tcp")
+    else if (linkConfig["type"].toString() == "tcp")
         qFatal("Not implemented");
-    else if (doc["type"].toString() == "serial")
+    else if (linkConfig["type"].toString() == "serial")
         qFatal("Not implemented");
     else
         qFatal("Unknown link type! Aborting");
 
-    WorkerDataReceive* udpworker = new WorkerDataReceive(l_type, doc["port"].toInt(), this);
+    WorkerDataReceive* udpworker = new WorkerDataReceive(l_type, linkConfig["port"].toInt(), this);
 
     connect(udpworker, &WorkerDataReceive::result, this, &ModuleJeromTheMavlink::on_message);
 
@@ -54,9 +56,27 @@ void ModuleJeromTheMavlink::init()
     // -------------------------------
 }
 
-void ModuleJeromTheMavlink::on_message(const std::string& data)
+void ModuleJeromTheMavlink::on_message(const QByteArray& data)
 {
-    //    qDebug() << data.c_str();
+    mavlink_message_t message;
+    mavlink_status_t status;
+    mavlink_heartbeat_t heartbeat;
+
+    for (int pos = 0; pos < data.length(); ++pos)
+    {
+        if (!mavlink_parse_char(0, data[pos], &message, &status))
+            continue;
+    }
+
+    if (MAVLINK_MSG_ID_HEARTBEAT == message.msgid)
+    {
+        mavlink_msg_heartbeat_decode(&message, &heartbeat);
+        qDebug() << heartbeat.type;
+        qDebug() << heartbeat.base_mode;
+        qDebug() << heartbeat.system_status;
+    }
+
+    //    qDebug() << data;
 }
 
 void ModuleJeromTheMavlink::done()

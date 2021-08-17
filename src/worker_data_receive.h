@@ -18,7 +18,7 @@ public:
     explicit WorkerDataReceive(loodsman::link_type l_type, int port, QObject* parent = nullptr);
     void run() override;
 signals:
-    void result(const std::string& data);
+    void result(const QByteArray& data);
 
 protected:
     std::string m_data;
