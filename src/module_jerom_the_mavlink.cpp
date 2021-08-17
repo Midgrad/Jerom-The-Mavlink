@@ -25,7 +25,6 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 
 void ModuleJeromTheMavlink::init()
 {
-
     qRegisterMetaType<std::string>("std::string");
 
     QFile file(::path);
@@ -34,22 +33,30 @@ void ModuleJeromTheMavlink::init()
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
 
-    // TODO: Split json and pass them into constructors
+    // TODO:Create herder/configurator for managing loodsman with json
+    // -------------------------------
+    loodsman::link_type l_type;
 
-    WorkerDataReceive* udpworker = new WorkerDataReceive(loodsman::link_type::udp,
-                                                         doc["port"].toInt(), this);
+    if (doc["type"].toString() == "udp")
+        l_type = loodsman::link_type::udp;
+    else if (doc["type"].toString() == "tcp")
+        qFatal("Not implemented");
+    else if (doc["type"].toString() == "serial")
+        qFatal("Not implemented");
+    else
+        qFatal("Unknown link type! Aborting");
+
+    WorkerDataReceive* udpworker = new WorkerDataReceive(l_type, doc["port"].toInt(), this);
 
     connect(udpworker, &WorkerDataReceive::result, this, &ModuleJeromTheMavlink::on_message);
 
     QThreadPool::globalInstance()->start(udpworker);
-
-    //    if (doc["type"].toString() == "udp")
-    //        doc["port"].toInt()
+    // -------------------------------
 }
 
 void ModuleJeromTheMavlink::on_message(const std::string& data)
 {
-    qDebug() << data.c_str();
+    //    qDebug() << data.c_str();
 }
 
 void ModuleJeromTheMavlink::done()
