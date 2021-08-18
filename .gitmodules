@@ -1,3 +1,6 @@
 [submodule "3rdparty/c_library_v2"]
 	path = 3rdparty/c_library_v2
 	url = https://github.com/mavlink/c_library_v2.git
+[submodule "3rdparty/libmavlinkcpp_v2"]
+	path = 3rdparty/libmavlinkcpp_v2
+	url = ../libmavlinkcpp_v2.git
