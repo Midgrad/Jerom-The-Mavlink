@@ -1,6 +1,9 @@
 #include "module_jerom_the_mavlink.h"
 
 #include "common/mavlink.h"
+#include "heartbeat_handler.h"
+#include "i_mavlink_handler.h"
+#include "telemetry_handler.h"
 #include "worker_data_receive.h"
 #include <QDebug>
 #include <QFile>
@@ -60,7 +63,6 @@ void ModuleJeromTheMavlink::on_message(const QByteArray& data)
 {
     mavlink_message_t message;
     mavlink_status_t status;
-    mavlink_heartbeat_t heartbeat;
 
     for (int pos = 0; pos < data.length(); ++pos)
     {
@@ -68,15 +70,26 @@ void ModuleJeromTheMavlink::on_message(const QByteArray& data)
             continue;
     }
 
-    if (MAVLINK_MSG_ID_HEARTBEAT == message.msgid)
-    {
-        mavlink_msg_heartbeat_decode(&message, &heartbeat);
-        qDebug() << heartbeat.type;
-        qDebug() << heartbeat.base_mode;
-        qDebug() << heartbeat.system_status;
-    }
+    //TODO: Why not to pass mavlink_message_t type directly to the handlers?
+    //    QByteArray messageData;
+    //    messageData.resize(sizeof(mavlink_message_t));
+    //    memcpy(messageData.data(), &message, messageData.size());
 
-    //    qDebug() << data;
+    QVector<IMavlinkHandler*> m_handlers;
+
+    HeartbeatHandler hbt_hndlr;
+    TelemetryHandler tlmtr_hndlr;
+
+    m_handlers.append(&hbt_hndlr);
+    m_handlers.append(&tlmtr_hndlr);
+
+    for (IMavlinkHandler* handler : m_handlers)
+    {
+        if (handler->canParse(message.msgid))
+        {
+            handler->parseMessage(message);
+        }
+    }
 }
 
 void ModuleJeromTheMavlink::done()
