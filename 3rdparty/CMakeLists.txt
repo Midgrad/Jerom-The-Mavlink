@@ -18,5 +18,5 @@ endif (MAVLINK_V2)
 target_include_directories(${PROJECT_NAME} INTERFACE "${MAVLINK_DIR}")
 
 # Internal sources and headers
-file(GLOB_RECURSE SOURCES "${MAVLINK_DIR}/*.h")
+file(GLOB SOURCES "${MAVLINK_DIR}/*.h")
 target_sources(${PROJECT_NAME} INTERFACE ${SOURCES})
