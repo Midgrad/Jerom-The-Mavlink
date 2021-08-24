@@ -1,6 +1,9 @@
 # Project
 project(Jerom-The-Mavlink)
 
+# Copy resources
+copy_post_cmake("route_type_mavlink.json" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/route_types)
+
 # Find Qt libraries
 find_package(Qt5 ${QT_REQUIRED_VERSION} COMPONENTS Core REQUIRED)
 

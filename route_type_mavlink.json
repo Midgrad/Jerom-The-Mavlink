@@ -1,0 +1,30 @@
+{
+    "name": "Mavlink route",
+    "id": "route_type_mavlink",
+    "waypoint_types:": [
+    {
+        "id": "waypoint",
+        "name": "Waypoint",
+        "params": [
+        {
+            "id": "position",
+            "name": "Coordinate",
+            "type": "coordinate",
+            "default_value": "0.0:0.0:0.0"
+        }
+        ]
+    }
+    ],
+    "initial": [
+    {
+        "name": "Start",
+        "type": "waypoint",
+        "params": [
+        {
+            "id": "position",
+            "value": "$CENTER_COORDINATE"
+        }
+        ]
+    }
+    ]
+}
