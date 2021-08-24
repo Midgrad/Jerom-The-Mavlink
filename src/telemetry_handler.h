@@ -2,6 +2,7 @@
 #define TELEMETRY_HANDLER_H
 
 #include "i_mavlink_handler.h"
+#include "i_property_tree.h"
 
 namespace jerom_mavlink
 {
@@ -19,6 +20,9 @@ public:
     void processAttitude(const mavlink_message_t& message);
     void processAltitude(const mavlink_message_t& message);
     void processGlobalPosition(const mavlink_message_t& message);
+
+private:
+    kjarni::domain::IPropertyTree* m_pTree;
 };
 } // namespace jerom_mavlink
 

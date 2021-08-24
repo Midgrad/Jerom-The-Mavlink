@@ -29,8 +29,6 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 
 void ModuleJeromTheMavlink::init()
 {
-    //    qRegisterMetaType<std::string>("std::string");
-
     QFile file(::path);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
 
@@ -69,11 +67,6 @@ void ModuleJeromTheMavlink::on_message(const QByteArray& data)
         if (!mavlink_parse_char(0, data[pos], &message, &status))
             continue;
     }
-
-    //TODO: Why not to pass mavlink_message_t type directly to the handlers?
-    //    QByteArray messageData;
-    //    messageData.resize(sizeof(mavlink_message_t));
-    //    memcpy(messageData.data(), &message, messageData.size());
 
     QVector<IMavlinkHandler*> m_handlers;
 
