@@ -2,6 +2,7 @@
 #define MODULE_JEROM_THE_MAVLINK_H
 
 #include "i_module.h"
+#include <string>
 
 namespace jerom_mavlink::app
 {
@@ -18,6 +19,9 @@ public:
 
     void init() override;
     void done() override;
+
+public slots:
+    void on_message(const QByteArray& data);
 };
 } // namespace jerom_mavlink::app
 
