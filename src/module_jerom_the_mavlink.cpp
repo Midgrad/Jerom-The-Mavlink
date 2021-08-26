@@ -1,31 +1,37 @@
 #include "module_jerom_the_mavlink.h"
 
-//#include <QDebug>
 #include <QFile>
-//#include <QJsonArray>
+#include <QJsonArray>
 #include <QJsonDocument>
-//#include <QJsonObject>
-//#include <QObject>
-//#include <QThreadPool>
 
-//#include "common/mavlink.h"
-//#include "heartbeat_handler.h"
-//#include "i_mavlink_handler.h"
-//#include "telemetry_handler.h"
-//#include "worker_data_receive.h"
+#include "link_factory.h"
+
+#include "heartbeat_handler.h"
+#include "telemetry_handler.h"
 
 #include "mavlink_transceiver.h"
 #include "mavlink_transceiver_threaded.h"
 
-//Q_DECLARE_METATYPE(std::string)
-
 namespace
 {
 constexpr char path[] = "./link_config.json";
+
+constexpr char type[] = "type";
+constexpr char name[] = "name";
+constexpr char port[] = "port";
+
+loodsman::link_type linkTypeFromString(const QString& type)
+{
+    if (type == "udp")
+        return loodsman::link_type::udp;
+
+    // TODO: others
+
+    return loodsman::link_type::unknown;
+}
 } // namespace
 
 using namespace jerom_mavlink::app;
-//using namespace jerom_mavlink::receive;
 
 ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 {
@@ -40,45 +46,33 @@ void ModuleJeromTheMavlink::init()
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
 
-    auto transciever = new domain::MavlinkTransciever(doc.array());
+    QMap<QString, loodsman::LinkPtr> links;
+    for (const QJsonValue& value : doc.array())
+    {
+        QJsonObject linkConfig = value.toObject();
 
-    //    WorkerDataReceive* udpworker = new WorkerDataReceive(l_type, linkConfig["port"].toInt(), this);
+        loodsman::LinkPtr link;
+        loodsman::factory(link, ::linkTypeFromString(linkConfig.value(::type).toString()),
+                          linkConfig.value(::port).toInt());
+        if (link)
+            links[linkConfig.value(::name).toString()] = link;
+    }
 
-    //    connect(udpworker, &WorkerDataReceive::result, this, &ModuleJeromTheMavlink::on_message);
+    // TODO: to handlers factory
+    QVector<domain::IMavlinkHandler*> handlers;
 
-    //    QThreadPool::globalInstance()->start(udpworker);
-    //    // -------------------------------
+    handlers.append(new domain::HeartbeatHandler());
+    handlers.append(new domain::TelemetryHandler());
+
+    // TODO: wrap transceiver with threaed decorator
+    m_transciever = new domain::MavlinkTranscieverThreaded(new domain::MavlinkTransciever(links,
+                                                                                          handlers,
+                                                                                          nullptr),
+                                                           this);
+    m_transciever->start();
 }
-
-//void ModuleJeromTheMavlink::on_message(const QByteArray& data)
-//{
-//    mavlink_message_t message;
-//    mavlink_status_t status;
-
-//    for (int pos = 0; pos < data.length(); ++pos)
-//    {
-//        if (!mavlink_parse_char(0, data[pos], &message, &status))
-//            continue;
-//    }
-
-//    QVector<IMavlinkHandler*> m_handlers;
-
-//    HeartbeatHandler hbt_hndlr;
-//    TelemetryHandler tlmtr_hndlr;
-
-//    m_handlers.append(&hbt_hndlr);
-//    m_handlers.append(&tlmtr_hndlr);
-
-//    for (IMavlinkHandler* handler : m_handlers)
-//    {
-//        if (handler->canParse(message.msgid))
-//        {
-//            handler->parseMessage(message);
-//        }
-//    }
-//}
 
 void ModuleJeromTheMavlink::done()
 {
-    // m_transciever->stop();
+    m_transciever->stop();
 }

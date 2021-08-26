@@ -3,11 +3,12 @@
 
 #include "i_mavlink_transceiver.h"
 
-// TODO: i_link
-#include "link_factory.h"
-
-#include <QJsonArray>
 #include <QMap>
+#include <QVector>
+
+// TODO: i_link
+#include "i_mavlink_handler.h"
+#include "link_factory.h"
 
 namespace jerom_mavlink::domain
 {
@@ -16,16 +17,25 @@ class MavlinkTransciever : public IMavlinkTransciever
     Q_OBJECT
 
 public:
-    MavlinkTransciever(const QJsonArray& config, QObject* parent = nullptr);
+    MavlinkTransciever(const QMap<QString, loodsman::LinkPtr>& links,
+                       const QVector<IMavlinkHandler*>& handlers, QObject* parent = nullptr);
 
 public slots:
     void start() override;
     void stop() override;
 
-    void send(const QString& path, const QJsonObject& properties) override;
+protected:
+    void timerEvent(QTimerEvent* event) override;
+
+private slots:
+    void receiveData();
+    void parseMessage(const QByteArray& data);
+    void send(const QByteArray& data);
 
 private:
-    QMap<QString, loodsman::link_ptr> m_links;
+    int m_timerId = 0;
+    QMap<QString, loodsman::LinkPtr> const m_links;
+    QVector<IMavlinkHandler*> const m_handlers;
 };
 } // namespace jerom_mavlink::domain
 

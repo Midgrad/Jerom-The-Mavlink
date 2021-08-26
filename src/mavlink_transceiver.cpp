@@ -1,6 +1,6 @@
 #include "mavlink_transceiver.h"
 
-#include <QJsonObject>
+#include <QTimerEvent>
 
 #include "link_factory.h"
 
@@ -8,50 +8,73 @@ using namespace jerom_mavlink::domain;
 
 namespace
 {
-constexpr char type[] = "type";
-constexpr char name[] = "name";
-constexpr char port[] = "port";
-
-loodsman::link_type linkTypeFromString(const QString& type)
-{
-    if (type == "udp")
-        return loodsman::link_type::udp;
-
-    // TODO: others
-
-    return loodsman::link_type::unknown;
-}
+constexpr int interval = 100;
 } // namespace
 
-MavlinkTransciever::MavlinkTransciever(const QJsonArray& config, QObject* parent) :
-    IMavlinkTransciever(parent)
+MavlinkTransciever::MavlinkTransciever(const QMap<QString, loodsman::LinkPtr>& links,
+                                       const QVector<IMavlinkHandler*>& handlers, QObject* parent) :
+    IMavlinkTransciever(parent),
+    m_links(links),
+    m_handlers(handlers)
 {
-    for (const QJsonValue& value : config)
-    {
-        QJsonObject linkConfig = value.toObject();
-
-        loodsman::link_ptr link;
-        loodsman::factory(link, ::linkTypeFromString(linkConfig.value(::type).toString()),
-                          linkConfig.value(::port).toInt());
-        if (link)
-            m_links[linkConfig.value(::name).toString()] = link;
-    }
 }
 
 void MavlinkTransciever::start()
 {
-    while (true)
-    {
-        std::string received_data(m_link->receive());
-        emit result(QByteArray::fromStdString(received_data));
-        //        qDebug() << "Data received";
-    }
+    m_timerId = this->startTimer(::interval);
 }
 
 void MavlinkTransciever::stop()
 {
+    if (!m_timerId)
+        return;
+
+    this->killTimer(m_timerId);
+    m_timerId = 0;
 }
 
-void MavlinkTransciever::send(const QString& path, const QJsonObject& properties)
+void MavlinkTransciever::timerEvent(QTimerEvent* event)
 {
+    if (event->timerId() != m_timerId)
+        return QObject::timerEvent(event);
+
+    this->receiveData();
+}
+
+void MavlinkTransciever::receiveData()
+{
+    std::string received_data;
+    for (const loodsman::LinkPtr& link : qAsConst(m_links))
+    {
+        std::string received_data = link->receive();
+        this->parseMessage(QByteArray::fromStdString(received_data));
+    }
+}
+
+void MavlinkTransciever::parseMessage(const QByteArray& data)
+{
+    mavlink_message_t message;
+    mavlink_status_t status;
+
+    for (int pos = 0; pos < data.length(); ++pos)
+    {
+        if (!mavlink_parse_char(0, data[pos], &message, &status))
+            continue;
+    }
+
+    for (IMavlinkHandler* handler : m_handlers)
+    {
+        if (handler->canParse(message.msgid))
+        {
+            handler->parseMessage(message);
+        }
+    }
+}
+
+void MavlinkTransciever::send(const QByteArray& data)
+{
+    for (const loodsman::LinkPtr& link : qAsConst(m_links))
+    {
+        link->send(data.toStdString());
+    }
 }

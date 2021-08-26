@@ -7,7 +7,7 @@
 #include <QString>
 #include <QTimerEvent>
 
-using namespace jerom_mavlink;
+using namespace jerom_mavlink::domain;
 
 namespace
 {
@@ -62,8 +62,9 @@ std::string decodeMode(quint8 mode)
 
 } // namespace
 
-HeartbeatHandler::HeartbeatHandler()
+HeartbeatHandler::HeartbeatHandler(QObject* parent) : IMavlinkHandler(parent)
 {
+    // FIXME: Handlers must not write to pTree directly
     m_pTree = kjarni::domain::Locator::get<kjarni::domain::IPropertyTree>();
     Q_ASSERT(m_pTree);
 }

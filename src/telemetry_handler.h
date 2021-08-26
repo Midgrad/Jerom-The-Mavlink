@@ -4,14 +4,14 @@
 #include "i_mavlink_handler.h"
 #include "i_property_tree.h"
 
-namespace jerom_mavlink
+namespace jerom_mavlink::domain
 {
 class TelemetryHandler : public IMavlinkHandler
 {
     Q_OBJECT
 
 public:
-    TelemetryHandler();
+    TelemetryHandler(QObject* parent = nullptr);
     ~TelemetryHandler() override;
 
     bool canParse(quint32 msgId) override;
@@ -24,6 +24,6 @@ public:
 private:
     kjarni::domain::IPropertyTree* m_pTree;
 };
-} // namespace jerom_mavlink
+} // namespace jerom_mavlink::domain
 
 #endif // TELEMETRY_HANDLER_H

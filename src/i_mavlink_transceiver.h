@@ -18,11 +18,6 @@ public:
 public slots:
     virtual void start() = 0;
     virtual void stop() = 0;
-
-    virtual void send(const QString& path, const QJsonObject& properties) = 0;
-
-signals:
-    void received(QString path, QJsonObject properties);
 };
 } // namespace jerom_mavlink::domain
 

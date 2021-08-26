@@ -8,10 +8,11 @@
 #include <QJsonObject>
 #include <QTimerEvent>
 
-using namespace jerom_mavlink;
+using namespace jerom_mavlink::domain;
 
-TelemetryHandler::TelemetryHandler()
+TelemetryHandler::TelemetryHandler(QObject* parent) : IMavlinkHandler(parent)
 {
+    // FIXME: Handlers must not write to pTree directly
     m_pTree = kjarni::domain::Locator::get<kjarni::domain::IPropertyTree>();
     Q_ASSERT(m_pTree);
 }
