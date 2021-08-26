@@ -2,13 +2,11 @@
 
 #include "i_property_tree.h"
 #include "locator.h"
-#include <QChar>
 #include <QDebug>
 #include <QJsonObject>
-#include <QString>
 #include <QTimerEvent>
 
-using namespace jerom_mavlink;
+using namespace jerom_mavlink::domain;
 
 namespace
 {
@@ -71,27 +69,19 @@ std::string decodeState(uint8_t state)
     }
 }
 
-// TODO: Use bitwise & operators with masks to decode
-// Not working properly
+// TODO: Options is not mutually exclusive, for demo purposes only
 std::string decodeMode(uint8_t mode)
 {
-    switch (mode & 126) // 0b01111100 - mask for every mode flag
-    {
-    case MAV_MODE_FLAG_AUTO_ENABLED:
+    if (mode & MAV_MODE_FLAG_DECODE_POSITION_AUTO)
         return "Auto";
-    case MAV_MODE_FLAG_MANUAL_INPUT_ENABLED:
-        return "Manual";
-    case MAV_MODE_FLAG_GUIDED_ENABLED:
+    else if (mode & MAV_MODE_FLAG_DECODE_POSITION_GUIDED)
         return "Guided";
-    case MAV_MODE_FLAG_STABILIZE_ENABLED:
+    else if (mode & MAV_MODE_FLAG_DECODE_POSITION_STABILIZE)
         return "Stabilize";
-    case MAV_MODE_FLAG_HIL_ENABLED:
-        return "HIL";
-    case MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
-        return "Custom";
-    default:
+    else if (mode & MAV_MODE_FLAG_DECODE_POSITION_MANUAL)
+        return "Manual";
+    else
         return "Unknown";
-    }
 }
 
 } // namespace

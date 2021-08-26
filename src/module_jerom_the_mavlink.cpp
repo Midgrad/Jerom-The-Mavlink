@@ -13,15 +13,13 @@
 #include <QObject>
 #include <QThreadPool>
 
-//Q_DECLARE_METATYPE(std::string)
-
 namespace
 {
 constexpr char path[] = "./link_config.json";
 } // namespace
 
 using namespace jerom_mavlink::app;
-using namespace jerom_mavlink::receive;
+using namespace jerom_mavlink::domain;
 
 ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 {
