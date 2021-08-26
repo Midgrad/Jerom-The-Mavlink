@@ -3,7 +3,7 @@
 
 #include "i_mavlink_transceiver.h"
 
-// TODO: ilink
+// TODO: i_link
 #include "link_factory.h"
 
 #include <QJsonArray>
@@ -19,6 +19,9 @@ public:
     MavlinkTransciever(const QJsonArray& config, QObject* parent = nullptr);
 
 public slots:
+    void start() override;
+    void stop() override;
+
     void send(const QString& path, const QJsonObject& properties) override;
 
 private:
