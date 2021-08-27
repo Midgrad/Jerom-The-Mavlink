@@ -18,6 +18,9 @@ public:
 public slots:
     virtual void start() = 0;
     virtual void stop() = 0;
+
+signals:
+    void finished();
 };
 } // namespace jerom_mavlink::domain
 

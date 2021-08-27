@@ -1,5 +1,6 @@
 #include "module_jerom_the_mavlink.h"
 
+#include <QDebug>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>

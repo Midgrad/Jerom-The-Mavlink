@@ -1,5 +1,6 @@
 #include "mavlink_transceiver.h"
 
+#include <QDebug>
 #include <QTimerEvent>
 
 #include "link_factory.h"
@@ -8,7 +9,7 @@ using namespace jerom_mavlink::domain;
 
 namespace
 {
-constexpr int interval = 100;
+constexpr int interval = 1;
 } // namespace
 
 MavlinkTransciever::MavlinkTransciever(const QMap<QString, loodsman::LinkPtr>& links,
@@ -26,11 +27,13 @@ void MavlinkTransciever::start()
 
 void MavlinkTransciever::stop()
 {
-    if (!m_timerId)
-        return;
+    if (m_timerId)
+    {
+        this->killTimer(m_timerId);
+        m_timerId = 0;
+    }
 
-    this->killTimer(m_timerId);
-    m_timerId = 0;
+    emit finished();
 }
 
 void MavlinkTransciever::timerEvent(QTimerEvent* event)
@@ -46,6 +49,7 @@ void MavlinkTransciever::receiveData()
     std::string received_data;
     for (const loodsman::LinkPtr& link : qAsConst(m_links))
     {
+        // FIXME: unblocking read
         std::string received_data = link->receive();
         this->parseMessage(QByteArray::fromStdString(received_data));
     }
