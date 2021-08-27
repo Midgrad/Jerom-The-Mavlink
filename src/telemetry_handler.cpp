@@ -71,6 +71,7 @@ void TelemetryHandler::processAttitude(const mavlink_message_t& message)
     mavlink_attitude_t attitude;
     mavlink_msg_attitude_decode(&message, &attitude);
 
+    // TODO: traits with parameters
     emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
                             QJsonObject({
                                 { "pitch", ::fromRadiansToDegrees(attitude.pitch) },
@@ -89,6 +90,7 @@ void TelemetryHandler::processAltitude(const mavlink_message_t& message)
 
     m_hasAltitudeMessage = true;
 
+    // TODO: traits with parameters
     emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
                             QJsonObject({ { "satelliteAltitude", altitude.altitude_amsl },
                                           { "relativeHeight", altitude.altitude_relative },
@@ -100,19 +102,18 @@ void TelemetryHandler::processGlobalPosition(const mavlink_message_t& message)
     mavlink_global_position_int_t global_position;
     mavlink_msg_global_position_int_decode(&message, &global_position);
 
-    emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
-                            QJsonObject({ { "latitude", ::decodeLatLon(global_position.lat) },
-                                          { "longitude", ::decodeLatLon(global_position.lon) },
-                                          { "heading", ::fromCentidegrees(global_position.hdg) } }));
+    // TODO: traits with parameters
+    QJsonObject properties({ { "latitude", ::decodeLatLon(global_position.lat) },
+                             { "longitude", ::decodeLatLon(global_position.lon) },
+                             { "heading", ::fromCentidegrees(global_position.hdg) } });
 
     if (!m_hasAltitudeMessage)
     {
-        emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
-                                QJsonObject(
-                                    { { "satelliteAltitude", ::decodeAltitude(global_position.alt) },
-                                      { "elevation",
-                                        ::decodeAltitude(global_position.relative_alt) } }));
+        properties.insert("satelliteAltitude", ::decodeAltitude(global_position.alt));
+        properties.insert("elevation", ::decodeAltitude(global_position.relative_alt));
     }
+
+    emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid), properties);
 }
 
 void TelemetryHandler::processSysStatus(const mavlink_message_t& message)
@@ -120,6 +121,7 @@ void TelemetryHandler::processSysStatus(const mavlink_message_t& message)
     mavlink_sys_status_t sys_status;
     mavlink_msg_sys_status_decode(&message, &sys_status);
 
+    // TODO: traits with parameters
     emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
                             QJsonObject({ { "batteryCurrent", sys_status.current_battery },
                                           { "batteryVoltage", sys_status.voltage_battery } }));
@@ -130,6 +132,7 @@ void TelemetryHandler::processHomePosition(const mavlink_message_t& message)
     mavlink_home_position_t home_position;
     mavlink_msg_home_position_decode(&message, &home_position);
 
+    // TODO: traits with parameters
     emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
                             QJsonObject({
                                 { "homeLatitude", ::decodeLatLon(home_position.latitude) },
@@ -144,6 +147,7 @@ void TelemetryHandler::processNavControllerOutput(const mavlink_message_t& messa
     mavlink_nav_controller_output_t nav_controller_output;
     mavlink_msg_nav_controller_output_decode(&message, &nav_controller_output);
 
+    // TODO: traits with parameters
     emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
                             QJsonObject({ { "desiredRoll", nav_controller_output.nav_roll },
                                           { "desiredPitch", nav_controller_output.nav_pitch },
@@ -157,6 +161,7 @@ void TelemetryHandler::processMissionCurrent(const mavlink_message_t& message)
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
+    // TODO: traits with parameters
     emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
                             QJsonObject({ { "wp", mission_current.seq } }));
 }
@@ -166,6 +171,7 @@ void TelemetryHandler::processVfrHud(const mavlink_message_t& message)
     mavlink_vfr_hud_t vfr_hud;
     mavlink_msg_vfr_hud_decode(&message, &vfr_hud);
 
+    // TODO: traits with parameters
     emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
                             QJsonObject({ { "ias", vfr_hud.airspeed },
                                           { "tas", ::trueAirspeed(vfr_hud.airspeed, vfr_hud.alt) },
@@ -181,6 +187,7 @@ void TelemetryHandler::processGpsRaw(const mavlink_message_t& message)
     mavlink_gps_raw_int_t gps_raw;
     mavlink_msg_gps_raw_int_decode(&message, &gps_raw);
 
+    // TODO: traits with parameters
     emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid),
                             QJsonObject({
                                 { "satellites", gps_raw.satellites_visible },
