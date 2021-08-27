@@ -7,7 +7,7 @@
 #include <QVector>
 
 // TODO: i_link
-#include "i_mavlink_handler.h"
+#include "i_mavlink_handlers_factory.h"
 #include "link_factory.h"
 
 namespace jerom_mavlink::domain
@@ -18,7 +18,7 @@ class MavlinkTransciever : public IMavlinkTransciever
 
 public:
     MavlinkTransciever(const QMap<QString, loodsman::LinkPtr>& links,
-                       const QVector<IMavlinkHandler*>& handlers, QObject* parent = nullptr);
+                       IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
 
 public slots:
     void start() override;

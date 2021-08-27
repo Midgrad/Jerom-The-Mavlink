@@ -13,11 +13,15 @@ constexpr int interval = 1;
 } // namespace
 
 MavlinkTransciever::MavlinkTransciever(const QMap<QString, loodsman::LinkPtr>& links,
-                                       const QVector<IMavlinkHandler*>& handlers, QObject* parent) :
+                                       IMavlinkHandlerFactory* factory, QObject* parent) :
     IMavlinkTransciever(parent),
     m_links(links),
-    m_handlers(handlers)
+    m_handlers(factory->create())
 {
+    for (IMavlinkHandler* handler : qAsConst(m_handlers))
+    {
+        handler->setParent(this);
+    }
 }
 
 void MavlinkTransciever::start()

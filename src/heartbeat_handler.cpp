@@ -1,10 +1,6 @@
 #include "heartbeat_handler.h"
 
-#include "i_property_tree.h"
-#include "locator.h"
 #include <QDebug>
-#include <QJsonObject>
-#include <QTimerEvent>
 
 using namespace jerom_mavlink::domain;
 
@@ -88,9 +84,6 @@ std::string decodeMode(uint8_t mode)
 
 HeartbeatHandler::HeartbeatHandler(QObject* parent) : IMavlinkHandler(parent)
 {
-    // FIXME: Handlers must not write to pTree directly
-    m_pTree = kjarni::domain::Locator::get<kjarni::domain::IPropertyTree>();
-    Q_ASSERT(m_pTree);
 }
 
 HeartbeatHandler::~HeartbeatHandler()
@@ -112,7 +105,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     mavlink_heartbeat_t heartbeat;
     mavlink_msg_heartbeat_decode(&message, &heartbeat);
 
-    m_pTree->appendProperties(
+    emit propertiesObtained(
         QStringLiteral("MAV %1").arg(message.sysid),
         QJsonObject({ { "state", QString::fromStdString(decodeState(heartbeat.system_status)) },
                       { "armed", (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) },

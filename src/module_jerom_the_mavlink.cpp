@@ -7,9 +7,9 @@
 
 #include "link_factory.h"
 
-#include "heartbeat_handler.h"
-#include "telemetry_handler.h"
+#include "locator.h"
 
+#include "mavlink_handlers_factory.h"
 #include "mavlink_transceiver.h"
 #include "mavlink_transceiver_threaded.h"
 
@@ -59,15 +59,12 @@ void ModuleJeromTheMavlink::init()
             links[linkConfig.value(::name).toString()] = link;
     }
 
-    // TODO: to handlers factory
-    QVector<domain::IMavlinkHandler*> handlers;
-
-    handlers.append(new domain::HeartbeatHandler());
-    handlers.append(new domain::TelemetryHandler());
+    auto pTree = kjarni::app::Locator::get<kjarni::domain::IPropertyTree>();
+    domain::MavlinkHandlerFactory factory(pTree);
 
     // TODO: wrap transceiver with threaed decorator
     m_transciever = new domain::MavlinkTranscieverThreaded(new domain::MavlinkTransciever(links,
-                                                                                          handlers,
+                                                                                          &factory,
                                                                                           nullptr),
                                                            this);
     m_transciever->start();
