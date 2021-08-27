@@ -12,8 +12,8 @@ class ITranslation
 public:
     virtual ~ITranslation() = default;
 
-    virtual bytearray_t translate_in(bytearray_t data) = 0;
-    virtual bytearray_t translate_out(bytearray_t data) = 0;
+    virtual bytearray_t translateIn(bytearray_t data) = 0;
+    virtual bytearray_t translateOut(bytearray_t data) = 0;
 };
 } // namespace jerom_mavlink::app
 
