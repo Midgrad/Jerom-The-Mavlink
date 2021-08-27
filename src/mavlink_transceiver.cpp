@@ -50,7 +50,7 @@ void MavlinkTransciever::receiveData()
     for (const loodsman::LinkPtr& link : qAsConst(m_links))
     {
         // FIXME: unblocking read
-        std::string received_data = link->receive();
+        received_data = link->receive();
         this->parseMessage(QByteArray::fromStdString(received_data));
     }
 }
