@@ -1,10 +1,9 @@
 #include "heartbeat_handler.h"
 
-#include "i_property_tree.h"
-#include "locator.h"
 #include <QDebug>
-#include <QJsonObject>
-#include <QTimerEvent>
+#include <QJsonArray>
+
+#include "mode_helper_factory.h"
 
 using namespace jerom_mavlink::domain;
 
@@ -68,28 +67,10 @@ std::string decodeState(uint8_t state)
         return "Unknown";
     }
 }
-
-// TODO: Options is not mutually exclusive, for demo purposes only
-std::string decodeMode(uint8_t mode)
-{
-    if (mode & MAV_MODE_FLAG_DECODE_POSITION_AUTO)
-        return "Auto";
-    else if (mode & MAV_MODE_FLAG_DECODE_POSITION_GUIDED)
-        return "Guided";
-    else if (mode & MAV_MODE_FLAG_DECODE_POSITION_STABILIZE)
-        return "Stabilize";
-    else if (mode & MAV_MODE_FLAG_DECODE_POSITION_MANUAL)
-        return "Manual";
-    else
-        return "Unknown";
-}
-
 } // namespace
 
-HeartbeatHandler::HeartbeatHandler()
+HeartbeatHandler::HeartbeatHandler(QObject* parent) : IMavlinkHandler(parent)
 {
-    m_pTree = kjarni::domain::Locator::get<kjarni::domain::IPropertyTree>();
-    Q_ASSERT(m_pTree);
 }
 
 HeartbeatHandler::~HeartbeatHandler()
@@ -111,10 +92,19 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     mavlink_heartbeat_t heartbeat;
     mavlink_msg_heartbeat_decode(&message, &heartbeat);
 
-    m_pTree->appendProperties(
-        QStringLiteral("MAV %1").arg(message.sysid),
-        QJsonObject({ { "state", QString::fromStdString(decodeState(heartbeat.system_status)) },
-                      { "armed", (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) },
-                      { "mode", QString::fromStdString(decodeMode(heartbeat.base_mode)) },
-                      { "type", QString::fromStdString(decodeMavType(heartbeat.type)) } }));
+    // TODO: traits with parameters
+    QJsonObject properties(
+        { { "state", QString::fromStdString(::decodeState(heartbeat.system_status)) },
+          { "armed", (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) },
+          { "type", QString::fromStdString(::decodeMavType(heartbeat.type)) } });
+
+    QScopedPointer<data_source::IModeHelper> modeHelper(
+        data_source::ModeHelperFactory::create(heartbeat.autopilot, heartbeat.type));
+    if (modeHelper)
+    {
+        properties.insert("modes", QJsonArray::fromStringList(modeHelper->availableModes()));
+        properties.insert("mode", modeHelper->customModeToMode(heartbeat.custom_mode));
+    }
+
+    emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid), properties);
 }

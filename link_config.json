@@ -1,5 +1,7 @@
+[
 {
-  "name": "SITL",
-  "type": "udp",
-  "port": 14550
+    "name": "SITL",
+    "type": "udp",
+    "port": 14550
 }
+]

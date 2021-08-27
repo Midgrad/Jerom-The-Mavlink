@@ -2,8 +2,6 @@
 #define TELEMETRY_HANDLER_H
 
 #include "i_mavlink_handler.h"
-#include "i_property_tree.h"
-#include <QtPositioning/QGeoCoordinate>
 
 namespace jerom_mavlink::domain
 {
@@ -12,7 +10,7 @@ class TelemetryHandler : public IMavlinkHandler
     Q_OBJECT
 
 public:
-    TelemetryHandler();
+    TelemetryHandler(QObject* parent = nullptr);
     ~TelemetryHandler() override;
 
     bool canParse(quint32 msgId) override;
@@ -29,11 +27,8 @@ public:
     void processHomePosition(const mavlink_message_t& message);
 
 private:
-    kjarni::domain::IPropertyTree* m_pTree;
     // TODO: this params should belong to a vehicle, not to the handler!
     bool m_hasAltitudeMessage;
-    QGeoCoordinate m_vehicleCoord;
-    QGeoCoordinate m_homeCoord;
 };
 } // namespace jerom_mavlink::domain
 

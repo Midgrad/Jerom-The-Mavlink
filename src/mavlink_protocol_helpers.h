@@ -65,7 +65,7 @@ inline float decodeGroundSpeed(uint16_t value)
     return value == UINT16_MAX ? qQNaN() : float(value) / 100;
 }
 
-inline float getTrueAirspeed(float indicatedAirspeed, float altitude)
+inline float trueAirspeed(float indicatedAirspeed, float altitude)
 {
     return indicatedAirspeed + (indicatedAirspeed * 0.02 * altitude / 1000);
 }
