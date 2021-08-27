@@ -4,7 +4,7 @@
 #include "i_mavlink_handler.h"
 #include "i_property_tree.h"
 
-namespace jerom_mavlink
+namespace jerom_mavlink::domain
 {
 class HeartbeatHandler : public IMavlinkHandler
 {
@@ -22,6 +22,6 @@ public:
 private:
     kjarni::domain::IPropertyTree* m_pTree;
 };
-} // namespace jerom_mavlink
+} // namespace jerom_mavlink::domain
 
 #endif // HEARTBEAT_HANDLER_H

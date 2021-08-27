@@ -4,7 +4,7 @@
 #include "QObject"
 #include "common/mavlink.h"
 
-namespace jerom_mavlink
+namespace jerom_mavlink::domain
 {
 class IMavlinkHandler : public QObject
 {
@@ -19,6 +19,6 @@ public:
     virtual void parseMessage(const mavlink_message_t& message) = 0;
 };
 
-} // namespace jerom_mavlink
+} // namespace jerom_mavlink::domain
 
 #endif // I_MAVLINK_HANDLER_H

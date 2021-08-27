@@ -2,7 +2,7 @@
 #include "link_factory.h"
 #include <QDebug>
 
-using namespace jerom_mavlink::receive;
+using namespace jerom_mavlink::domain;
 using namespace loodsman;
 
 WorkerDataReceive::WorkerDataReceive(link_type l_type, int port, QObject* parent) : QObject(parent)

@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QRunnable>
 
-namespace jerom_mavlink::receive
+namespace jerom_mavlink::domain
 {
 class WorkerDataReceive
     : public QObject
@@ -25,5 +25,5 @@ protected:
     loodsman::link_ptr m_link;
 };
 
-} // namespace jerom_mavlink::receive
+} // namespace jerom_mavlink::domain
 #endif //JEROM_WORKER_DATA_RECEIVE_H
