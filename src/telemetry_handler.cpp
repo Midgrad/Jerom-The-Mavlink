@@ -61,6 +61,10 @@ void TelemetryHandler::parseMessage(const mavlink_message_t& message)
     {
         this->processMissionCurrent(message);
     }
+    if (message.msgid == MAVLINK_MSG_ID_MISSION_COUNT)
+    {
+        this->processMissionCount(message);
+    }
     if (message.msgid == MAVLINK_MSG_ID_HOME_POSITION)
     {
         this->processHomePosition(message);
@@ -151,6 +155,7 @@ void TelemetryHandler::processNavControllerOutput(const mavlink_message_t& messa
                                   { tmi::wpDistance, nav_controller_output.wp_dist } }));
 }
 
+// TODO: to mission handler
 void TelemetryHandler::processMissionCurrent(const mavlink_message_t& message)
 {
     mavlink_mission_current_t mission_current;
@@ -158,6 +163,16 @@ void TelemetryHandler::processMissionCurrent(const mavlink_message_t& message)
 
     emit propertiesObtained(utils::nodeMavId(message.sysid),
                             QJsonObject({ { tmi::wp, mission_current.seq } }));
+}
+
+// TODO: to mission handler
+void TelemetryHandler::processMissionCount(const mavlink_message_t& message)
+{
+    mavlink_mission_count_t mission_count;
+    mavlink_msg_mission_count_decode(&message, &mission_count);
+
+    emit propertiesObtained(utils::nodeMavId(message.sysid),
+                            QJsonObject({ { tmi::wpCount, mission_count.count } }));
 }
 
 void TelemetryHandler::processVfrHud(const mavlink_message_t& message)

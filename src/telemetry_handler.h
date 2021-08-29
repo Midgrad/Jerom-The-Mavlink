@@ -24,6 +24,7 @@ public:
     void processGpsRaw(const mavlink_message_t& message);
     void processNavControllerOutput(const mavlink_message_t& message);
     void processMissionCurrent(const mavlink_message_t& message);
+    void processMissionCount(const mavlink_message_t& message);
     void processHomePosition(const mavlink_message_t& message);
 
 private:
