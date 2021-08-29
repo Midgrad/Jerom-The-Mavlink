@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <QJsonArray>
 
+#include "common_tmi.h"
+#include "mavlink_protocol_helpers.h"
 #include "mode_helper_factory.h"
 
 using namespace jerom_mavlink::domain;
@@ -94,17 +96,17 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
 
     // TODO: traits with parameters
     QJsonObject properties(
-        { { "state", QString::fromStdString(::decodeState(heartbeat.system_status)) },
-          { "armed", (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) },
-          { "type", QString::fromStdString(::decodeMavType(heartbeat.type)) } });
+        { { tmi::state, QString::fromStdString(::decodeState(heartbeat.system_status)) },
+          { tmi::armed, (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) },
+          { tmi::type, QString::fromStdString(::decodeMavType(heartbeat.type)) } });
 
     QScopedPointer<data_source::IModeHelper> modeHelper(
         data_source::ModeHelperFactory::create(heartbeat.autopilot, heartbeat.type));
     if (modeHelper)
     {
-        properties.insert("modes", QJsonArray::fromStringList(modeHelper->availableModes()));
-        properties.insert("mode", modeHelper->customModeToMode(heartbeat.custom_mode));
+        properties.insert(tmi::modes, QJsonArray::fromStringList(modeHelper->availableModes()));
+        properties.insert(tmi::mode, modeHelper->customModeToMode(heartbeat.custom_mode));
     }
 
-    emit propertiesObtained(QStringLiteral("MAV %1").arg(message.sysid), properties);
+    emit propertiesObtained(utils::nodeMavId(message.sysid), properties);
 }
