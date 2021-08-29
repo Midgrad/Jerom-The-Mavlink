@@ -2,13 +2,16 @@
 #define MAVLINK_PROTOCOL_HELPERS_H
 
 #ifndef UINT16_MAX
-// Std
+
 #include <limits.h>
+
+#include <QString>
+#include <QtMath>
 
 #define UINT16_MAX std::numeric_limits<std::uint16_t>::max()
 #endif
 
-namespace jerom_mavlink::domain
+namespace jerom_mavlink::domain::utils
 {
 int32_t inline hzToUs(float frequency)
 {
@@ -100,6 +103,11 @@ inline float decodeRssi(uint16_t value)
 {
     return qMin(qMax(qRound(value / 1.9 - 127.0), -120), 0);
 }
-} // namespace jerom_mavlink::domain
+
+inline QString nodeMavId(uint8_t sysid)
+{
+    return QStringLiteral("MAV %1").arg(sysid);
+}
+} // namespace jerom_mavlink::domain::utils
 
 #endif // MAVLINK_PROTOCOL_HELPERS_H
