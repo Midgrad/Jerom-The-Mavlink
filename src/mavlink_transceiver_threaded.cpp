@@ -8,7 +8,7 @@ constexpr int timeout = 500;
 constexpr char threadName[] = "mavlink_transciever";
 } // namespace
 
-using namespace jerom_mavlink::domain;
+using namespace md::domain;
 
 MavlinkTranscieverThreaded::MavlinkTranscieverThreaded(IMavlinkTransciever* worker,
                                                        QObject* parent) :

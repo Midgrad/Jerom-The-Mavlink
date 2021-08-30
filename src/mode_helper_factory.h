@@ -5,7 +5,7 @@
 
 #include "i_mode_helper.h"
 
-namespace jerom_mavlink::data_source
+namespace md::data_source
 {
 class ModeHelperFactory
 {

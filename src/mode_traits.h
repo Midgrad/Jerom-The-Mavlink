@@ -3,7 +3,7 @@
 
 #include <QString>
 
-namespace jerom_mavlink::data_source
+namespace md::data_source
 {
 namespace modes
 {

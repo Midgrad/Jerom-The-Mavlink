@@ -2,7 +2,7 @@
 
 #include <QMap>
 
-using namespace jerom_mavlink::data_source;
+using namespace md::data_source;
 
 namespace
 {

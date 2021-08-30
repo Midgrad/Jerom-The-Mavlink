@@ -3,9 +3,9 @@
 #include "heartbeat_handler.h"
 #include "telemetry_handler.h"
 
-using namespace jerom_mavlink::domain;
+using namespace md::domain;
 
-MavlinkHandlerFactory::MavlinkHandlerFactory(kjarni::domain::IPropertyTree* pTree) : m_pTree(pTree)
+MavlinkHandlerFactory::MavlinkHandlerFactory(IPropertyTree* pTree) : m_pTree(pTree)
 {
 }
 

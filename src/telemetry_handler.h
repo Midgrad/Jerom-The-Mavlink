@@ -3,7 +3,7 @@
 
 #include "i_mavlink_handler.h"
 
-namespace jerom_mavlink::domain
+namespace md::domain
 {
 class TelemetryHandler : public IMavlinkHandler
 {

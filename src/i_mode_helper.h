@@ -3,7 +3,7 @@
 
 #include "mode_traits.h"
 
-namespace jerom_mavlink::data_source
+namespace md::data_source
 {
 class IModeHelper
 {

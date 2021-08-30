@@ -5,7 +5,7 @@
 
 #include <QVector>
 
-namespace jerom_mavlink::domain
+namespace md::domain
 {
 class IMavlinkHandlerFactory
 {

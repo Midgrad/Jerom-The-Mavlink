@@ -3,7 +3,7 @@
 
 #include "common_tmi.h"
 
-namespace tmi
+namespace md::tmi
 {
 // Engine
 constexpr char throttle[] = "throttle";
@@ -14,6 +14,6 @@ constexpr char batteryCurrent[] = "batteryCurrent";
 
 // SNS
 constexpr char satellites[] = "satellites";
-} // namespace tmi
+} // namespace md::tmi
 
 #endif // MAVLINK_TMI_H

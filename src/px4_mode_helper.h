@@ -3,7 +3,7 @@
 
 #include "i_mode_helper.h"
 
-namespace jerom_mavlink::data_source
+namespace md::data_source
 {
 class Px4ModeHelper : public IModeHelper // TODO: separate copter and plane modes
 {

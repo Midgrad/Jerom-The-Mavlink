@@ -6,7 +6,7 @@
 
 #include <QMap>
 
-namespace jerom_mavlink::domain
+namespace md::domain
 {
 class HeartbeatHandler : public IMavlinkHandler
 {
@@ -26,6 +26,6 @@ private:
     QMap<quint8, QSharedPointer<data_source::IModeHelper>> m_modeHelpers;
     QMap<quint8, quint8> m_baseModes;
 };
-} // namespace jerom_mavlink::domain
+} // namespace md::domain
 
 #endif // HEARTBEAT_HANDLER_H

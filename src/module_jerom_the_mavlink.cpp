@@ -32,7 +32,7 @@ loodsman::link_type linkTypeFromString(const QString& type)
 }
 } // namespace
 
-using namespace jerom_mavlink::app;
+using namespace md::app;
 
 ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 {
@@ -59,7 +59,7 @@ void ModuleJeromTheMavlink::init()
             links[linkConfig.value(::name).toString()] = link;
     }
 
-    auto pTree = kjarni::app::Locator::get<kjarni::domain::IPropertyTree>();
+    auto pTree = Locator::get<md::domain::IPropertyTree>();
     domain::MavlinkHandlerFactory factory(pTree);
 
     // TODO: wrap transceiver with threaed decorator

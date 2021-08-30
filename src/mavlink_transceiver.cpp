@@ -5,7 +5,7 @@
 
 #include "link_factory.h"
 
-using namespace jerom_mavlink::domain;
+using namespace md::domain;
 
 namespace
 {

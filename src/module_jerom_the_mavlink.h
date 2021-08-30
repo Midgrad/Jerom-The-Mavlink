@@ -4,14 +4,14 @@
 #include "i_mavlink_transceiver.h"
 #include "i_module.h"
 
-namespace jerom_mavlink::app
+namespace md::app
 {
 class ModuleJeromTheMavlink
     : public QObject
-    , public kjarni::app::IModule
+    , public md::app::IModule
 {
     Q_OBJECT
-    Q_INTERFACES(kjarni::app::IModule)
+    Q_INTERFACES(md::app::IModule)
     Q_PLUGIN_METADATA(IID "Midgrad.ModuleJeromTheMavlink" FILE "meta.json")
 
 public:
@@ -23,6 +23,6 @@ public:
 private:
     domain::IMavlinkTransciever* m_transciever = nullptr;
 };
-} // namespace jerom_mavlink::app
+} // namespace md::app
 
 #endif // MODULE_JEROM_THE_MAVLINK_H

@@ -8,7 +8,7 @@
 #include "apm_plane_mode_helper.h"
 #include "px4_mode_helper.h"
 
-using namespace jerom_mavlink::data_source;
+using namespace md::data_source;
 
 IModeHelper* ModeHelperFactory::create(uint8_t autopilot, uint8_t type)
 {

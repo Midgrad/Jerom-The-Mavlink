@@ -3,7 +3,7 @@
 
 #include "i_mode_helper.h"
 
-namespace jerom_mavlink::data_source
+namespace md::data_source
 {
 class ApmPlaneModeHelper : public IModeHelper
 {
@@ -15,6 +15,6 @@ public:
 
     virtual QStringList availableModes() const override;
 };
-} // namespace jerom_mavlink::data_source
+} // namespace md::data_source
 
 #endif // APM_PLANE_MODE_HELPER_H

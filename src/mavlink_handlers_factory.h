@@ -5,19 +5,19 @@
 
 #include "i_property_tree.h"
 
-namespace jerom_mavlink::domain
+namespace md::domain
 {
 class MavlinkHandlerFactory : public IMavlinkHandlerFactory
 {
 public:
-    MavlinkHandlerFactory(kjarni::domain::IPropertyTree* pTree);
+    MavlinkHandlerFactory(IPropertyTree* pTree);
 
     QVector<IMavlinkHandler*> create(MavlinkHandlerContext* context) override;
 
 private:
-    kjarni::domain::IPropertyTree* const m_pTree;
+    IPropertyTree* const m_pTree;
 };
 
-} // namespace jerom_mavlink::domain
+} // namespace md::domain
 
 #endif // MAVLINK_HANDLER_FACTORY_H

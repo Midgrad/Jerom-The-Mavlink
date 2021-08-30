@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-namespace jerom_mavlink::domain
+namespace md::domain
 {
 class IMavlinkTransciever : public QObject
 {

@@ -5,7 +5,7 @@
 
 #include <QThread>
 
-namespace jerom_mavlink::domain
+namespace md::domain
 {
 class MavlinkTranscieverThreaded : public IMavlinkTransciever
 {

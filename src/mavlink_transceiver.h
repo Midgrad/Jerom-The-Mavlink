@@ -10,7 +10,7 @@
 #include "i_mavlink_handlers_factory.h"
 #include "link_factory.h"
 
-namespace jerom_mavlink::domain
+namespace md::domain
 {
 class MavlinkTransciever : public IMavlinkTransciever
 {

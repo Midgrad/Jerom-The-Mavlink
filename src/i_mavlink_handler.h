@@ -7,14 +7,14 @@
 
 #include "i_property_tree.h"
 
-namespace jerom_mavlink::domain
+namespace md::domain
 {
 struct MavlinkHandlerContext
 {
     quint8 systemId = 255;
     quint8 compId = 0;
 
-    kjarni::domain::IPropertyTree* pTree = nullptr;
+    IPropertyTree* pTree = nullptr;
 };
 
 class IMavlinkHandler : public QObject
@@ -39,6 +39,6 @@ protected:
     MavlinkHandlerContext* const m_context;
 };
 
-} // namespace jerom_mavlink::domain
+} // namespace md::domain
 
 #endif // I_MAVLINK_HANDLER_H

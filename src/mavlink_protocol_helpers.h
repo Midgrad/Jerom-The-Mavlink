@@ -11,7 +11,7 @@
 #define UINT16_MAX std::numeric_limits<std::uint16_t>::max()
 #endif
 
-namespace jerom_mavlink::domain::utils
+namespace md::domain::utils
 {
 int32_t inline hzToUs(float frequency)
 {
