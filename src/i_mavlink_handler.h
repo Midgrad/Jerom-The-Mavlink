@@ -3,17 +3,28 @@
 
 #include <common/mavlink.h>
 
-#include <QJsonObject>
 #include <QObject>
+
+#include "i_property_tree.h"
 
 namespace jerom_mavlink::domain
 {
+struct MavlinkHandlerContext
+{
+    quint8 systemId = 255;
+    quint8 compId = 0;
+
+    kjarni::domain::IPropertyTree* pTree = nullptr;
+};
+
 class IMavlinkHandler : public QObject
 {
     Q_OBJECT
 
 public:
-    IMavlinkHandler(QObject* parent) : QObject(parent)
+    IMavlinkHandler(MavlinkHandlerContext* context, QObject* parent) :
+        QObject(parent),
+        m_context(context)
     {
     }
     virtual ~IMavlinkHandler() = default;
@@ -22,7 +33,10 @@ public:
     virtual void parseMessage(const mavlink_message_t& message) = 0;
 
 signals:
-    void propertiesObtained(QString path, QJsonObject properties);
+    void sendMessage(mavlink_message_t message);
+
+protected:
+    MavlinkHandlerContext* const m_context;
 };
 
 } // namespace jerom_mavlink::domain

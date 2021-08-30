@@ -30,10 +30,11 @@ protected:
 private slots:
     void receiveData();
     void parseMessage(const QByteArray& data);
-    void send(const QByteArray& data);
+    void send(const mavlink_message_t& message);
 
 private:
     int m_timerId = 0;
+    MavlinkHandlerContext m_context;
     QMap<QString, loodsman::LinkPtr> const m_links;
     QVector<IMavlinkHandler*> const m_handlers;
 };

@@ -7,8 +7,8 @@
 
 using namespace jerom_mavlink::domain;
 
-TelemetryHandler::TelemetryHandler(QObject* parent) :
-    IMavlinkHandler(parent),
+TelemetryHandler::TelemetryHandler(MavlinkHandlerContext* context, QObject* parent) :
+    IMavlinkHandler(context, parent),
     m_hasAltitudeMessage(false)
 {
 }
@@ -76,7 +76,7 @@ void TelemetryHandler::processAttitude(const mavlink_message_t& message)
     mavlink_attitude_t attitude;
     mavlink_msg_attitude_decode(&message, &attitude);
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid),
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                             QJsonObject({
                                 { tmi::pitch, utils::fromRadiansToDegrees(attitude.pitch) },
                                 { tmi::roll, utils::fromRadiansToDegrees(attitude.roll) },
@@ -92,7 +92,7 @@ void TelemetryHandler::processAltitude(const mavlink_message_t& message)
 
     m_hasAltitudeMessage = true;
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid),
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                             QJsonObject({ { tmi::altitudeAmsl, altitude.altitude_amsl },
                                           { tmi::altitudeRelative, altitude.altitude_relative },
                                           { tmi::altitudeTerrain, altitude.altitude_terrain } }));
@@ -114,7 +114,7 @@ void TelemetryHandler::processGlobalPosition(const mavlink_message_t& message)
                           utils::decodeAltitude(global_position.relative_alt));
     }
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid), properties);
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid), properties);
 }
 
 void TelemetryHandler::processSysStatus(const mavlink_message_t& message)
@@ -122,7 +122,7 @@ void TelemetryHandler::processSysStatus(const mavlink_message_t& message)
     mavlink_sys_status_t sys_status;
     mavlink_msg_sys_status_decode(&message, &sys_status);
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid),
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                             QJsonObject({ { tmi::batteryCurrent, sys_status.current_battery },
                                           { tmi::batteryVoltage, sys_status.voltage_battery } }));
 }
@@ -132,7 +132,7 @@ void TelemetryHandler::processHomePosition(const mavlink_message_t& message)
     mavlink_home_position_t home_position;
     mavlink_msg_home_position_decode(&message, &home_position);
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid),
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                             QJsonObject({
                                 { tmi::homeLatitude, utils::decodeLatLon(home_position.latitude) },
                                 { tmi::homeLongitude, utils::decodeLatLon(home_position.longitude) },
@@ -146,7 +146,7 @@ void TelemetryHandler::processNavControllerOutput(const mavlink_message_t& messa
     mavlink_nav_controller_output_t nav_controller_output;
     mavlink_msg_nav_controller_output_decode(&message, &nav_controller_output);
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid),
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                             QJsonObject(
                                 { { tmi::desiredRoll, nav_controller_output.nav_roll },
                                   { tmi::desiredPitch, nav_controller_output.nav_pitch },
@@ -161,7 +161,7 @@ void TelemetryHandler::processMissionCurrent(const mavlink_message_t& message)
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid),
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                             QJsonObject({ { tmi::wp, mission_current.seq } }));
 }
 
@@ -171,7 +171,7 @@ void TelemetryHandler::processMissionCount(const mavlink_message_t& message)
     mavlink_mission_count_t mission_count;
     mavlink_msg_mission_count_decode(&message, &mission_count);
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid),
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                             QJsonObject({ { tmi::wpCount, mission_count.count } }));
 }
 
@@ -180,7 +180,7 @@ void TelemetryHandler::processVfrHud(const mavlink_message_t& message)
     mavlink_vfr_hud_t vfr_hud;
     mavlink_msg_vfr_hud_decode(&message, &vfr_hud);
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid),
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                             QJsonObject(
                                 { { tmi::ias, vfr_hud.airspeed },
                                   { tmi::tas, utils::trueAirspeed(vfr_hud.airspeed, vfr_hud.alt) },
@@ -194,7 +194,7 @@ void TelemetryHandler::processGpsRaw(const mavlink_message_t& message)
     mavlink_gps_raw_int_t gps_raw;
     mavlink_msg_gps_raw_int_decode(&message, &gps_raw);
 
-    emit propertiesObtained(utils::nodeMavId(message.sysid),
+    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                             QJsonObject({
                                 { tmi::satellites, gps_raw.satellites_visible },
                                 // { tmi::gs, decodeGroundSpeed(gps_raw.vel) },

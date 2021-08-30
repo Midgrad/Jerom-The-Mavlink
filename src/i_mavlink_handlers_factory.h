@@ -12,7 +12,7 @@ class IMavlinkHandlerFactory
 public:
     virtual ~IMavlinkHandlerFactory() = default;
 
-    virtual QVector<IMavlinkHandler*> create() = 0;
+    virtual QVector<IMavlinkHandler*> create(MavlinkHandlerContext* context) = 0;
 };
 
 } // namespace jerom_mavlink::domain

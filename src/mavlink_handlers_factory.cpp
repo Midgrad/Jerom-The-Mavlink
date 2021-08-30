@@ -9,18 +9,12 @@ MavlinkHandlerFactory::MavlinkHandlerFactory(kjarni::domain::IPropertyTree* pTre
 {
 }
 
-QVector<IMavlinkHandler*> MavlinkHandlerFactory::create()
+QVector<IMavlinkHandler*> MavlinkHandlerFactory::create(MavlinkHandlerContext* context)
 {
+    context->pTree = m_pTree;
+
     QVector<IMavlinkHandler*> handlers;
-
-    handlers.append(new HeartbeatHandler());
-    handlers.append(new TelemetryHandler());
-
-    for (IMavlinkHandler* handler : handlers)
-    {
-        QObject::connect(handler, &IMavlinkHandler::propertiesObtained, m_pTree,
-                         &kjarni::domain::IPropertyTree::appendProperties);
-    }
-
+    handlers.append(new HeartbeatHandler(context));
+    handlers.append(new TelemetryHandler(context));
     return handlers;
 }

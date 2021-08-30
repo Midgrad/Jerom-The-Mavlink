@@ -10,7 +10,7 @@ class TelemetryHandler : public IMavlinkHandler
     Q_OBJECT
 
 public:
-    TelemetryHandler(QObject* parent = nullptr);
+    TelemetryHandler(MavlinkHandlerContext* context, QObject* parent = nullptr);
     ~TelemetryHandler() override;
 
     bool canParse(quint32 msgId) override;

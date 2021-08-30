@@ -12,7 +12,7 @@ class MavlinkHandlerFactory : public IMavlinkHandlerFactory
 public:
     MavlinkHandlerFactory(kjarni::domain::IPropertyTree* pTree);
 
-    QVector<IMavlinkHandler*> create() override;
+    QVector<IMavlinkHandler*> create(MavlinkHandlerContext* context) override;
 
 private:
     kjarni::domain::IPropertyTree* const m_pTree;

@@ -16,11 +16,12 @@ MavlinkTransciever::MavlinkTransciever(const QMap<QString, loodsman::LinkPtr>& l
                                        IMavlinkHandlerFactory* factory, QObject* parent) :
     IMavlinkTransciever(parent),
     m_links(links),
-    m_handlers(factory->create())
+    m_handlers(factory->create(&m_context))
 {
     for (IMavlinkHandler* handler : qAsConst(m_handlers))
     {
         handler->setParent(this);
+        connect(handler, &IMavlinkHandler::sendMessage, this, &MavlinkTransciever::send);
     }
 }
 
@@ -79,8 +80,14 @@ void MavlinkTransciever::parseMessage(const QByteArray& data)
     }
 }
 
-void MavlinkTransciever::send(const QByteArray& data)
+void MavlinkTransciever::send(const mavlink_message_t& message)
 {
+    quint8 buffer[MAVLINK_MAX_PACKET_LEN];
+    int lenght = mavlink_msg_to_send_buffer(buffer, &message);
+    if (!lenght)
+        return;
+
+    QByteArray data((const char*) buffer, lenght);
     for (const loodsman::LinkPtr& link : qAsConst(m_links))
     {
         link->send(data.toStdString());
