@@ -124,7 +124,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
 
     m_baseModes[message.sysid] = heartbeat.base_mode;
 
-    QJsonObject properties(
+    QVariantMap properties(
         { { tmi::state, QString::fromStdString(::decodeState(heartbeat.system_status)) },
           { tmi::armed, (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) },
           { tmi::type, QString::fromStdString(::decodeMavType(heartbeat.type)) } });
