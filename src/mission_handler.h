@@ -16,10 +16,14 @@ public:
     bool canParse(quint32 msgId) override;
     void parseMessage(const mavlink_message_t& message) override;
 
+    void requestMissionCount(const QString& node);
     void sendMissionSetCurrent(const QString& node, int waypoint);
 
     void processMissionCurrent(const mavlink_message_t& message);
     void processMissionCount(const mavlink_message_t& message);
+
+private:
+    QStringList m_obtainedNodes;
 };
 } // namespace md::domain
 
