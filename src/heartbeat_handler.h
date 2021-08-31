@@ -20,6 +20,7 @@ public:
     void parseMessage(const mavlink_message_t& message) override;
 
     void sendMode(const QString& node, const QString& mode);
+
     void processHeartbeat(const mavlink_message_t& message);
 
 private:

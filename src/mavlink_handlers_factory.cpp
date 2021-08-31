@@ -1,6 +1,7 @@
 #include "mavlink_handlers_factory.h"
 
 #include "heartbeat_handler.h"
+#include "mission_handler.h"
 #include "telemetry_handler.h"
 
 using namespace md::domain;
@@ -16,5 +17,6 @@ QVector<IMavlinkHandler*> MavlinkHandlerFactory::create(MavlinkHandlerContext* c
     QVector<IMavlinkHandler*> handlers;
     handlers.append(new HeartbeatHandler(context));
     handlers.append(new TelemetryHandler(context));
+    handlers.append(new MissionHandler(context));
     return handlers;
 }

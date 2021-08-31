@@ -23,14 +23,12 @@ public:
     void processVfrHud(const mavlink_message_t& message);
     void processGpsRaw(const mavlink_message_t& message);
     void processNavControllerOutput(const mavlink_message_t& message);
-    void processMissionCurrent(const mavlink_message_t& message);
-    void processMissionCount(const mavlink_message_t& message);
     void processHomePosition(const mavlink_message_t& message);
 
 private:
     // TODO: this params should belong to a vehicle, not to the handler!
     bool m_hasAltitudeMessage;
 };
-} // namespace jerom_mavlink::domain
+} // namespace md::domain
 
 #endif // TELEMETRY_HANDLER_H

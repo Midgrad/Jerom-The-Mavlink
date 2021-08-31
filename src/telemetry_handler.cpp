@@ -23,7 +23,7 @@ bool TelemetryHandler::canParse(quint32 msgId)
            (msgId == MAVLINK_MSG_ID_GLOBAL_POSITION_INT) || (msgId == MAVLINK_MSG_ID_VFR_HUD) ||
            (msgId == MAVLINK_MSG_ID_GPS_RAW_INT) || (msgId == MAVLINK_MSG_ID_SYS_STATUS) ||
            (msgId == MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT) ||
-           (msgId == MAVLINK_MSG_ID_MISSION_CURRENT) || (msgId == MAVLINK_MSG_ID_HOME_POSITION);
+           (msgId == MAVLINK_MSG_ID_HOME_POSITION);
 }
 
 void TelemetryHandler::parseMessage(const mavlink_message_t& message)
@@ -56,14 +56,6 @@ void TelemetryHandler::parseMessage(const mavlink_message_t& message)
     if (message.msgid == MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT)
     {
         this->processNavControllerOutput(message);
-    }
-    if (message.msgid == MAVLINK_MSG_ID_MISSION_CURRENT)
-    {
-        this->processMissionCurrent(message);
-    }
-    if (message.msgid == MAVLINK_MSG_ID_MISSION_COUNT)
-    {
-        this->processMissionCount(message);
     }
     if (message.msgid == MAVLINK_MSG_ID_HOME_POSITION)
     {
@@ -158,26 +150,6 @@ void TelemetryHandler::processNavControllerOutput(const mavlink_message_t& messa
                                          { tmi::targetBearing,
                                            nav_controller_output.target_bearing },
                                          { tmi::wpDistance, nav_controller_output.wp_dist } });
-}
-
-// TODO: to mission handler
-void TelemetryHandler::processMissionCurrent(const mavlink_message_t& message)
-{
-    mavlink_mission_current_t mission_current;
-    mavlink_msg_mission_current_decode(&message, &mission_current);
-
-    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
-                                       { { tmi::wp, mission_current.seq } });
-}
-
-// TODO: to mission handler
-void TelemetryHandler::processMissionCount(const mavlink_message_t& message)
-{
-    mavlink_mission_count_t mission_count;
-    mavlink_msg_mission_count_decode(&message, &mission_count);
-
-    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
-                                       { { tmi::wpCount, mission_count.count } });
 }
 
 void TelemetryHandler::processVfrHud(const mavlink_message_t& message)
