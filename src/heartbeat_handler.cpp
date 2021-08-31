@@ -74,6 +74,14 @@ std::string decodeState(uint8_t state)
 HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context, QObject* parent) :
     IMavlinkHandler(context, parent)
 {
+    connect(m_context->pTree, &IPropertyTree::propertiesChanged, this,
+            [this](const QString& node, const QVariantMap& properties) {
+                if (properties.contains(tmi::setMode))
+                {
+                    this->m_context->pTree->removeProperties(node, { tmi::setMode });
+                    this->sendMode(node, properties.value(tmi::setMode).toString());
+                }
+            });
 }
 
 HeartbeatHandler::~HeartbeatHandler()
@@ -90,16 +98,12 @@ void HeartbeatHandler::parseMessage(const mavlink_message_t& message)
     this->processHeartbeat(message);
 }
 
-//void HeartbeatHandler::onPropertiesChanged(const QString& path, const QJsonObject& properties)
-//{
-//    if (properties.contains(tmi::setMode))
-//        this->sendMode(path, QJsonValue(properties).toString());
-//}
-
 void HeartbeatHandler::sendMode(const QString& node, const QString& mode)
 {
     qDebug() << "setMode" << node << mode;
     auto mavId = utils::mavIdFromNode(node);
+    if (!mavId)
+        return;
 
     auto modeHelper = m_modeHelpers.value(mavId);
     if (!modeHelper)
