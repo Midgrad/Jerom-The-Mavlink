@@ -5,7 +5,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 
-#include "link_factory.h"
+#include "udp_link_factory.h"
 
 #include "locator.h"
 
@@ -21,15 +21,15 @@ constexpr char type[] = "type";
 constexpr char name[] = "name";
 constexpr char port[] = "port";
 
-loodsman::link_type linkTypeFromString(const QString& type)
-{
-    if (type == "udp")
-        return loodsman::link_type::udp;
-
-    // TODO: others
-
-    return loodsman::link_type::unknown;
-}
+//loodsman::link_type linkTypeFromString(const QString& type)
+//{
+//    if (type == "udp")
+//        return loodsman::link_type::udp;
+//
+//    // TODO: others
+//
+//    return loodsman::link_type::unknown;
+//}
 } // namespace
 
 using namespace md::app;
@@ -47,14 +47,14 @@ void ModuleJeromTheMavlink::init()
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     file.close();
 
-    QMap<QString, loodsman::LinkPtr> links;
+    QMap<QString, std::shared_ptr<loodsman::ILink>> links;
     for (const QJsonValue& value : doc.array())
     {
         QJsonObject linkConfig = value.toObject();
 
-        loodsman::LinkPtr link;
-        loodsman::factory(link, ::linkTypeFromString(linkConfig.value(::type).toString()),
-                          linkConfig.value(::port).toInt());
+        loodsman::UdpLinkFactory factory(linkConfig.value(::port).toInt());
+        std::shared_ptr<loodsman::ILink> link(factory.create());
+
         if (link)
             links[linkConfig.value(::name).toString()] = link;
     }
@@ -62,15 +62,14 @@ void ModuleJeromTheMavlink::init()
     auto pTree = Locator::get<md::domain::IPropertyTree>();
     domain::MavlinkHandlerFactory factory(pTree);
 
-    // TODO: wrap transceiver with threaed decorator
-    m_transciever = new domain::MavlinkTranscieverThreaded(new domain::MavlinkTransciever(links,
+    m_transceiver = new domain::MavlinkTranscieverThreaded(new domain::MavlinkTransceiver(links,
                                                                                           &factory,
                                                                                           nullptr),
                                                            this);
-    m_transciever->start();
+    m_transceiver->start();
 }
 
 void ModuleJeromTheMavlink::done()
 {
-    m_transciever->stop();
+    m_transceiver->stop();
 }

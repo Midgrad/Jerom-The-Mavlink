@@ -1,23 +1,25 @@
-#ifndef MAVLINK_TRANSCIEVER_H
-#define MAVLINK_TRANSCIEVER_H
+#ifndef MAVLINK_TRANSCEIVER_H
+#define MAVLINK_TRANSCEIVER_H
 
 #include "i_mavlink_transceiver.h"
 
 #include <QMap>
 #include <QVector>
 
+#include <memory>
+
 // TODO: i_link
+#include "i_link_factory.h"
 #include "i_mavlink_handlers_factory.h"
-#include "link_factory.h"
 
 namespace md::domain
 {
-class MavlinkTransciever : public IMavlinkTransciever
+class MavlinkTransceiver : public IMavlinkTransceiver
 {
     Q_OBJECT
 
 public:
-    MavlinkTransciever(const QMap<QString, loodsman::LinkPtr>& links,
+    MavlinkTransceiver(const QMap<QString, std::shared_ptr<loodsman::ILink>>& links,
                        IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
 
 public slots:
@@ -35,9 +37,9 @@ private slots:
 private:
     int m_timerId = 0;
     MavlinkHandlerContext m_context;
-    QMap<QString, loodsman::LinkPtr> const m_links;
+    QMap<QString, std::shared_ptr<loodsman::ILink>> const m_links;
     QVector<IMavlinkHandler*> const m_handlers;
 };
-} // namespace jerom_mavlink::domain
+} // namespace md::domain
 
-#endif // MAVLINK_TRANSCIEVER_H
+#endif // MAVLINK_TRANSCEIVER_H
