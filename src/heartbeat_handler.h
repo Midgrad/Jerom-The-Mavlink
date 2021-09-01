@@ -1,14 +1,14 @@
 #ifndef HEARTBEAT_HANDLER_H
 #define HEARTBEAT_HANDLER_H
 
-#include "i_mavlink_handler.h"
+#include "abstract_command_handler.h"
 #include "i_mode_helper.h"
 
 #include <QMap>
 
 namespace md::domain
 {
-class HeartbeatHandler : public IMavlinkHandler
+class HeartbeatHandler : public AbstractCommandHandler
 {
     Q_OBJECT
 
@@ -20,6 +20,7 @@ public:
     void parseMessage(const mavlink_message_t& message) override;
 
     void sendMode(const QString& node, const QString& mode);
+    void sendArm(const QString& node, bool arm);
 
     void processHeartbeat(const mavlink_message_t& message);
 

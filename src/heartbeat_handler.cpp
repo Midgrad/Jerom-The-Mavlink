@@ -72,7 +72,7 @@ std::string decodeState(uint8_t state)
 } // namespace
 
 HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context, QObject* parent) :
-    IMavlinkHandler(context, parent)
+    AbstractCommandHandler(context, parent)
 {
     connect(m_context->pTree, &IPropertyTree::propertiesChanged, this,
             [this](const QString& node, const QVariantMap& properties) {
@@ -80,6 +80,11 @@ HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context, QObject* pare
                 {
                     this->m_context->pTree->removeProperties(node, { tmi::setMode });
                     this->sendMode(node, properties.value(tmi::setMode).toString());
+                }
+                else if (properties.contains(tmi::setArmed))
+                {
+                    this->m_context->pTree->removeProperties(node, { tmi::setArmed });
+                    this->sendArm(node, properties.value(tmi::setArmed).toBool());
                 }
             });
 }
@@ -119,6 +124,25 @@ void HeartbeatHandler::sendMode(const QString& node, const QString& mode)
     mavlink_msg_set_mode_encode_chan(m_context->systemId, m_context->compId, 0, &message,
                                      &setMode); // TODO: link channel
     emit sendMessage(message);
+}
+
+void HeartbeatHandler::sendArm(const QString& node, bool arm)
+{
+    qDebug() << "setArm" << node << arm;
+    auto mavId = utils::mavIdFromNode(node);
+    if (!mavId)
+        return;
+
+    if (arm)
+    {
+        // 21196: force arming/disarming (e.g. allow arming to override preflight checks)
+        int force = 0;
+        this->sendCommandLong(mavId, MAV_CMD_COMPONENT_ARM_DISARM, { 1, force, 0, 0, 0, 0, 0 }, 0);
+    }
+    else
+    {
+        this->sendCommandLong(mavId, MAV_CMD_COMPONENT_ARM_DISARM, { 0, 0, 0, 0, 0, 0, 0 }, 0);
+    }
 }
 
 void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
