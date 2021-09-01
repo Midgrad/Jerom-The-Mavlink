@@ -18,11 +18,7 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 
 void ModuleJeromTheMavlink::init()
 {
-    // TODO: to comman json config reader
-
-    md::domain::LinkConfigurator configurator;
-
-    auto links = configurator.start();
+    auto links = md::domain::LinkConfigurator::start();
 
     auto pTree = Locator::get<md::domain::IPropertyTree>();
     domain::MavlinkHandlerFactory factory(pTree);

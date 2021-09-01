@@ -10,6 +10,8 @@
 
 using namespace md::domain;
 
+// TODO: to common json config reader - https://github.com/Midgrad/kjarni/issues/2
+
 namespace
 {
 constexpr char path[] = "./link_config.json";
@@ -20,21 +22,23 @@ constexpr char port[] = "port";
 
 } // namespace
 
-void LinkConfigurator::read()
+QJsonDocument LinkConfigurator::read()
 {
     QFile file(::path);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
 
-    m_document = QJsonDocument::fromJson(file.readAll());
+    QJsonDocument document = QJsonDocument::fromJson(file.readAll());
     file.close();
+
+    return document;
 }
 
 QMap<QString, std::shared_ptr<loodsman::ILink>> LinkConfigurator::start()
 {
-    this->read();
+    QJsonDocument document = LinkConfigurator::read();
 
     QMap<QString, std::shared_ptr<loodsman::ILink>> links;
-    for (const QJsonValue& value : m_document.array())
+    for (const QJsonValue& value : document.array())
     {
         QJsonObject linkConfig = value.toObject();
 

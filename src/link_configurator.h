@@ -15,12 +15,11 @@ class LinkConfigurator
 public:
     LinkConfigurator() = default;
 
-    void read();
+    static QJsonDocument read();
 
-    QMap<QString, std::shared_ptr<loodsman::ILink>> start();
+    static QMap<QString, std::shared_ptr<loodsman::ILink>> start();
 
 private:
-    QJsonDocument m_document;
 };
 
 } // namespace md::domain
