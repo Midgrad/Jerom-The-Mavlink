@@ -7,12 +7,12 @@
 
 namespace md::domain
 {
-class MavlinkTranscieverThreaded : public IMavlinkTransciever
+class MavlinkTranscieverThreaded : public IMavlinkTransceiver
 {
     Q_OBJECT
 
 public:
-    MavlinkTranscieverThreaded(IMavlinkTransciever* worker, QObject* parent = nullptr);
+    MavlinkTranscieverThreaded(IMavlinkTransceiver* worker, QObject* parent = nullptr);
     ~MavlinkTranscieverThreaded() override;
 
 public slots:
@@ -20,9 +20,9 @@ public slots:
     void stop() override;
 
 private:
-    IMavlinkTransciever* const m_worker;
+    IMavlinkTransceiver* const m_worker;
     QThread* const m_thread;
 };
-} // namespace jerom_mavlink::domain
+} // namespace md::domain
 
 #endif // MAVLINK_TRANSCIEVER_THREADED_H

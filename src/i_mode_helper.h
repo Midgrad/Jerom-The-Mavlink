@@ -16,6 +16,6 @@ public:
 
     virtual QStringList availableModes() const = 0;
 };
-} // namespace jerom_mavlink::data_source
+} // namespace md::data_source
 
 #endif // I_MODE_HELPER_H

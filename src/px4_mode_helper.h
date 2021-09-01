@@ -15,6 +15,6 @@ public:
 
     QStringList availableModes() const override;
 };
-} // namespace jerom_mavlink::data_source
+} // namespace md::data_source
 
 #endif // PX4_MODE_HELPER_H

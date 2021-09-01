@@ -15,6 +15,6 @@ public:
     virtual QVector<IMavlinkHandler*> create(MavlinkHandlerContext* context) = 0;
 };
 
-} // namespace jerom_mavlink::domain
+} // namespace md::domain
 
 #endif // I_MAVLINK_HANDLER_FACTORY_H

@@ -32,6 +32,6 @@ constexpr char throwing[] = "Throw";
 constexpr char avoid[] = "Avoid";
 constexpr char follow[] = "Follow";
 } // namespace modes
-} // namespace jerom_mavlink::data_source
+} // namespace md::data_source
 
 #endif // MODE_TRAITS_H
