@@ -1,19 +1,19 @@
-#ifndef I_MAVLINK_TRANSCIEVER_H
-#define I_MAVLINK_TRANSCIEVER_H
+#ifndef I_MAVLINK_TRANSCEIVER_H
+#define I_MAVLINK_TRANSCEIVER_H
 
 #include <QObject>
 
 namespace md::domain
 {
-class IMavlinkTransciever : public QObject
+class IMavlinkTransceiver : public QObject
 {
     Q_OBJECT
 
 public:
-    IMavlinkTransciever(QObject* parent) : QObject(parent)
+    IMavlinkTransceiver(QObject* parent) : QObject(parent)
     {
     }
-    virtual ~IMavlinkTransciever() = default;
+    virtual ~IMavlinkTransceiver() = default;
 
 public slots:
     virtual void start() = 0;
@@ -22,6 +22,6 @@ public slots:
 signals:
     void finished();
 };
-} // namespace jerom_mavlink::domain
+} // namespace md::domain
 
-#endif // I_MAVLINK_TRANSCIEVER_H
+#endif // I_MAVLINK_TRANSCEIVER_H

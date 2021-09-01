@@ -15,6 +15,6 @@ public:
 
     virtual QStringList availableModes() const override;
 };
-} // namespace jerom_mavlink::data_source
+} // namespace md::data_source
 
 #endif // APM_COPTER_MODE_HELPER_H

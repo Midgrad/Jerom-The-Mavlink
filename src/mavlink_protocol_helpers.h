@@ -114,6 +114,6 @@ inline uint8_t mavIdFromNode(const QString& node)
     return node.split(' ').last().toInt();
 }
 
-} // namespace jerom_mavlink::domain::utils
+} // namespace md::domain::utils
 
 #endif // MAVLINK_PROTOCOL_HELPERS_H

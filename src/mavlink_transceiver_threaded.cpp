@@ -10,9 +10,9 @@ constexpr char threadName[] = "mavlink_transciever";
 
 using namespace md::domain;
 
-MavlinkTranscieverThreaded::MavlinkTranscieverThreaded(IMavlinkTransciever* worker,
+MavlinkTranscieverThreaded::MavlinkTranscieverThreaded(IMavlinkTransceiver* worker,
                                                        QObject* parent) :
-    IMavlinkTransciever(parent),
+    IMavlinkTransceiver(parent),
     m_worker(worker),
     m_thread(new QThread(this))
 {
@@ -22,9 +22,9 @@ MavlinkTranscieverThreaded::MavlinkTranscieverThreaded(IMavlinkTransciever* work
     worker->moveToThread(m_thread);
 
     QObject::connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
-    QObject::connect(m_worker, &IMavlinkTransciever::finished, m_thread, &QThread::quit);
-    QObject::connect(m_worker, &IMavlinkTransciever::finished, m_worker, &QObject::deleteLater);
-    QObject::connect(m_worker, &IMavlinkTransciever::finished, this, &IMavlinkTransciever::finished);
+    QObject::connect(m_worker, &IMavlinkTransceiver::finished, m_thread, &QThread::quit);
+    QObject::connect(m_worker, &IMavlinkTransceiver::finished, m_worker, &QObject::deleteLater);
+    QObject::connect(m_worker, &IMavlinkTransceiver::finished, this, &IMavlinkTransceiver::finished);
 }
 
 MavlinkTranscieverThreaded::~MavlinkTranscieverThreaded()

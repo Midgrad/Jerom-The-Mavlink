@@ -21,7 +21,7 @@ public:
     void done() override;
 
 private:
-    domain::IMavlinkTransciever* m_transciever = nullptr;
+    domain::IMavlinkTransceiver* m_transceiver = nullptr;
 };
 } // namespace md::app
 

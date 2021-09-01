@@ -12,6 +12,6 @@ class ModeHelperFactory
 public:
     static IModeHelper* create(uint8_t autopilot, uint8_t type);
 };
-} // namespace jerom_mavlink::data_source
+} // namespace md::data_source
 
 #endif // MODE_HELPER_FACTORY_H
