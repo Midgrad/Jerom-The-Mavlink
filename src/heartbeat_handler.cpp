@@ -74,19 +74,12 @@ std::string decodeState(uint8_t state)
 HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context, QObject* parent) :
     AbstractCommandHandler(context, parent)
 {
-    connect(m_context->pTree, &IPropertyTree::propertiesChanged, this,
-            [this](const QString& node, const QVariantMap& properties) {
-                if (properties.contains(tmi::setMode))
-                {
-                    this->m_context->pTree->removeProperties(node, { tmi::setMode });
-                    this->sendMode(node, properties.value(tmi::setMode).toString());
-                }
-                else if (properties.contains(tmi::setArmed))
-                {
-                    this->m_context->pTree->removeProperties(node, { tmi::setArmed });
-                    this->sendArm(node, properties.value(tmi::setArmed).toBool());
-                }
-            });
+    this->subscribeCommand(tmi::setMode, [this](const QString& node, const QVariant& args) {
+        this->sendMode(node, args.toString());
+    });
+    this->subscribeCommand(tmi::setArmed, [this](const QString& node, const QVariant& args) {
+        this->sendArm(node, args.toBool());
+    });
 }
 
 HeartbeatHandler::~HeartbeatHandler()

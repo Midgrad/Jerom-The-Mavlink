@@ -37,3 +37,15 @@ void AbstractCommandHandler::sendCommandLong(quint8 mavId, quint16 commandId,
                                          &mavCommand); // TODO: link channel
     emit sendMessage(message);
 }
+
+void AbstractCommandHandler::subscribeCommand(const QString& command, CommandSendCallback callback)
+{
+    connect(m_context->pTree, &IPropertyTree::propertiesChanged, this,
+            [this, command, callback](const QString& node, const QVariantMap& properties) {
+                if (properties.contains(command))
+                {
+                    this->m_context->pTree->removeProperties(node, { command });
+                    callback(node, properties.value(command));
+                }
+            });
+}
