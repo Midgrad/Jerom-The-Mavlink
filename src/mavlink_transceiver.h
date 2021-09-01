@@ -20,7 +20,7 @@ class MavlinkTransceiver : public IMavlinkTransceiver
     Q_OBJECT
 
 public:
-    MavlinkTransceiver(const QMap<QString, linkPtr>& links, IMavlinkHandlerFactory* factory,
+    MavlinkTransceiver(const QMap<QString, LinkPtr>& links, IMavlinkHandlerFactory* factory,
                        QObject* parent = nullptr);
 
 public slots:
@@ -38,7 +38,7 @@ private slots:
 private:
     int m_timerId = 0;
     MavlinkHandlerContext m_context;
-    QMap<QString, linkPtr> const m_links;
+    QMap<QString, LinkPtr> const m_links;
     QVector<IMavlinkHandler*> const m_handlers;
 };
 } // namespace md::domain

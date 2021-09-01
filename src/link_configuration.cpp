@@ -31,17 +31,17 @@ QJsonDocument LinkConfiguration::read()
     return document;
 }
 
-QMap<QString, linkPtr> LinkConfiguration::start()
+QMap<QString, LinkPtr> LinkConfiguration::start()
 {
     QJsonDocument document = LinkConfiguration::read();
 
-    QMap<QString, linkPtr> links;
+    QMap<QString, LinkPtr> links;
     for (const QJsonValue& value : document.array())
     {
         QJsonObject linkConfig = value.toObject();
 
         loodsman::UdpLinkFactory factory(linkConfig.value(::port).toInt());
-        linkPtr link(factory.create());
+        LinkPtr link(factory.create());
 
         if (link)
             links[linkConfig.value(::name).toString()] = link;

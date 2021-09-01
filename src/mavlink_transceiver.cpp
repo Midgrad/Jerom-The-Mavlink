@@ -10,7 +10,7 @@ namespace
 constexpr int interval = 1;
 } // namespace
 
-MavlinkTransceiver::MavlinkTransceiver(const QMap<QString, linkPtr>& links,
+MavlinkTransceiver::MavlinkTransceiver(const QMap<QString, LinkPtr>& links,
                                        IMavlinkHandlerFactory* factory, QObject* parent) :
     IMavlinkTransceiver(parent),
     m_links(links),
@@ -50,7 +50,7 @@ void MavlinkTransceiver::timerEvent(QTimerEvent* event)
 void MavlinkTransceiver::receiveData()
 {
     std::string received_data;
-    for (linkPtr link : qAsConst(m_links))
+    for (LinkPtr link : qAsConst(m_links))
     {
         // FIXME: unblocking read
         received_data = link->receive();
@@ -86,7 +86,7 @@ void MavlinkTransceiver::send(const mavlink_message_t& message)
         return;
 
     QByteArray data((const char*) buffer, lenght);
-    for (linkPtr link : qAsConst(m_links))
+    for (LinkPtr link : qAsConst(m_links))
     {
         link->send(data.toStdString());
     }
