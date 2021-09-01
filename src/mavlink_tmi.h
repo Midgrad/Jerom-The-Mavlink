@@ -6,15 +6,15 @@
 namespace md::tmi
 {
 // Devices
-constexpr char ahrs[] = "ahrs";
-constexpr char accel[] = "accel";
-constexpr char gyro[] = "gyro";
-constexpr char mag[] = "mag";
-constexpr char gps[] = "gps";
-constexpr char baro[] = "baro";
-constexpr char pitot[] = "pitot";
-constexpr char radalt[] = "radalt";
-constexpr char battery[] = "battery";
+constexpr char ahrs[] = "AHRS";
+constexpr char accel[] = "Accel";
+constexpr char gyro[] = "Gyro";
+constexpr char mag[] = "Mag";
+constexpr char gps[] = "GPS";
+constexpr char baro[] = "Baro";
+constexpr char pitot[] = "Pitot";
+constexpr char radalt[] = "Radalt";
+constexpr char battery[] = "Battery";
 
 // Engine
 constexpr char throttle[] = "throttle";

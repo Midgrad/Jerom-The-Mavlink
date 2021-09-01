@@ -34,13 +34,14 @@ void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
     mavlink_sys_status_t sysStatus;
     mavlink_msg_sys_status_decode(&message, &sysStatus);
 
-    QVariantMap status;
+    QVariantList devices;
 
     QVariantMap ahrs;
     ahrs[tmi::present] = sysStatus.onboard_control_sensors_present & MAV_SYS_STATUS_AHRS;
     ahrs[tmi::enabled] = sysStatus.onboard_control_sensors_enabled & MAV_SYS_STATUS_AHRS;
     ahrs[tmi::health] = sysStatus.onboard_control_sensors_health & MAV_SYS_STATUS_AHRS;
-    status[tmi::ahrs] = ahrs;
+    ahrs[tmi::name] = tmi::ahrs;
+    devices.append(ahrs);
 
     QVariantMap accel;
     accel[tmi::present] = sysStatus.onboard_control_sensors_present &
@@ -48,25 +49,29 @@ void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
     accel[tmi::enabled] = sysStatus.onboard_control_sensors_enabled &
                           MAV_SYS_STATUS_SENSOR_3D_ACCEL;
     accel[tmi::health] = sysStatus.onboard_control_sensors_health & MAV_SYS_STATUS_SENSOR_3D_ACCEL;
-    status[tmi::accel] = accel;
+    accel[tmi::name] = tmi::accel;
+    devices.append(accel);
 
     QVariantMap gyro;
     gyro[tmi::present] = sysStatus.onboard_control_sensors_present & MAV_SYS_STATUS_SENSOR_3D_GYRO;
     gyro[tmi::enabled] = sysStatus.onboard_control_sensors_enabled & MAV_SYS_STATUS_SENSOR_3D_GYRO;
     gyro[tmi::health] = sysStatus.onboard_control_sensors_health & MAV_SYS_STATUS_SENSOR_3D_GYRO;
-    status[tmi::gyro] = gyro;
+    gyro[tmi::name] = tmi::gyro;
+    devices.append(gyro);
 
     QVariantMap mag;
     mag[tmi::present] = sysStatus.onboard_control_sensors_present & MAV_SYS_STATUS_SENSOR_3D_MAG;
     mag[tmi::enabled] = sysStatus.onboard_control_sensors_enabled & MAV_SYS_STATUS_SENSOR_3D_MAG;
     mag[tmi::health] = sysStatus.onboard_control_sensors_health & MAV_SYS_STATUS_SENSOR_3D_MAG;
-    status[tmi::mag] = mag;
+    mag[tmi::name] = tmi::mag;
+    devices.append(mag);
 
     QVariantMap gps;
     gps[tmi::present] = sysStatus.onboard_control_sensors_present & MAV_SYS_STATUS_SENSOR_GPS;
     gps[tmi::enabled] = sysStatus.onboard_control_sensors_enabled & MAV_SYS_STATUS_SENSOR_GPS;
     gps[tmi::health] = sysStatus.onboard_control_sensors_health & MAV_SYS_STATUS_SENSOR_GPS;
-    status[tmi::gps] = gps;
+    gps[tmi::name] = tmi::gps;
+    devices.append(gps);
 
     QVariantMap baro;
     baro[tmi::present] = sysStatus.onboard_control_sensors_present &
@@ -75,7 +80,8 @@ void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
                          MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE;
     baro[tmi::health] = sysStatus.onboard_control_sensors_health &
                         MAV_SYS_STATUS_SENSOR_ABSOLUTE_PRESSURE;
-    status[tmi::baro] = baro;
+    baro[tmi::name] = tmi::baro;
+    devices.append(baro);
 
     QVariantMap pitot;
     pitot[tmi::present] = sysStatus.onboard_control_sensors_present &
@@ -84,7 +90,8 @@ void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
                           MAV_SYS_STATUS_SENSOR_DIFFERENTIAL_PRESSURE;
     pitot[tmi::health] = sysStatus.onboard_control_sensors_health &
                          MAV_SYS_STATUS_SENSOR_DIFFERENTIAL_PRESSURE;
-    status[tmi::pitot] = pitot;
+    pitot[tmi::name] = tmi::pitot;
+    devices.append(pitot);
 
     QVariantMap radalt;
     radalt[tmi::present] = sysStatus.onboard_control_sensors_present &
@@ -93,7 +100,8 @@ void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
                            MAV_SYS_STATUS_SENSOR_LASER_POSITION;
     radalt[tmi::health] = sysStatus.onboard_control_sensors_health &
                           MAV_SYS_STATUS_SENSOR_LASER_POSITION;
-    status[tmi::radalt] = radalt;
+    radalt[tmi::name] = tmi::radalt;
+    devices.append(radalt);
 
     QVariantMap battery;
     battery[tmi::present] = sysStatus.onboard_control_sensors_present &
@@ -101,8 +109,11 @@ void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
     battery[tmi::enabled] = sysStatus.onboard_control_sensors_enabled &
                             MAV_SYS_STATUS_SENSOR_BATTERY;
     battery[tmi::health] = sysStatus.onboard_control_sensors_health & MAV_SYS_STATUS_SENSOR_BATTERY;
-    status[tmi::battery] = battery;
+    battery[tmi::name] = tmi::battery;
+    devices.append(battery);
 
+    QVariantMap status;
+    status[tmi::devices] = devices;
     status[tmi::batteryCurrent] = utils::decodeCurrent(sysStatus.current_battery);
     status[tmi::batteryVoltage] = utils::decodeVoltage(sysStatus.voltage_battery);
     status[tmi::batteryPercentage] = sysStatus.battery_remaining;
