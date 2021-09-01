@@ -11,6 +11,7 @@
 // TODO: i_link
 #include "i_link_factory.h"
 #include "i_mavlink_handlers_factory.h"
+#include "link_configuration.h"
 
 namespace md::domain
 {
@@ -19,8 +20,8 @@ class MavlinkTransceiver : public IMavlinkTransceiver
     Q_OBJECT
 
 public:
-    MavlinkTransceiver(const QMap<QString, std::shared_ptr<loodsman::ILink>>& links,
-                       IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
+    MavlinkTransceiver(const QMap<QString, linkPtr>& links, IMavlinkHandlerFactory* factory,
+                       QObject* parent = nullptr);
 
 public slots:
     void start() override;
@@ -37,7 +38,7 @@ private slots:
 private:
     int m_timerId = 0;
     MavlinkHandlerContext m_context;
-    QMap<QString, std::shared_ptr<loodsman::ILink>> const m_links;
+    QMap<QString, linkPtr> const m_links;
     QVector<IMavlinkHandler*> const m_handlers;
 };
 } // namespace md::domain

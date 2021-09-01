@@ -1,4 +1,4 @@
-#include "link_configurator.h"
+#include "link_configuration.h"
 
 #include <QFile>
 #include <QJsonArray>
@@ -10,8 +10,6 @@
 
 using namespace md::domain;
 
-// TODO: to common json config reader - https://github.com/Midgrad/kjarni/issues/2
-
 namespace
 {
 constexpr char path[] = "./link_config.json";
@@ -22,7 +20,7 @@ constexpr char port[] = "port";
 
 } // namespace
 
-QJsonDocument LinkConfigurator::read()
+QJsonDocument LinkConfiguration::read()
 {
     QFile file(::path);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -33,17 +31,17 @@ QJsonDocument LinkConfigurator::read()
     return document;
 }
 
-QMap<QString, std::shared_ptr<loodsman::ILink>> LinkConfigurator::start()
+QMap<QString, linkPtr> LinkConfiguration::start()
 {
-    QJsonDocument document = LinkConfigurator::read();
+    QJsonDocument document = LinkConfiguration::read();
 
-    QMap<QString, std::shared_ptr<loodsman::ILink>> links;
+    QMap<QString, linkPtr> links;
     for (const QJsonValue& value : document.array())
     {
         QJsonObject linkConfig = value.toObject();
 
         loodsman::UdpLinkFactory factory(linkConfig.value(::port).toInt());
-        std::shared_ptr<loodsman::ILink> link(factory.create());
+        linkPtr link(factory.create());
 
         if (link)
             links[linkConfig.value(::name).toString()] = link;

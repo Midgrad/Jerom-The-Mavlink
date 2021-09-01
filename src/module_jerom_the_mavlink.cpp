@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-#include "link_configurator.h"
+#include "link_configuration.h"
 
 #include "locator.h"
 
@@ -18,7 +18,7 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 
 void ModuleJeromTheMavlink::init()
 {
-    auto links = md::domain::LinkConfigurator::start();
+    auto links = md::domain::LinkConfiguration::start();
 
     auto pTree = Locator::get<md::domain::IPropertyTree>();
     domain::MavlinkHandlerFactory factory(pTree);
