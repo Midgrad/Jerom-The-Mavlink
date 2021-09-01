@@ -19,7 +19,6 @@ public:
     void processAttitude(const mavlink_message_t& message);
     void processAltitude(const mavlink_message_t& message);
     void processGlobalPosition(const mavlink_message_t& message);
-    void processSysStatus(const mavlink_message_t& message);
     void processVfrHud(const mavlink_message_t& message);
     void processGpsRaw(const mavlink_message_t& message);
     void processNavControllerOutput(const mavlink_message_t& message);

@@ -21,7 +21,7 @@ bool TelemetryHandler::canParse(quint32 msgId)
 {
     return (msgId == MAVLINK_MSG_ID_ATTITUDE) || (msgId == MAVLINK_MSG_ID_ALTITUDE) ||
            (msgId == MAVLINK_MSG_ID_GLOBAL_POSITION_INT) || (msgId == MAVLINK_MSG_ID_VFR_HUD) ||
-           (msgId == MAVLINK_MSG_ID_GPS_RAW_INT) || (msgId == MAVLINK_MSG_ID_SYS_STATUS) ||
+           (msgId == MAVLINK_MSG_ID_GPS_RAW_INT) ||
            (msgId == MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT) ||
            (msgId == MAVLINK_MSG_ID_HOME_POSITION);
 }
@@ -48,10 +48,6 @@ void TelemetryHandler::parseMessage(const mavlink_message_t& message)
     if (message.msgid == MAVLINK_MSG_ID_GPS_RAW_INT)
     {
         this->processGpsRaw(message);
-    }
-    if (message.msgid == MAVLINK_MSG_ID_SYS_STATUS)
-    {
-        this->processSysStatus(message);
     }
     if (message.msgid == MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT)
     {
@@ -109,17 +105,6 @@ void TelemetryHandler::processGlobalPosition(const mavlink_message_t& message)
     }
 
     m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid), properties);
-}
-
-void TelemetryHandler::processSysStatus(const mavlink_message_t& message)
-{
-    mavlink_sys_status_t sys_status;
-    mavlink_msg_sys_status_decode(&message, &sys_status);
-
-    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
-
-                                       { { tmi::batteryCurrent, sys_status.current_battery },
-                                         { tmi::batteryVoltage, sys_status.voltage_battery } });
 }
 
 void TelemetryHandler::processHomePosition(const mavlink_message_t& message)
