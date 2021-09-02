@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QJsonArray>
+#include <QTimerEvent>
 
 #include "common_tmi.h"
 #include "mavlink_protocol_helpers.h"
@@ -11,6 +12,8 @@ using namespace md::domain;
 
 namespace
 {
+constexpr int onlineTimout = 2000;
+
 std::string decodeMavType(uint8_t type)
 {
     switch (type)
@@ -84,6 +87,10 @@ HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context, QObject* pare
 
 HeartbeatHandler::~HeartbeatHandler()
 {
+    for (QBasicTimer* timer : m_vehicleTimers.values())
+    {
+        delete timer;
+    }
 }
 
 bool HeartbeatHandler::canParse(quint32 msgId)
@@ -143,12 +150,18 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     mavlink_heartbeat_t heartbeat;
     mavlink_msg_heartbeat_decode(&message, &heartbeat);
 
+    if (!m_vehicleTimers.contains(message.sysid))
+    {
+        m_vehicleTimers[message.sysid] = new QBasicTimer();
+    }
+    m_vehicleTimers[message.sysid]->start(::onlineTimout, this); // TODO: to settings
     m_baseModes[message.sysid] = heartbeat.base_mode;
 
     QVariantMap properties(
         { { tmi::state, QString::fromStdString(::decodeState(heartbeat.system_status)) },
           { tmi::armed, (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) },
-          { tmi::type, QString::fromStdString(::decodeMavType(heartbeat.type)) } });
+          { tmi::type, QString::fromStdString(::decodeMavType(heartbeat.type)) },
+          { tmi::online, true } });
 
     if (!m_modeHelpers.contains(message.sysid))
         m_modeHelpers.insert(message.sysid,
@@ -164,4 +177,17 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     }
 
     m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid), properties);
+}
+
+void HeartbeatHandler::timerEvent(QTimerEvent* event)
+{
+    for (QBasicTimer* timer : m_vehicleTimers.values())
+    {
+        if (timer->timerId() != event->timerId())
+            continue;
+
+        m_context->pTree->appendProperties(utils::nodeFromMavId(m_vehicleTimers.key(timer)),
+                                           { { tmi::online, false } });
+        timer->stop();
+    }
 }
