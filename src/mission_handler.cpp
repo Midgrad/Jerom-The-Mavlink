@@ -93,8 +93,7 @@ void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
     m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
-                                       { { tmi::wpCount, 1000 }, // FIXME: request mission count
-                                         { tmi::wp, mission_current.seq } });
+                                       { { tmi::wp, mission_current.seq } });
 }
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
