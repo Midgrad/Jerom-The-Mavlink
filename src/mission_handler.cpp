@@ -40,13 +40,16 @@ bool MissionHandler::canParse(quint32 msgId)
 
 void MissionHandler::parseMessage(const mavlink_message_t& message)
 {
-    if (message.msgid == MAVLINK_MSG_ID_MISSION_CURRENT)
+    switch (message.msgid)
     {
-        this->processMissionCurrent(message);
-    }
-    if (message.msgid == MAVLINK_MSG_ID_MISSION_COUNT)
-    {
-        this->processMissionCount(message);
+    case MAVLINK_MSG_ID_MISSION_CURRENT:
+        return this->processMissionCurrent(message);
+    case MAVLINK_MSG_ID_MISSION_COUNT:
+        return this->processMissionCount(message);
+    case MAVLINK_MSG_ID_MISSION_ITEM_REACHED:
+        return this->processMissionReached(message);
+    default:
+        break;
     }
 }
 
@@ -89,21 +92,39 @@ void MissionHandler::sendMissionSetCurrent(const QString& node, int waypoint)
 
 void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
 {
+    QString node = utils::nodeFromMavId(message.sysid);
+    if (node.isEmpty())
+        return;
+
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
-                                       { { tmi::wp, mission_current.seq } });
+    m_context->pTree->appendProperties(node, { { tmi::wp, mission_current.seq } });
 }
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
 {
+    QString node = utils::nodeFromMavId(message.sysid);
+    if (node.isEmpty())
+        return;
+
     mavlink_mission_count_t mission_count;
     mavlink_msg_mission_count_decode(&message, &mission_count);
 
-    QString node = utils::nodeFromMavId(message.sysid);
     if (!m_obtainedNodes.contains(node))
         m_obtainedNodes.append(node);
 
     m_context->pTree->appendProperties(node, { { tmi::wpCount, mission_count.count } });
+}
+
+void MissionHandler::processMissionReached(const mavlink_message_t& message)
+{
+    QString node = utils::nodeFromMavId(message.sysid);
+    if (node.isEmpty())
+        return;
+
+    mavlink_mission_item_reached_t reached;
+    mavlink_msg_mission_item_reached_decode(&message, &reached);
+
+    // TODO: mark waypoint with reached flag
 }

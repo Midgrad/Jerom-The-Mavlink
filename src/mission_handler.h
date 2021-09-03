@@ -21,6 +21,7 @@ public:
 
     void processMissionCurrent(const mavlink_message_t& message);
     void processMissionCount(const mavlink_message_t& message);
+    void processMissionReached(const mavlink_message_t& message);
 
 private:
     QStringList m_obtainedNodes;
