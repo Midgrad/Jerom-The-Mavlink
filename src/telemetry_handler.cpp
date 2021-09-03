@@ -159,8 +159,8 @@ void TelemetryHandler::processGpsRaw(const mavlink_message_t& message)
 
     m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid),
                                        {
-                                           { tmi::satellites, gps_raw.satellites_visible },
-                                           // { tmi::gs, decodeGroundSpeed(gps_raw.vel) },
+                                           { tmi::satellitesVisible, gps_raw.satellites_visible },
+                                           { tmi::gpsFix, gps_raw.fix_type },
                                            { tmi::course, utils::fromCentidegrees(gps_raw.cog) },
                                        });
 }

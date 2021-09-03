@@ -25,7 +25,8 @@ constexpr char batteryVoltage[] = "batteryVoltage";
 constexpr char batteryCurrent[] = "batteryCurrent";
 
 // SNS
-constexpr char satellites[] = "satellites";
+constexpr char gpsFix[] = "gpsFix";
+constexpr char satellitesVisible[] = "satellitesVisible";
 } // namespace md::tmi
 
 #endif // MAVLINK_TMI_H
