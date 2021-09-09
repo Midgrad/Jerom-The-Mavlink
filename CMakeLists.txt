@@ -1,6 +1,9 @@
 # Project
 project(Jerom-The-Mavlink)
 
+# Set output directory
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MODULE_OUTPUT_DIRECTORY})
+
 # Copy resources
 copy_post_cmake("route_type_mavlink.json" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/route_types)
 
