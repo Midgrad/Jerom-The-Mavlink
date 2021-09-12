@@ -1,32 +1,11 @@
-# Project
-project(Jerom-The-Mavlink)
-
-# Set output directory
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MODULE_OUTPUT_DIRECTORY})
-
 # Copy resources
 copy_post_cmake("route_type_mavlink.json" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/route_types)
+copy_post_cmake("link_config.json" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 # Mavlink 3rdparty
 add_subdirectory(3rdparty)
 
-# Find Qt libraries
-find_package(Qt5 ${QT_REQUIRED_VERSION} COMPONENTS Core REQUIRED)
+# Mavlink module
+add_subdirectory(impl)
+add_subdirectory(module)
 
-# Qt plugin definition
-add_definitions(-DQT_PLUGIN)
-
-# Target
-add_library(${PROJECT_NAME} MODULE "")
-
-# Include
-target_include_directories(${PROJECT_NAME} PUBLIC "src")
-
-# Sources
-file(GLOB SOURCES "src/*")
-target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
-
-# Libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC kjarni Qt5::Core loodsman mavlink)
-
-copy_post_cmake("link_config.json" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

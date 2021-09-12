@@ -10,6 +10,11 @@
 #include "mavlink_transceiver.h"
 #include "mavlink_transceiver_threaded.h"
 
+namespace
+{
+constexpr char linksFileName[] = "./link_config.json";
+}
+
 using namespace md::app;
 
 ModuleJeromTheMavlink::ModuleJeromTheMavlink()
@@ -18,15 +23,12 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 
 void ModuleJeromTheMavlink::init()
 {
-    auto links = md::domain::LinkConfiguration::start();
-
     auto pTree = Locator::get<md::domain::IPropertyTree>();
     domain::MavlinkHandlerFactory factory(pTree);
 
-    m_transceiver = new domain::MavlinkTranscieverThreaded(new domain::MavlinkTransceiver(links,
-                                                                                          &factory,
-                                                                                          nullptr),
-                                                           this);
+    data_source::LinkConfiguration configuration(::linksFileName);
+    m_transceiver = new domain::MavlinkTranscieverThreaded(
+        new domain::MavlinkTransceiver(configuration.readLinks(), &factory, nullptr), this);
     m_transceiver->start();
 }
 

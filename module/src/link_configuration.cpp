@@ -1,39 +1,29 @@
 #include "link_configuration.h"
 
-#include <QFile>
 #include <QJsonArray>
-#include <QJsonDocument>
 #include <QJsonObject>
-#include <QMap>
 
+#include "json_source_file.h"
 #include "udp_link_factory.h"
 
-using namespace md::domain;
+using namespace md::data_source;
 
 namespace
 {
-constexpr char path[] = "./link_config.json";
-
 constexpr char type[] = "type";
 constexpr char name[] = "name";
 constexpr char port[] = "port";
 
 } // namespace
 
-QJsonDocument LinkConfiguration::read()
+LinkConfiguration::LinkConfiguration(const QString& fileName) :
+    m_source(new JsonSourceFile(fileName))
 {
-    QFile file(::path);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
-
-    QJsonDocument document = QJsonDocument::fromJson(file.readAll());
-    file.close();
-
-    return document;
 }
 
-QMap<QString, LinkPtr> LinkConfiguration::start()
+LinkPtrMap LinkConfiguration::readLinks()
 {
-    QJsonDocument document = LinkConfiguration::read();
+    QJsonDocument document = m_source->read();
 
     QMap<QString, LinkPtr> links;
     for (const QJsonValue& value : document.array())

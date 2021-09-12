@@ -1,0 +1,23 @@
+# Project
+project(jerom_mavlink_impl)
+
+# Find Qt libraries
+find_package(Qt5 ${QT_REQUIRED_VERSION} COMPONENTS Core REQUIRED)
+
+# Target
+add_library(${PROJECT_NAME} SHARED "")
+
+# Include
+target_include_directories(${PROJECT_NAME} PUBLIC "include" PRIVATE "src")
+
+# Sources
+file(GLOB SOURCES "include/*" "src/*")
+target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
+
+# Link with libraries
+target_link_libraries(${PROJECT_NAME} PUBLIC vegur_api loodsman mavlink Qt5::Core)
+
+# Tests
+if(TESTS_ENABLED)
+#    add_subdirectory(tests)
+endif(TESTS_ENABLED)

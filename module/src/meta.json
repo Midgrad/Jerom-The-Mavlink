@@ -2,5 +2,5 @@
     "name": "Jerom-The-Mavlink",
     "version": "0.0.1",
     "description": "Mavlink communication module",
-    "dependencies" : []
+    "dependencies" : ["Vegur"]
 }
