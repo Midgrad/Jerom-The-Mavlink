@@ -3,6 +3,7 @@
 
 #include "i_mavlink_transceiver.h"
 #include "i_module.h"
+#include "mavlink_mission_factory.h"
 
 namespace md::app
 {
@@ -22,6 +23,7 @@ public:
 
 private:
     domain::IMavlinkTransceiver* m_transceiver = nullptr;
+    domain::MavlinkMissionFactory m_missionFactory;
 };
 } // namespace md::app
 
