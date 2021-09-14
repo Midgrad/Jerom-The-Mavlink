@@ -5,15 +5,15 @@
 
 namespace md::domain
 {
+// TODO: to mavlink traits
+static const QString mavlinkType = "Mavlink mission";
+
 class MavlinkMissionFactory : public IMissionFactory
 {
 public:
     MavlinkMissionFactory();
 
     Mission* create() override;
-
-private:
-    const MissionType* m_type;
 };
 } // namespace md::domain
 

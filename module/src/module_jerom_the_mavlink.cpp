@@ -31,7 +31,7 @@ void ModuleJeromTheMavlink::init()
 
     missionService->registerMissionType("Mavlink", &m_missionFactory);
 
-    domain::MavlinkHandlerFactory factory(pTree);
+    domain::MavlinkHandlerFactory factory(pTree, missionService);
 
     data_source::LinkConfiguration configuration(::linksFileName);
     m_transceiver = new domain::MavlinkTranscieverThreaded(

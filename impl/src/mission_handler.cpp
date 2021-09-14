@@ -2,12 +2,14 @@
 
 #include <QDebug>
 
+#include "mavlink_mission_factory.h"
 #include "mavlink_protocol_helpers.h"
 #include "mavlink_tmi.h"
 
 using namespace md::domain;
 
-MissionHandler::MissionHandler(MavlinkHandlerContext* context, QObject* parent) :
+MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
+                               QObject* parent) :
     IMavlinkHandler(context, parent)
 {
     connect(m_context->pTree, &IPropertyTree::rootNodesChanged, this,
@@ -15,7 +17,7 @@ MissionHandler::MissionHandler(MavlinkHandlerContext* context, QObject* parent) 
                 for (const QString& node : nodes)
                 {
                     if (!m_obtainedNodes.contains(node))
-                        this->requestMissionCount(node);
+                        this->sendMissionRequestList(node);
                 }
             });
     // TODO: common command subsribe
@@ -27,6 +29,12 @@ MissionHandler::MissionHandler(MavlinkHandlerContext* context, QObject* parent) 
                     this->sendMissionSetCurrent(node, properties.value(tmi::setWp).toInt());
                 }
             });
+
+    // TODO: refactor to other class
+    connect(missionsService, &IMissionsService::missionAdded, this,
+            &MissionHandler::subscribeMission);
+    connect(missionsService, &IMissionsService::missionRemoved, this,
+            &MissionHandler::unsubscribeMission);
 }
 
 MissionHandler::~MissionHandler()
@@ -53,9 +61,9 @@ void MissionHandler::parseMessage(const mavlink_message_t& message)
     }
 }
 
-void MissionHandler::requestMissionCount(const QString& node)
+void MissionHandler::sendMissionRequestList(const QString& node)
 {
-    qDebug() << "requestMissionCount" << node;
+    qDebug() << "sendMissionRequestList" << node;
     auto mavId = utils::mavIdFromNode(node);
     if (!mavId)
         return;
@@ -68,6 +76,28 @@ void MissionHandler::requestMissionCount(const QString& node)
 
     mavlink_msg_mission_request_list_encode_chan(m_context->systemId, m_context->compId, 0,
                                                  &message, &request); // TODO: link channel
+    emit sendMessage(message);
+}
+
+void MissionHandler::sendMissionItemRequest(const QString& node, int index)
+{
+    qDebug() << "sendMissionItemRequest" << node << index;
+    auto mavId = utils::mavIdFromNode(node);
+    if (!mavId)
+        return;
+
+    mavlink_message_t message;
+    mavlink_mission_request_t request;
+    request.target_system = mavId;
+    request.target_component = 0;
+    request.seq = index;
+
+#ifdef MAVLINK_V2
+    request.mission_type = MAV_MISSION_TYPE_MISSION;
+#endif
+
+    mavlink_msg_mission_request_encode_chan(m_context->systemId, m_context->compId, 0, &message,
+                                            &request); // TODO: link channel
     emit sendMessage(message);
 }
 
@@ -115,6 +145,15 @@ void MissionHandler::processMissionCount(const mavlink_message_t& message)
         m_obtainedNodes.append(node);
 
     m_context->pTree->appendProperties(node, { { tmi::wpCount, mission_count.count } });
+
+    Mission* mission = m_downloadingMissions.value(node, nullptr);
+    if (mission)
+    {
+        mission->setTotal(mission_count.count);
+        mission->setProgres(0);
+
+        this->sendMissionItemRequest(node, 0);
+    }
 }
 
 void MissionHandler::processMissionReached(const mavlink_message_t& message)
@@ -127,4 +166,24 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
     // TODO: mark waypoint with reached flag
+}
+
+void MissionHandler::subscribeMission(Mission* mission)
+{
+    if (mission->type() != mavlinkType)
+        return;
+
+    connect(mission, &Mission::download, this, [this, mission]() {
+        m_downloadingMissions[mission->vehicle()] = mission;
+        this->sendMissionRequestList(mission->vehicle());
+    });
+}
+
+void MissionHandler::unsubscribeMission(Mission* mission)
+{
+    QString node = m_downloadingMissions.key(mission);
+    if (node.length())
+        m_downloadingMissions.remove(node);
+
+    disconnect(mission, nullptr, this, nullptr);
 }

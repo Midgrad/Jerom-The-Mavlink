@@ -8,7 +8,10 @@ MavlinkMissionFactory::MavlinkMissionFactory()
 
 Mission* MavlinkMissionFactory::create()
 {
-    auto mission = new Mission(QVariant(), "New mission");
+    auto mission = new Mission(mavlinkType, "New mission");
+    auto route = new Route(mission->name() + " " + QObject::tr("route"));
+
+    mission->setRoute(route);
 
     return mission;
 }
