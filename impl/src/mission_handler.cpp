@@ -33,9 +33,9 @@ MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService*
 
     // TODO: refactor to other class
     connect(missionsService, &IMissionsService::missionAdded, this,
-            &MissionHandler::subscribeMission);
+            &MissionHandler::subscribeMission, Qt::DirectConnection);
     connect(missionsService, &IMissionsService::missionRemoved, this,
-            &MissionHandler::unsubscribeMission);
+            &MissionHandler::unsubscribeMission, Qt::DirectConnection);
 }
 
 MissionHandler::~MissionHandler()
@@ -75,13 +75,14 @@ void MissionHandler::sendMissionRequest(const QString& node)
         return;
 
     mavlink_message_t message;
-    mavlink_mission_request_t request;
+    mavlink_mission_request_list_t request;
 
     request.target_system = mavId;
     request.target_component = MAV_COMP_ID_MISSIONPLANNER;
 
-    mavlink_msg_mission_request_encode_chan(m_context->systemId, m_context->compId, 0, &message,
-                                            &request); // TODO: link channel
+    mavlink_msg_mission_request_list_encode_chan(m_context->systemId, m_context->compId, 0,
+                                                 &message,
+                                                 &request); // TODO: link channel
     emit sendMessage(message);
 }
 
@@ -158,8 +159,8 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     if (!mission)
         return;
 
-    mavlink_mission_item_t item;
-    mavlink_msg_mission_item_decode(&message, &item);
+    mavlink_mission_item_int_t item;
+    mavlink_msg_mission_item_int_decode(&message, &item);
 
     qDebug() << "processMissionItem" << node << item.seq;
 
@@ -183,12 +184,18 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
 
     // TODO: Set waypoint type & props
 
-    // TODO: Finishing download
-    //this->sendAck(node, MAV_MISSION_ACCEPTED);
+    mission->setProgress(item.seq + 1);
 
-    // Request second waypoint
-    mission->setProgres(item.seq + 1);
-    this->sendMissionItemRequest(node, mission->progress());
+    if (mission->isComplete())
+    {
+        m_downloadingMissions.remove(node);
+        this->sendAck(node, MAV_MISSION_ACCEPTED);
+    }
+    else
+    {
+        // Request next waypoint
+        this->sendMissionItemRequest(node, mission->progress());
+    }
 }
 
 void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
@@ -221,7 +228,7 @@ void MissionHandler::processMissionCount(const mavlink_message_t& message)
     if (mission)
     {
         mission->setTotal(mission_count.count);
-        mission->setProgres(0);
+        mission->setProgress(0);
 
         this->sendMissionItemRequest(node, mission->progress());
     }
@@ -247,6 +254,19 @@ void MissionHandler::subscribeMission(Mission* mission)
     connect(mission, &Mission::download, this, [this, mission]() {
         m_downloadingMissions[mission->vehicle()] = mission;
         this->sendMissionRequest(mission->vehicle());
+    });
+
+    connect(mission, &Mission::cancel, this, [this, mission]() {
+        QString node = m_downloadingMissions.key(mission);
+        if (node.length())
+            m_downloadingMissions.remove(node);
+
+        node = m_uploadingMissions.key(mission);
+        if (node.length())
+            m_uploadingMissions.remove(node);
+
+        // TODO: for downloading only
+        mission->setTotal(mission->progress());
     });
 }
 
