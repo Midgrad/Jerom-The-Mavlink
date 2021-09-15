@@ -4,16 +4,14 @@ project(mavlink)
 # Interface library target
 add_library(${PROJECT_NAME} INTERFACE)
 
-set(MAVLINK_V2 TRUE)
-
 # MAVLink version
-if (MAVLINK_V2)
+if (MAVLINK_V2_ENABLE)
     set(MAVLINK_DIR "libmavlinkcpp_v2")
-    message(MAVLINK_V2)
-else (MAVLINK_V2)
+    message("Mavlink version 2 enabled")
+else (MAVLINK_V2_ENABLE)
     set(MAVLINK_DIR "libmavlinkcpp_v1")
-    message(MAVLINK_V2)
-endif (MAVLINK_V2)
+    message("Mavlink version 2 disabled")
+endif (MAVLINK_V2_ENABLE)
 
 target_include_directories(${PROJECT_NAME} INTERFACE "${MAVLINK_DIR}")
 
