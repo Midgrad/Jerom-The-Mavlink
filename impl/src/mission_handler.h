@@ -18,10 +18,12 @@ public:
     bool canParse(quint32 msgId) override;
     void parseMessage(const mavlink_message_t& message) override;
 
-    void sendMissionRequestList(const QString& node);
+    void sendMissionRequest(const QString& node);
     void sendMissionItemRequest(const QString& node, int index);
+    void sendAck(const QString& node, MAV_MISSION_RESULT type);
     void sendMissionSetCurrent(const QString& node, int waypoint);
 
+    void processMissionItem(const mavlink_message_t& message);
     void processMissionCurrent(const mavlink_message_t& message);
     void processMissionCount(const mavlink_message_t& message);
     void processMissionReached(const mavlink_message_t& message);

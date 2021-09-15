@@ -29,7 +29,7 @@ void ModuleJeromTheMavlink::init()
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
 
-    missionService->registerMissionType("Mavlink", &m_missionFactory);
+    missionService->registerMissionType(domain::mavlinkMissionType, &m_missionFactory);
 
     domain::MavlinkHandlerFactory factory(pTree, missionService);
 
