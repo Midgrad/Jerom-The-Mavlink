@@ -14,7 +14,7 @@ public:
     Mission* createMission() override;
 
     Route* createRouteForMission(Mission* mission);
-    Waypoint* createWaypointForRoute(Route* route);
+    Waypoint* createWaypointForRoute(Route* route, const WaypointType* type);
 };
 } // namespace md::domain
 

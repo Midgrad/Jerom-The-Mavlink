@@ -1,13 +1,11 @@
 #ifndef MAVLINK_PROTOCOL_HELPERS_H
 #define MAVLINK_PROTOCOL_HELPERS_H
 
-#ifndef UINT16_MAX
-
-#include <limits.h>
-
 #include <QString>
 #include <QtMath>
 
+#ifndef UINT16_MAX
+#include <limits.h>
 #define UINT16_MAX std::numeric_limits<std::uint16_t>::max()
 #endif
 
@@ -104,6 +102,7 @@ inline float decodeRssi(uint16_t value)
     return qMin(qMax(qRound(value / 1.9 - 127.0), -120), 0);
 }
 
+// TODO: replace with vehicle object
 inline QString nodeFromMavId(uint8_t sysid)
 {
     return QStringLiteral("MAV %1").arg(sysid);

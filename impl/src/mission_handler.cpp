@@ -4,6 +4,7 @@
 #include <QThread>
 
 #include "mavlink_mission_factory.h"
+#include "mavlink_mission_waypoint.h"
 #include "mavlink_protocol_helpers.h"
 #include "mavlink_tmi.h"
 
@@ -179,10 +180,11 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     else
     {
         MavlinkMissionFactory factory;
-        waypoint = factory.createWaypointForRoute(route);
+        waypoint = factory.createWaypointForRoute(route, &mavlink_mission::waypoint);
     }
 
-    // TODO: Set waypoint type & props
+    MavlinkMissionWaypoint missionWaypoint(waypoint);
+    missionWaypoint.fillFromMissionItem(item);
 
     mission->setProgress(item.seq + 1);
 
@@ -248,7 +250,7 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
 
 void MissionHandler::subscribeMission(Mission* mission)
 {
-    if (mission->type() != mavlinkMissionType)
+    if (mission->type() != mavlink_mission::missionType)
         return;
 
     connect(mission, &Mission::download, this, [this, mission]() {
