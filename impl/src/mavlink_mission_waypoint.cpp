@@ -31,7 +31,54 @@ void MavlinkMissionWaypoint::fillFromMissionItem(const mavlink_mission_item_int_
         return;
     }
 
-    //m_waypoint->setType(type);
+    m_waypoint->setType(type);
+
+    // TODO: parameters to chain
+    QVariantMap parameters;
+    for (const Parameter& parameter : type->parameters)
+    {
+        if (parameter == mavlink_mission::latitude)
+        {
+            parameters.insert(parameter.name, item.x);
+        }
+        else if (parameter == mavlink_mission::longitude)
+        {
+            parameters.insert(parameter.name, item.y);
+        }
+        else if (parameter == mavlink_mission::altitude)
+        {
+            parameters.insert(parameter.name, item.z);
+        }
+        else if (parameter == mavlink_mission::abortAltitude)
+        {
+            parameters.insert(parameter.name, item.param1);
+        }
+        else if (parameter == mavlink_mission::relative)
+        {
+            parameters.insert(parameter.name, item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
+        }
+        else if (parameter == mavlink_mission::pitch)
+        {
+            parameters.insert(parameter.name, item.param1);
+        }
+        else if (parameter == mavlink_mission::radius)
+        {
+            parameters.insert(parameter.name, item.param3);
+        }
+        else if (parameter == mavlink_mission::loops)
+        {
+            parameters.insert(parameter.name, item.param1);
+        }
+        else if (parameter == mavlink_mission::clockwise)
+        {
+            parameters.insert(parameter.name, bool(item.param3 > 0));
+        }
+        else if (parameter == mavlink_mission::yaw)
+        {
+            parameters.insert(parameter.name, item.param4);
+        }
+    }
+    m_waypoint->setParameters(parameters);
 }
 
 void MavlinkMissionWaypoint::fillMissionItem(mavlink_mission_item_int_t& item)
