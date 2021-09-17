@@ -1,14 +1,16 @@
 #include "mavlink_mission_factory.h"
 
+#include "utils.h"
+
 using namespace md::domain;
 
 MavlinkMissionFactory::MavlinkMissionFactory()
 {
 }
 
-Mission* MavlinkMissionFactory::createMission()
+Mission* MavlinkMissionFactory::createMission(const QString& name)
 {
-    auto mission = new Mission(mavlink_mission::missionType, "New mission");
+    auto mission = new Mission(mavlink_mission::missionType, utils::nameToId(name), name);
 
     this->createRouteForMission(mission);
     this->createWaypointForRoute(mission->route(), &mavlink_mission::waypoint);

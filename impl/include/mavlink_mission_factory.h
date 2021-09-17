@@ -11,7 +11,7 @@ class MavlinkMissionFactory : public IMissionFactory
 public:
     MavlinkMissionFactory();
 
-    Mission* createMission() override;
+    Mission* createMission(const QString& name) override;
 
     Route* createRouteForMission(Mission* mission);
     Waypoint* createWaypointForRoute(Route* route, const WaypointType* type);
