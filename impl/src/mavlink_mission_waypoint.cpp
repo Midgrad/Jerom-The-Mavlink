@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include "mavlink_mission_traits.h"
+#include "mavlink_protocol_helpers.h"
 
 using namespace md::domain;
 
@@ -39,11 +40,11 @@ void MavlinkMissionWaypoint::fillFromMissionItem(const mavlink_mission_item_int_
     {
         if (parameter == mavlink_mission::latitude)
         {
-            parameters.insert(parameter.name, item.x);
+            parameters.insert(parameter.name, utils::decodeLatLon(item.x));
         }
         else if (parameter == mavlink_mission::longitude)
         {
-            parameters.insert(parameter.name, item.y);
+            parameters.insert(parameter.name, utils::decodeLatLon(item.y));
         }
         else if (parameter == mavlink_mission::altitude)
         {
