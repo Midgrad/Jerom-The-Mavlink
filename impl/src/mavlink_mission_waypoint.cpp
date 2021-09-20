@@ -70,7 +70,7 @@ void MavlinkMissionWaypoint::fillFromMissionItem(const mavlink_mission_item_int_
         return;
     }
 
-    m_waypoint->setType(type);
+    m_waypoint->setType(type->name);
     m_waypoint->setName(item.seq ? QObject::tr("WPT %1").arg(item.seq) : QObject::tr("HOME"));
 
     QVariantMap parameters;
@@ -88,4 +88,5 @@ void MavlinkMissionWaypoint::fillFromMissionItem(const mavlink_mission_item_int_
 
 void MavlinkMissionWaypoint::fillMissionItem(mavlink_mission_item_int_t& item)
 {
+    // TODO: fill mission Item
 }

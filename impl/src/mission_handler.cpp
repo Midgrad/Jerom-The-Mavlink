@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QThread>
 
-#include "mavlink_mission_factory.h"
+#include "mavlink_mission_traits.h"
 #include "mavlink_mission_waypoint.h"
 #include "mavlink_protocol_helpers.h"
 #include "mavlink_tmi.h"
@@ -170,12 +170,6 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     qDebug() << "processMissionItem" << node << item.seq;
 
     Route* route = mission->route();
-    if (!route)
-    {
-        MavlinkMissionFactory factory;
-        route = factory.createRouteForMission(mission);
-    }
-
     Waypoint* waypoint = nullptr;
     if (item.seq < route->count())
     {
@@ -183,8 +177,8 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     }
     else
     {
-        MavlinkMissionFactory factory;
-        waypoint = factory.createWaypointForRoute(route, &mavlink_mission::waypoint);
+        waypoint = new Waypoint(tr("New Waypoint"), mavlink_mission::waypoint.name);
+        route->addWaypoint(waypoint);
     }
 
     MavlinkMissionWaypoint missionWaypoint(waypoint);

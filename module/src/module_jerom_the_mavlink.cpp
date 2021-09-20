@@ -7,6 +7,7 @@
 
 #include "link_configuration.h"
 #include "mavlink_handlers_factory.h"
+#include "mavlink_mission_traits.h"
 #include "mavlink_transceiver.h"
 #include "mavlink_transceiver_threaded.h"
 
@@ -29,7 +30,7 @@ void ModuleJeromTheMavlink::init()
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
 
-    missionService->registerMissionType(domain::mavlink_mission::missionType, &m_missionFactory);
+    missionService->registerMissionType(domain::mavlink_mission::missionType);
 
     domain::MavlinkHandlerFactory factory(pTree, missionService);
 
@@ -41,5 +42,10 @@ void ModuleJeromTheMavlink::init()
 
 void ModuleJeromTheMavlink::done()
 {
+    auto missionService = Locator::get<domain::IMissionsService>();
+    Q_ASSERT(missionService);
+
+    missionService->unregisterMissionType(domain::mavlink_mission::missionType);
+
     m_transceiver->stop();
 }
