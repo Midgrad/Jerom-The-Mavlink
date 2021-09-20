@@ -10,6 +10,7 @@
 
 #include "i_mavlink_handlers_factory.h"
 #include "jerom_traits.h"
+#include "link_configuration.h"
 
 namespace md::domain
 {
@@ -18,8 +19,10 @@ class MavlinkTransceiver : public IMavlinkTransceiver
     Q_OBJECT
 
 public:
-    MavlinkTransceiver(const data_source::LinkPtrMap& links, IMavlinkHandlerFactory* factory,
-                       QObject* parent = nullptr);
+    MavlinkTransceiver(data_source::LinkConfiguration* configuration,
+                       IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
+
+    const QVector<IMavlinkHandler*>& handlers() const;
 
 public slots:
     void start() override;
@@ -30,14 +33,18 @@ protected:
 
 private slots:
     void receiveData();
-    void parseMessage(const QByteArray& data);
     void send(const mavlink_message_t& message);
 
 private:
     int m_timerId = 0;
+    //    static void parseData(const std::string& data, MavlinkTransceiver* transceiver);
+    static void parseMessage(const std::string& data, MavlinkTransceiver* transceiver);
     MavlinkHandlerContext m_context;
     data_source::LinkPtrMap const m_links;
     QVector<IMavlinkHandler*> const m_handlers;
+    data_source::LinkConfiguration* m_configuration;
+
+public:
 };
 } // namespace md::domain
 

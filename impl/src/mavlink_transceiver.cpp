@@ -1,5 +1,6 @@
 #include "mavlink_transceiver.h"
 
+#include <string>
 #include <QDebug>
 #include <QTimerEvent>
 
@@ -10,11 +11,12 @@ namespace
 constexpr int interval = 1;
 } // namespace
 
-MavlinkTransceiver::MavlinkTransceiver(const data_source::LinkPtrMap& links,
+MavlinkTransceiver::MavlinkTransceiver(data_source::LinkConfiguration* configuration,
                                        IMavlinkHandlerFactory* factory, QObject* parent) :
     IMavlinkTransceiver(parent),
-    m_links(links),
-    m_handlers(factory->create(&m_context))
+    m_links(configuration->createLinks()),
+    m_handlers(factory->create(&m_context)),
+    m_configuration(configuration)
 {
     for (IMavlinkHandler* handler : qAsConst(m_handlers))
     {
@@ -49,27 +51,28 @@ void MavlinkTransceiver::timerEvent(QTimerEvent* event)
 
 void MavlinkTransceiver::receiveData()
 {
-    std::string received_data;
+    m_configuration->checkHandlers();
+
     for (const data_source::LinkPtr& link : qAsConst(m_links))
     {
-        // FIXME: unblocking read
-        received_data = link->receive();
-        this->parseMessage(QByteArray::fromStdString(received_data));
+        link->asyncReceive(std::bind(parseMessage, std::placeholders::_1, this));
     }
 }
 
-void MavlinkTransceiver::parseMessage(const QByteArray& data)
+void MavlinkTransceiver::parseMessage(const std::string& data, MavlinkTransceiver* transceiver)
 {
+    QByteArray bytearray = QByteArray::fromStdString(data);
+
     mavlink_message_t message;
     mavlink_status_t status;
 
-    for (int pos = 0; pos < data.length(); ++pos)
+    for (int pos = 0; pos < bytearray.length(); ++pos)
     {
         if (!mavlink_parse_char(0, data[pos], &message, &status))
             continue;
     }
 
-    for (IMavlinkHandler* handler : m_handlers)
+    for (IMavlinkHandler* handler : transceiver->handlers())
     {
         if (handler->canParse(message.msgid))
         {
@@ -90,4 +93,8 @@ void MavlinkTransceiver::send(const mavlink_message_t& message)
     {
         link->send(data.toStdString());
     }
+}
+const QVector<IMavlinkHandler*>& MavlinkTransceiver::handlers() const
+{
+    return m_handlers;
 }
