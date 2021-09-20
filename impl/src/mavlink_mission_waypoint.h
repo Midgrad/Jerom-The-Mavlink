@@ -17,6 +17,8 @@ public:
 
 private:
     Waypoint* const m_waypoint;
+
+    QMap<QString, std::function<QVariant(const mavlink_mission_item_int_t& item)>> m_waypointFillers;
 };
 
 } // namespace md::domain

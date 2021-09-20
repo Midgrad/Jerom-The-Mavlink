@@ -37,6 +37,10 @@ MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService*
             &MissionHandler::subscribeMission, Qt::DirectConnection);
     connect(missionsService, &IMissionsService::missionRemoved, this,
             &MissionHandler::unsubscribeMission, Qt::DirectConnection);
+    for (Mission* mission : missionsService->missions())
+    {
+        this->subscribeMission(mission);
+    }
 }
 
 MissionHandler::~MissionHandler()
