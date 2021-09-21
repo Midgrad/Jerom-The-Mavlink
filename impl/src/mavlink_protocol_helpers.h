@@ -9,7 +9,7 @@
 #define UINT16_MAX std::numeric_limits<std::uint16_t>::max()
 #endif
 
-namespace md::domain::utils
+namespace md::utils
 {
 int32_t inline hzToUs(float frequency)
 {
@@ -113,6 +113,6 @@ inline uint8_t mavIdFromNode(const QString& node)
     return node.split(' ').last().toInt();
 }
 
-} // namespace md::domain::utils
+} // namespace md::utils
 
 #endif // MAVLINK_PROTOCOL_HELPERS_H

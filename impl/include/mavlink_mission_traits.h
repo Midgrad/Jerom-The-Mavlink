@@ -18,6 +18,7 @@ const Parameter loops = { "Loops", Parameter::Int, 1 };
 const Parameter clockwise = { "Clockwise", Parameter::Bool, true };
 const Parameter yaw = { "Yaw", Parameter::Real, 0.0 };
 
+// TODO: remove home point with route reference altitude
 const WaypointType home = { "Home", { latitude, longitude, altitude } };
 const WaypointType waypoint = { "Waypoint", { latitude, longitude, altitude, relative } };
 const WaypointType takeoff = { "Takeoff", { latitude, longitude, altitude, relative, pitch } };

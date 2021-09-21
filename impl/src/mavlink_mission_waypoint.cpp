@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include "mavlink_mission_traits.h"
+#include "mavlink_protocol_helpers.h"
 
 using namespace md::domain;
 
@@ -15,72 +16,77 @@ const QMap<uint16_t, const WaypointType*> commandTypes = {
     { MAV_CMD_NAV_LAND, &mavlink_mission::landing },
     { MAV_CMD_NAV_LOITER_TURNS, &mavlink_mission::loiterTurns }
 };
+
+void insertParameter(const Parameter& parameter, QVariantMap& parameters)
+{
 }
+} // namespace
 
 MavlinkMissionWaypoint::MavlinkMissionWaypoint(Waypoint* waypoint) : m_waypoint(waypoint)
 {
     Q_ASSERT(waypoint);
+
+    using ItemRef = const mavlink_mission_item_int_t&;
+
+    m_waypointFillers.insert(mavlink_mission::latitude.name, [](ItemRef item) {
+        return utils::decodeLatLon(item.x);
+    });
+    m_waypointFillers.insert(mavlink_mission::longitude.name, [](ItemRef item) {
+        return utils::decodeLatLon(item.y);
+    });
+    m_waypointFillers.insert(mavlink_mission::altitude.name, [](ItemRef item) {
+        return item.z;
+    });
+    m_waypointFillers.insert(mavlink_mission::abortAltitude.name, [](ItemRef item) {
+        return item.param1;
+    });
+    m_waypointFillers.insert(mavlink_mission::relative.name, [](ItemRef item) {
+        return item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT;
+    });
+    m_waypointFillers.insert(mavlink_mission::pitch.name, [](ItemRef item) {
+        return item.param1;
+    });
+    m_waypointFillers.insert(mavlink_mission::radius.name, [](ItemRef item) {
+        return item.param3;
+    });
+    m_waypointFillers.insert(mavlink_mission::loops.name, [](ItemRef item) {
+        return item.param1;
+    });
+    m_waypointFillers.insert(mavlink_mission::clockwise.name, [](ItemRef item) {
+        return item.param3 > 0;
+    });
+    m_waypointFillers.insert(mavlink_mission::yaw.name, [](ItemRef item) {
+        return item.param4;
+    });
 }
 
 void MavlinkMissionWaypoint::fillFromMissionItem(const mavlink_mission_item_int_t& item)
 {
-    const WaypointType* type = ::commandTypes.value(item.command);
+    const WaypointType* type = item.seq ? ::commandTypes.value(item.command)
+                                        : &mavlink_mission::home;
     if (!type)
     {
         qWarning() << "Unsupported waypoint type" << type;
         return;
     }
 
-    m_waypoint->setType(type);
+    m_waypoint->setType(type->name);
+    m_waypoint->setName(item.seq ? QObject::tr("WPT %1").arg(item.seq) : QObject::tr("HOME"));
 
-    // TODO: parameters to chain
     QVariantMap parameters;
     for (const Parameter& parameter : type->parameters)
     {
-        if (parameter == mavlink_mission::latitude)
-        {
-            parameters.insert(parameter.name, item.x);
-        }
-        else if (parameter == mavlink_mission::longitude)
-        {
-            parameters.insert(parameter.name, item.y);
-        }
-        else if (parameter == mavlink_mission::altitude)
-        {
-            parameters.insert(parameter.name, item.z);
-        }
-        else if (parameter == mavlink_mission::abortAltitude)
-        {
-            parameters.insert(parameter.name, item.param1);
-        }
-        else if (parameter == mavlink_mission::relative)
-        {
-            parameters.insert(parameter.name, item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
-        }
-        else if (parameter == mavlink_mission::pitch)
-        {
-            parameters.insert(parameter.name, item.param1);
-        }
-        else if (parameter == mavlink_mission::radius)
-        {
-            parameters.insert(parameter.name, item.param3);
-        }
-        else if (parameter == mavlink_mission::loops)
-        {
-            parameters.insert(parameter.name, item.param1);
-        }
-        else if (parameter == mavlink_mission::clockwise)
-        {
-            parameters.insert(parameter.name, bool(item.param3 > 0));
-        }
-        else if (parameter == mavlink_mission::yaw)
-        {
-            parameters.insert(parameter.name, item.param4);
-        }
+        if (!m_waypointFillers.contains(parameter.name))
+            return;
+
+        QVariant guarded = parameter.guard(m_waypointFillers[parameter.name](item));
+        parameters.insert(parameter.name, guarded);
     }
+
     m_waypoint->setParameters(parameters);
 }
 
 void MavlinkMissionWaypoint::fillMissionItem(mavlink_mission_item_int_t& item)
 {
+    // TODO: fill mission Item
 }
