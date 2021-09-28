@@ -28,9 +28,10 @@ public:
     void processMissionCount(const mavlink_message_t& message);
     void processMissionReached(const mavlink_message_t& message);
 
-public slots:
-    void subscribeMission(Mission* mission);
-    void unsubscribeMission(Mission* mission);
+private slots:
+    void upload(Mission* mission);
+    void download(Mission* mission);
+    void cancel(Mission* mission);
 
 private:
     QStringList m_obtainedNodes;

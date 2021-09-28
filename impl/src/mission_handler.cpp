@@ -32,15 +32,10 @@ MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService*
                 }
             });
 
-    // TODO: refactor to other class
-    connect(missionsService, &IMissionsService::missionAdded, this,
-            &MissionHandler::subscribeMission, Qt::DirectConnection);
-    connect(missionsService, &IMissionsService::missionRemoved, this,
-            &MissionHandler::unsubscribeMission, Qt::DirectConnection);
-    for (Mission* mission : missionsService->missions())
-    {
-        this->subscribeMission(mission);
-    }
+    connect(missionsService, &IMissionsService::upload, this, &MissionHandler::upload);
+    connect(missionsService, &IMissionsService::download, this, &MissionHandler::download);
+    connect(missionsService, &IMissionsService::cancel, this, &MissionHandler::cancel);
+    connect(missionsService, &IMissionsService::missionRemoved, this, &MissionHandler::cancel);
 }
 
 MissionHandler::~MissionHandler()
@@ -246,35 +241,37 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     // TODO: mark waypoint with reached flag
 }
 
-void MissionHandler::subscribeMission(Mission* mission)
+void MissionHandler::upload(Mission* mission)
 {
-    if (mission->type() != mavlink_mission::missionType)
+    if (mission->vehicle().isEmpty())
         return;
 
-    connect(mission, &Mission::download, this, [this, mission]() {
-        m_downloadingMissions[mission->vehicle()] = mission;
-        this->sendMissionRequest(mission->vehicle());
-    });
-
-    connect(mission, &Mission::cancel, this, [this, mission]() {
-        QString node = m_downloadingMissions.key(mission);
-        if (node.length())
-            m_downloadingMissions.remove(node);
-
-        node = m_uploadingMissions.key(mission);
-        if (node.length())
-            m_uploadingMissions.remove(node);
-
-        // TODO: for downloading only
-        mission->setTotal(mission->progress());
-    });
+    m_uploadingMissions[mission->vehicle()] = mission;
+    //TOODO: this->sendMissionCount(mission->vehicle(), mission->route()->count());
 }
 
-void MissionHandler::unsubscribeMission(Mission* mission)
+void MissionHandler::download(Mission* mission)
+{
+    if (mission->vehicle().isEmpty())
+        return;
+
+    m_downloadingMissions[mission->vehicle()] = mission;
+    this->sendMissionRequest(mission->vehicle());
+}
+
+void MissionHandler::cancel(Mission* mission)
 {
     QString node = m_downloadingMissions.key(mission);
     if (node.length())
+    {
         m_downloadingMissions.remove(node);
+        mission->setTotal(mission->progress());
+    }
 
-    disconnect(mission, nullptr, this, nullptr);
+    node = m_uploadingMissions.key(mission);
+    if (node.length())
+    {
+        m_uploadingMissions.remove(node);
+        mission->setProgress(mission->total());
+    }
 }
