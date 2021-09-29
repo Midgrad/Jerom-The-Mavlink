@@ -36,6 +36,7 @@ MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService*
     connect(missionsService, &IMissionsService::download, this, &MissionHandler::download);
     connect(missionsService, &IMissionsService::cancel, this, &MissionHandler::cancel);
     connect(missionsService, &IMissionsService::missionRemoved, this, &MissionHandler::cancel);
+    connect(this, &MissionHandler::statusUpdate, missionsService, &IMissionsService::updateStatus);
 }
 
 MissionHandler::~MissionHandler()
@@ -179,9 +180,11 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     MavlinkMissionWaypoint missionWaypoint(waypoint);
     missionWaypoint.fillFromMissionItem(item);
 
-    mission->setProgress(item.seq + 1);
+    MissionStatus status(item.seq + 1, m_statuses[node].total());
+    m_statuses[node] = status;
+    emit statusUpdate(mission->id(), status);
 
-    if (mission->isComplete())
+    if (status.isComplete())
     {
         m_downloadingMissions.remove(node);
         this->sendAck(node, MAV_MISSION_ACCEPTED);
@@ -189,7 +192,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     else
     {
         // Request next waypoint
-        this->sendMissionItemRequest(node, mission->progress());
+        this->sendMissionItemRequest(node, status.progress());
     }
 }
 
@@ -222,10 +225,11 @@ void MissionHandler::processMissionCount(const mavlink_message_t& message)
     Mission* mission = m_downloadingMissions.value(node, nullptr);
     if (mission)
     {
-        mission->setTotal(mission_count.count);
-        mission->setProgress(0);
+        MissionStatus status(0, mission_count.count);
+        m_statuses[node] = status;
 
-        this->sendMissionItemRequest(node, mission->progress());
+        emit statusUpdate(mission->id(), status);
+        this->sendMissionItemRequest(node, status.progress());
     }
 }
 
@@ -247,7 +251,7 @@ void MissionHandler::upload(Mission* mission)
         return;
 
     m_uploadingMissions[mission->vehicle()] = mission;
-    //TOODO: this->sendMissionCount(mission->vehicle(), mission->route()->count());
+    //TODO: this->sendMissionCount(mission->vehicle(), mission->route()->count());
 }
 
 void MissionHandler::download(Mission* mission)
@@ -265,13 +269,14 @@ void MissionHandler::cancel(Mission* mission)
     if (node.length())
     {
         m_downloadingMissions.remove(node);
-        mission->setTotal(mission->progress());
     }
 
     node = m_uploadingMissions.key(mission);
     if (node.length())
     {
         m_uploadingMissions.remove(node);
-        mission->setProgress(mission->total());
     }
+
+    m_statuses.remove(node);
+    emit statusUpdate(mission->id(), MissionStatus());
 }

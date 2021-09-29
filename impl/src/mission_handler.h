@@ -28,6 +28,9 @@ public:
     void processMissionCount(const mavlink_message_t& message);
     void processMissionReached(const mavlink_message_t& message);
 
+signals:
+    void statusUpdate(QVariant missionId, MissionStatus status);
+
 private slots:
     void upload(Mission* mission);
     void download(Mission* mission);
@@ -37,6 +40,7 @@ private:
     QStringList m_obtainedNodes;
     QMap<QString, Mission*> m_downloadingMissions;
     QMap<QString, Mission*> m_uploadingMissions;
+    QMap<QString, MissionStatus> m_statuses;
 };
 } // namespace md::domain
 
