@@ -26,13 +26,13 @@ MavlinkMissionWaypoint::MavlinkMissionWaypoint(Waypoint* waypoint) : m_waypoint(
 {
     Q_ASSERT(waypoint);
 
-    using ItemRef = const mavlink_mission_item_int_t&;
+    using ItemRef = const mavlink_mission_item_t&;
 
     m_waypointFillers.insert(mavlink_mission::latitude.name, [](ItemRef item) {
-        return utils::decodeLatLon(item.x);
+        return item.x;
     });
     m_waypointFillers.insert(mavlink_mission::longitude.name, [](ItemRef item) {
-        return utils::decodeLatLon(item.y);
+        return item.y;
     });
     m_waypointFillers.insert(mavlink_mission::altitude.name, [](ItemRef item) {
         return item.z;
@@ -60,7 +60,7 @@ MavlinkMissionWaypoint::MavlinkMissionWaypoint(Waypoint* waypoint) : m_waypoint(
     });
 }
 
-void MavlinkMissionWaypoint::fillFromMissionItem(const mavlink_mission_item_int_t& item)
+void MavlinkMissionWaypoint::fillFromMissionItem(const mavlink_mission_item_t& item)
 {
     const WaypointType* type = item.seq ? ::commandTypes.value(item.command)
                                         : &mavlink_mission::home;
@@ -86,7 +86,7 @@ void MavlinkMissionWaypoint::fillFromMissionItem(const mavlink_mission_item_int_
     m_waypoint->setParameters(parameters);
 }
 
-void MavlinkMissionWaypoint::fillMissionItem(mavlink_mission_item_int_t& item)
+void MavlinkMissionWaypoint::fillMissionItem(mavlink_mission_item_t& item)
 {
     // TODO: fill mission Item
 }

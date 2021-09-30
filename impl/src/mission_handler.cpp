@@ -160,8 +160,8 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     if (!mission)
         return;
 
-    mavlink_mission_item_int_t item;
-    mavlink_msg_mission_item_int_decode(&message, &item);
+    mavlink_mission_item_t item;
+    mavlink_msg_mission_item_decode(&message, &item);
 
     qDebug() << "processMissionItem" << node << item.seq;
 
