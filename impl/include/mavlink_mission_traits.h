@@ -1,12 +1,10 @@
 #ifndef MAVLINK_MISSION_TRAITS_H
 #define MAVLINK_MISSION_TRAITS_H
 
-#include "waypoint_type.h"
+#include "mission_type.h"
 
 namespace md::domain::mavlink_mission
 {
-const QString missionType = "Mavlink mission";
-
 const Parameter latitude = { "latitude", Parameter::Real, 0.0 };
 const Parameter longitude = { "longitude", Parameter::Real, 0.0 };
 const Parameter altitude = { "altitude", Parameter::Real, 100.0 };
@@ -27,6 +25,10 @@ const WaypointType landing = { "landing",
 const WaypointType loiterTurns = {
     "loiter_turns", { latitude, longitude, altitude, relative, radius, loops, clockwise, yaw }
 };
+
+const RouteType routeType = { "mavlink_route", { home, waypoint, takeoff, landing } };
+const MissionType missionType = { "mavlink_mission", routeType };
+
 } // namespace md::domain::mavlink_mission
 
 #endif // MAVLINK_MISSION_TRAITS_H
