@@ -15,7 +15,7 @@ file(GLOB SOURCES "include/*" "src/*")
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
 
 # Link with libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC vegur_api loodsman mavlink Qt5::Core)
+target_link_libraries(${PROJECT_NAME} PUBLIC kjarni loodsman mavlink Qt5::Core)
 
 # Tests
 if(TESTS_ENABLED)
