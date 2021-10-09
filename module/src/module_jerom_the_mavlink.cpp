@@ -31,13 +31,16 @@ void ModuleJeromTheMavlink::init()
     Q_ASSERT(missionService);
 
     missionService->registerMissionType(&domain::mavlink_mission::missionType);
-    missionService->readAllMissions(); // TODO: IModule start() after init
 
     domain::MavlinkHandlerFactory factory(pTree, missionService);
 
     data_source::LinkConfiguration configuration(::linksFileName);
     m_transceiver = new domain::MavlinkTranscieverThreaded(
         new domain::MavlinkTransceiver(configuration.readLinks(), &factory, nullptr), this);
+}
+
+void ModuleJeromTheMavlink::start()
+{
     m_transceiver->start();
 }
 

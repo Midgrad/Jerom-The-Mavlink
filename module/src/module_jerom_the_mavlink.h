@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE ModuleJeromTheMavlink();
 
     void init() override;
+    void start() override;
     void done() override;
 
 private:
