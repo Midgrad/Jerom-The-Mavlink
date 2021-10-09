@@ -173,7 +173,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     }
     else
     {
-        waypoint = new Waypoint(tr("New Waypoint"), mavlink_mission::waypoint.name);
+        waypoint = new Waypoint(tr("New Waypoint"), &mavlink_mission::waypoint);
         route->addWaypoint(waypoint);
     }
 

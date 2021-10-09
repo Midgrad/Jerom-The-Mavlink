@@ -31,6 +31,7 @@ void ModuleJeromTheMavlink::init()
     Q_ASSERT(missionService);
 
     missionService->registerMissionType(&domain::mavlink_mission::missionType);
+    missionService->readAllMissions(); // TODO: IModule start() after init
 
     domain::MavlinkHandlerFactory factory(pTree, missionService);
 

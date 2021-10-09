@@ -26,8 +26,8 @@ const WaypointType loiterTurns = {
     "loiter_turns", { latitude, longitude, altitude, relative, radius, loops, clockwise, yaw }
 };
 
-const RouteType routeType = { "mavlink_route", { home, waypoint, takeoff, landing } };
-const MissionType missionType = { "mavlink_mission", routeType };
+const RouteType routeType = { "mavlink_route", { &home, &waypoint, &takeoff, &landing } };
+const MissionType missionType = { "mavlink_mission", &routeType };
 
 } // namespace md::domain::mavlink_mission
 

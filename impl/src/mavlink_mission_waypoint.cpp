@@ -62,14 +62,15 @@ MavlinkMissionWaypoint::MavlinkMissionWaypoint(Waypoint* waypoint) : m_waypoint(
 
 void MavlinkMissionWaypoint::fillFromMissionItem(const mavlink_mission_item_t& item)
 {
-    WaypointType* type = item.seq ? ::commandTypes.value(item.command) : &mavlink_mission::home;
+    const WaypointType* type = item.seq ? ::commandTypes.value(item.command)
+                                        : &mavlink_mission::home;
     if (!type)
     {
         qWarning() << "Unsupported waypoint type" << type;
         return;
     }
 
-    m_waypoint->setType(*type);
+    m_waypoint->setType(type);
     m_waypoint->setName(item.seq ? QObject::tr("WPT %1").arg(item.seq) : QObject::tr("HOME"));
 
     QVariantMap parameters;
