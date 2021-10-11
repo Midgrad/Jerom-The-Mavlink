@@ -8,10 +8,8 @@
 
 #include <memory>
 
-// TODO: i_link
-#include "i_link_factory.h"
 #include "i_mavlink_handlers_factory.h"
-#include "link_configuration.h"
+#include "jerom_traits.h"
 
 namespace md::domain
 {
@@ -20,7 +18,7 @@ class MavlinkTransceiver : public IMavlinkTransceiver
     Q_OBJECT
 
 public:
-    MavlinkTransceiver(const QMap<QString, LinkPtr>& links, IMavlinkHandlerFactory* factory,
+    MavlinkTransceiver(const data_source::LinkPtrMap& links, IMavlinkHandlerFactory* factory,
                        QObject* parent = nullptr);
 
 public slots:
@@ -38,7 +36,7 @@ private slots:
 private:
     int m_timerId = 0;
     MavlinkHandlerContext m_context;
-    QMap<QString, LinkPtr> const m_links;
+    data_source::LinkPtrMap const m_links;
     QVector<IMavlinkHandler*> const m_handlers;
 };
 } // namespace md::domain
