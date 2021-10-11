@@ -4,11 +4,22 @@
 #include <QThread>
 
 #include "mavlink_mission_traits.h"
-#include "mavlink_mission_waypoint.h"
 #include "mavlink_protocol_helpers.h"
 #include "mavlink_tmi.h"
 
 using namespace md::domain;
+
+namespace
+{
+const QMap<uint16_t, const WaypointType*> commandTypes = {
+    { MAV_CMD_DO_SET_HOME, &mavlink_mission::home },
+    { MAV_CMD_NAV_WAYPOINT, &mavlink_mission::waypoint },
+    { MAV_CMD_NAV_TAKEOFF, &mavlink_mission::takeoff },
+    { MAV_CMD_NAV_LAND, &mavlink_mission::landing },
+    { MAV_CMD_NAV_LOITER_TURNS, &mavlink_mission::loiterTurns },
+    { MAV_CMD_NAV_LOITER_TO_ALT, &mavlink_mission::loiterAlt }
+};
+}
 
 MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
                                QObject* parent) :
@@ -173,12 +184,21 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     }
     else
     {
-        waypoint = new Waypoint(tr("New Waypoint"), &mavlink_mission::waypoint);
+        waypoint = new Waypoint(item.seq ? tr("WPT %1").arg(item.seq) : QObject::tr("HOME"),
+                                &mavlink_mission::waypoint);
         route->addWaypoint(waypoint);
     }
 
-    MavlinkMissionWaypoint missionWaypoint(waypoint);
-    missionWaypoint.fillFromMissionItem(item);
+    auto type = ::commandTypes.value(item.command, nullptr);
+    auto convertor = m_convertors.convertor(type);
+    if (type && convertor)
+    {
+        convertor->itemToWaypoint(item, waypoint);
+    }
+    else
+    {
+        qWarning() << "Unhandled mission item type" << item.command;
+    }
 
     MissionStatus status(item.seq + 1, m_statuses[node].total());
     m_statuses[node] = status;
