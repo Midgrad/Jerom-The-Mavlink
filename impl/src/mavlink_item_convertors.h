@@ -23,6 +23,7 @@ public:
     ~MavlinkItemConvertorsPool();
 
     IMavlinkItemConvertor* convertor(const WaypointType* type);
+    IMavlinkItemConvertor* convertor(uint16_t commandType);
 
 private:
     const QMap<const WaypointType*, IMavlinkItemConvertor*> m_convertors;

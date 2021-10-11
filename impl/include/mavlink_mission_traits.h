@@ -19,18 +19,20 @@ const Parameter clockwise = { "clockwise", Parameter::Bool, true };
 const Parameter yaw = { "yaw", Parameter::Real, qQNaN() };
 
 // TODO: remove home point with route reference altitude
-const WaypointType home = { "home", { latitude, longitude, altitude, yaw } };
+const WaypointType home = { "home", { &latitude, &longitude, &altitude, &yaw } };
 const WaypointType waypoint = {
-    "waypoint", { latitude, longitude, altitude, relative, time, radius, passRadius, yaw }
+    "waypoint", { &latitude, &longitude, &altitude, &relative, &time, &radius, &passRadius, &yaw }
 };
-const WaypointType takeoff = { "takeoff", { latitude, longitude, altitude, relative, pitch, yaw } };
-const WaypointType landing = { "landing",
-                               { latitude, longitude, altitude, relative, yaw, abortAltitude } };
-const WaypointType loiterTurns = {
-    "loiter_turns", { latitude, longitude, altitude, relative, radius, loops, clockwise, yaw }
+const WaypointType takeoff = { "takeoff",
+                               { &latitude, &longitude, &altitude, &relative, &pitch, &yaw } };
+const WaypointType landing = {
+    "landing", { &latitude, &longitude, &altitude, &relative, &yaw, &abortAltitude }
 };
+const WaypointType loiterTurns = { "loiter_turns",
+                                   { &latitude, &longitude, &altitude, &relative, &radius, &loops,
+                                     &clockwise, &yaw } };
 const WaypointType loiterAlt = {
-    "loiter_alt", { latitude, longitude, altitude, relative, radius, clockwise, yaw }
+    "loiter_alt", { &latitude, &longitude, &altitude, &relative, &radius, &clockwise, &yaw }
 };
 
 const RouteType routeType = { "mavlink_route",

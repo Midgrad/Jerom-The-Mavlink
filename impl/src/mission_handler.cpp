@@ -9,18 +9,6 @@
 
 using namespace md::domain;
 
-namespace
-{
-const QMap<uint16_t, const WaypointType*> commandTypes = {
-    { MAV_CMD_DO_SET_HOME, &mavlink_mission::home },
-    { MAV_CMD_NAV_WAYPOINT, &mavlink_mission::waypoint },
-    { MAV_CMD_NAV_TAKEOFF, &mavlink_mission::takeoff },
-    { MAV_CMD_NAV_LAND, &mavlink_mission::landing },
-    { MAV_CMD_NAV_LOITER_TURNS, &mavlink_mission::loiterTurns },
-    { MAV_CMD_NAV_LOITER_TO_ALT, &mavlink_mission::loiterAlt }
-};
-}
-
 MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
                                QObject* parent) :
     IMavlinkHandler(context, parent)
@@ -189,9 +177,8 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
         route->addWaypoint(waypoint);
     }
 
-    auto type = ::commandTypes.value(item.command, nullptr);
-    auto convertor = m_convertors.convertor(type);
-    if (type && convertor)
+    auto convertor = m_convertors.convertor(item.command);
+    if (convertor)
     {
         convertor->itemToWaypoint(item, waypoint);
     }
