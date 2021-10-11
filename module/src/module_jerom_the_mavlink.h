@@ -8,7 +8,7 @@ namespace md::app
 {
 class ModuleJeromTheMavlink
     : public QObject
-    , public md::app::IModule
+    , public IModule
 {
     Q_OBJECT
     Q_INTERFACES(md::app::IModule)
@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE ModuleJeromTheMavlink();
 
     void init() override;
+    void start() override;
     void done() override;
 
 private:

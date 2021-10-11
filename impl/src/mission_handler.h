@@ -3,6 +3,7 @@
 
 #include "i_mavlink_handler.h"
 #include "i_missions_service.h"
+#include "mavlink_item_convertors.h"
 
 namespace md::domain
 {
@@ -37,6 +38,7 @@ private slots:
     void cancel(Mission* mission);
 
 private:
+    MavlinkItemConvertorsPool m_convertors;
     QStringList m_obtainedNodes;
     QMap<QString, Mission*> m_downloadingMissions;
     QMap<QString, Mission*> m_uploadingMissions;

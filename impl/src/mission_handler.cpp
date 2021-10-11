@@ -4,7 +4,6 @@
 #include <QThread>
 
 #include "mavlink_mission_traits.h"
-#include "mavlink_mission_waypoint.h"
 #include "mavlink_protocol_helpers.h"
 #include "mavlink_tmi.h"
 
@@ -173,12 +172,20 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     }
     else
     {
-        waypoint = new Waypoint(tr("New Waypoint"), mavlink_mission::waypoint.name);
+        waypoint = new Waypoint(item.seq ? tr("WPT %1").arg(item.seq) : QObject::tr("HOME"),
+                                &mavlink_mission::waypoint);
         route->addWaypoint(waypoint);
     }
 
-    MavlinkMissionWaypoint missionWaypoint(waypoint);
-    missionWaypoint.fillFromMissionItem(item);
+    auto convertor = m_convertors.convertor(item.command);
+    if (convertor)
+    {
+        convertor->itemToWaypoint(item, waypoint);
+    }
+    else
+    {
+        qWarning() << "Unhandled mission item type" << item.command;
+    }
 
     MissionStatus status(item.seq + 1, m_statuses[node].total());
     m_statuses[node] = status;
