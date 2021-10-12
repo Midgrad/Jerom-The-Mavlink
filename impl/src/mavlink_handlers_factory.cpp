@@ -8,9 +8,11 @@
 using namespace md::domain;
 
 MavlinkHandlerFactory::MavlinkHandlerFactory(IPropertyTree* pTree,
-                                             IMissionsService* missionsService) :
+                                             IMissionsService* missionsService,
+                                             IVehiclesService* vehiclesService) :
     m_pTree(pTree),
-    m_missionsService(missionsService)
+    m_missionsService(missionsService),
+    m_vehiclesService(vehiclesService)
 {
 }
 
@@ -19,9 +21,9 @@ QVector<IMavlinkHandler*> MavlinkHandlerFactory::create(MavlinkHandlerContext* c
     context->pTree = m_pTree;
 
     QVector<IMavlinkHandler*> handlers;
-    handlers.append(new HeartbeatHandler(context));
+    handlers.append(new HeartbeatHandler(context, m_vehiclesService));
     handlers.append(new TelemetryHandler(context));
-    handlers.append(new MissionHandler(context, m_missionsService));
+    handlers.append(new MissionHandler(context, m_missionsService, m_vehiclesService));
     handlers.append(new SystemStatusHandler(context));
     return handlers;
 }

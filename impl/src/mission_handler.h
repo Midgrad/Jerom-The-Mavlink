@@ -3,6 +3,7 @@
 
 #include "i_mavlink_handler.h"
 #include "i_missions_service.h"
+#include "i_vehicles_service.h"
 #include "mavlink_item_convertors.h"
 
 namespace md::domain
@@ -13,7 +14,7 @@ class MissionHandler : public IMavlinkHandler
 
 public:
     MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
-                   QObject* parent = nullptr);
+                   IVehiclesService* vehiclesService, QObject* parent = nullptr);
     ~MissionHandler() override;
 
     bool canParse(quint32 msgId) override;
@@ -38,6 +39,7 @@ private slots:
     void cancel(Mission* mission);
 
 private:
+    IVehiclesService* const m_vehiclesService;
     MavlinkItemConvertorsPool m_convertors;
     QStringList m_obtainedNodes;
     QMap<QString, Mission*> m_downloadingMissions;

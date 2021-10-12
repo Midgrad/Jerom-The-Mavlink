@@ -1,7 +1,7 @@
 #ifndef MAVLINK_TMI_H
 #define MAVLINK_TMI_H
 
-#include "common_tmi.h"
+#include "vehicle_tmi.h"
 
 namespace md::tmi
 {

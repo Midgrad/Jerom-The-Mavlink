@@ -3,6 +3,7 @@
 
 #include "abstract_command_handler.h"
 #include "i_mode_helper.h"
+#include "i_vehicles_service.h"
 
 #include <QBasicTimer>
 #include <QMap>
@@ -14,7 +15,8 @@ class HeartbeatHandler : public AbstractCommandHandler
     Q_OBJECT
 
 public:
-    HeartbeatHandler(MavlinkHandlerContext* context, QObject* parent = nullptr);
+    HeartbeatHandler(MavlinkHandlerContext* context, IVehiclesService* vehiclesService,
+                     QObject* parent = nullptr);
     ~HeartbeatHandler() override;
 
     bool canParse(quint32 msgId) override;
@@ -28,9 +30,10 @@ public:
     void timerEvent(QTimerEvent* event) override;
 
 private:
+    IVehiclesService* const m_vehiclesService;
     QMap<quint8, QSharedPointer<data_source::IModeHelper>> m_modeHelpers;
     QMap<quint8, quint8> m_baseModes;
-    QMap<quint8, QBasicTimer*> m_vehicleTimers;
+    QMap<Vehicle*, QBasicTimer*> m_vehicleTimers;
 };
 } // namespace md::domain
 

@@ -102,17 +102,6 @@ inline float decodeRssi(uint16_t value)
     return qMin(qMax(qRound(value / 1.9 - 127.0), -120), 0);
 }
 
-// TODO: replace with vehicle object
-inline QString nodeFromMavId(uint8_t sysid)
-{
-    return QStringLiteral("MAV %1").arg(sysid);
-}
-
-inline uint8_t mavIdFromNode(const QString& node)
-{
-    return node.split(' ').last().toInt();
-}
-
 } // namespace md::utils
 
 #endif // MAVLINK_PROTOCOL_HELPERS_H

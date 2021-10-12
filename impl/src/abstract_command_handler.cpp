@@ -7,6 +7,7 @@ AbstractCommandHandler::AbstractCommandHandler(MavlinkHandlerContext* context, Q
 {
 }
 
+// TODO: CommandService
 void AbstractCommandHandler::sendCommandLong(quint8 mavId, quint16 commandId,
                                              const QVariantList& args, int attempt)
 {

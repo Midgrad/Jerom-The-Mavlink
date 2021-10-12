@@ -4,9 +4,9 @@
 #include <QJsonArray>
 #include <QTimerEvent>
 
-#include "common_tmi.h"
 #include "mavlink_protocol_helpers.h"
 #include "mode_helper_factory.h"
+#include "vehicle_tmi.h"
 
 using namespace md::domain;
 
@@ -14,22 +14,22 @@ namespace
 {
 constexpr int onlineTimout = 2000;
 
-std::string decodeMavType(uint8_t type)
+Vehicle::Type decodeMavType(uint8_t type)
 {
     switch (type)
     {
     case MAV_TYPE_FIXED_WING:
     case MAV_TYPE_KITE:
     case MAV_TYPE_FLAPPING_WING:
-        return "FixedWing";
+        return Vehicle::FixedWing;
     case MAV_TYPE_TRICOPTER:
     case MAV_TYPE_QUADROTOR:
     case MAV_TYPE_HEXAROTOR:
     case MAV_TYPE_OCTOROTOR:
-        return "Multicopter";
+        return Vehicle::Copter;
     case MAV_TYPE_COAXIAL:
     case MAV_TYPE_HELICOPTER:
-        return "Helicopter";
+        return Vehicle::RotaryWing;
     case MAV_TYPE_VTOL_DUOROTOR:
     case MAV_TYPE_VTOL_QUADROTOR:
     case MAV_TYPE_VTOL_TILTROTOR:
@@ -37,13 +37,13 @@ std::string decodeMavType(uint8_t type)
     case MAV_TYPE_VTOL_RESERVED3:
     case MAV_TYPE_VTOL_RESERVED4:
     case MAV_TYPE_VTOL_RESERVED5:
-        return "Vtol";
+        return Vehicle::Vtol;
     case MAV_TYPE_AIRSHIP:
     case MAV_TYPE_FREE_BALLOON:
-        return "Airship";
+        return Vehicle::Airship;
     case MAV_TYPE_GENERIC:
     default:
-        return "Vehicle";
+        return Vehicle::Generic;
     }
 }
 
@@ -74,14 +74,21 @@ std::string decodeState(uint8_t state)
 }
 } // namespace
 
-HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context, QObject* parent) :
-    AbstractCommandHandler(context, parent)
+HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context,
+                                   IVehiclesService* vehiclesService, QObject* parent) :
+    AbstractCommandHandler(context, parent),
+    m_vehiclesService(vehiclesService)
 {
     this->subscribeCommand(tmi::setMode, [this](const QString& node, const QVariant& args) {
         this->sendMode(node, args.toString());
     });
     this->subscribeCommand(tmi::setArmed, [this](const QString& node, const QVariant& args) {
         this->sendArm(node, args.toBool());
+    });
+
+    connect(vehiclesService, &IVehiclesService::vehicleRemoved, this, [this](Vehicle* vehicle) {
+        if (!m_vehicleTimers.contains(vehicle))
+            delete m_vehicleTimers.take(vehicle);
     });
 }
 
@@ -106,7 +113,9 @@ void HeartbeatHandler::parseMessage(const mavlink_message_t& message)
 void HeartbeatHandler::sendMode(const QString& node, const QString& mode)
 {
     qDebug() << "setMode" << node << mode;
-    auto mavId = utils::mavIdFromNode(node);
+
+    Vehicle* vehicle = m_vehiclesService->vehicle(node);
+    auto mavId = m_context->vehicles.key(vehicle, 0);
     if (!mavId)
         return;
 
@@ -129,7 +138,8 @@ void HeartbeatHandler::sendMode(const QString& node, const QString& mode)
 void HeartbeatHandler::sendArm(const QString& node, bool arm)
 {
     qDebug() << "setArm" << node << arm;
-    auto mavId = utils::mavIdFromNode(node);
+    Vehicle* vehicle = m_vehiclesService->vehicle(node);
+    auto mavId = m_context->vehicles.key(vehicle, 0);
     if (!mavId)
         return;
 
@@ -150,25 +160,37 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     mavlink_heartbeat_t heartbeat;
     mavlink_msg_heartbeat_decode(&message, &heartbeat);
 
-    if (!m_vehicleTimers.contains(message.sysid))
+    // Get or create vehicle
+    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
+    // TODO: auto add MAV flag to properties
+    if (!vehicle)
     {
-        m_vehicleTimers[message.sysid] = new QBasicTimer();
+        vehicle = new Vehicle(::decodeMavType(heartbeat.type), QString("mav_%1").arg(message.sysid),
+                              QString("MAV %1").arg(message.sysid));
+        m_vehiclesService->saveVehicle(vehicle);
+        m_context->vehicles.insert(message.sysid, vehicle);
     }
-    m_vehicleTimers[message.sysid]->start(::onlineTimout, this); // TODO: to settings
+
+    // Vehicle timer and base mode
+    if (!m_vehicleTimers.contains(vehicle))
+    {
+        m_vehicleTimers[vehicle] = new QBasicTimer();
+    }
+    m_vehicleTimers[vehicle]->start(::onlineTimout, this); // TODO: to settings
     m_baseModes[message.sysid] = heartbeat.base_mode;
 
+    // Telemetry values
     QVariantMap properties(
         { { tmi::state, QString::fromStdString(::decodeState(heartbeat.system_status)) },
           { tmi::armed, (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) },
-          { tmi::type, QString::fromStdString(::decodeMavType(heartbeat.type)) },
           { tmi::online, true } });
 
+    // Obtain specific mode with mode helper
     if (!m_modeHelpers.contains(message.sysid))
         m_modeHelpers.insert(message.sysid,
                              QSharedPointer<data_source::IModeHelper>(
                                  data_source::ModeHelperFactory::create(heartbeat.autopilot,
                                                                         heartbeat.type)));
-
     auto modeHelper = m_modeHelpers.value(message.sysid);
     if (modeHelper)
     {
@@ -176,7 +198,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
         properties.insert(tmi::mode, modeHelper->customModeToMode(heartbeat.custom_mode));
     }
 
-    m_context->pTree->appendProperties(utils::nodeFromMavId(message.sysid), properties);
+    m_context->pTree->appendProperties(vehicle->id(), properties);
 }
 
 void HeartbeatHandler::timerEvent(QTimerEvent* event)
@@ -186,8 +208,10 @@ void HeartbeatHandler::timerEvent(QTimerEvent* event)
         if (timer->timerId() != event->timerId())
             continue;
 
-        m_context->pTree->appendProperties(utils::nodeFromMavId(m_vehicleTimers.key(timer)),
-                                           { { tmi::online, false } });
+        Vehicle* vehicle = m_vehicleTimers.key(timer);
+        if (vehicle)
+            m_context->pTree->appendProperties(vehicle->id(), { { tmi::online, false } });
+
         timer->stop();
     }
 }

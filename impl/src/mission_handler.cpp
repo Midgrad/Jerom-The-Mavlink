@@ -10,8 +10,9 @@
 using namespace md::domain;
 
 MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
-                               QObject* parent) :
-    IMavlinkHandler(context, parent)
+                               IVehiclesService* vehiclesService, QObject* parent) :
+    IMavlinkHandler(context, parent),
+    m_vehiclesService(vehiclesService)
 {
     connect(m_context->pTree, &IPropertyTree::rootNodesChanged, this,
             [this](const QStringList& nodes) {
@@ -70,7 +71,8 @@ void MissionHandler::parseMessage(const mavlink_message_t& message)
 void MissionHandler::sendMissionRequest(const QString& node)
 {
     qDebug() << "sendMissionRequest" << node;
-    auto mavId = utils::mavIdFromNode(node);
+    Vehicle* vehicle = m_vehiclesService->vehicle(node);
+    auto mavId = m_context->vehicles.key(vehicle, 0);
     if (!mavId)
         return;
 
@@ -89,7 +91,8 @@ void MissionHandler::sendMissionRequest(const QString& node)
 void MissionHandler::sendMissionItemRequest(const QString& node, int index)
 {
     qDebug() << "sendMissionItemRequest" << node << index;
-    auto mavId = utils::mavIdFromNode(node);
+    Vehicle* vehicle = m_vehiclesService->vehicle(node);
+    auto mavId = m_context->vehicles.key(vehicle, 0);
     if (!mavId)
         return;
 
@@ -111,7 +114,8 @@ void MissionHandler::sendMissionItemRequest(const QString& node, int index)
 void MissionHandler::sendAck(const QString& node, MAV_MISSION_RESULT type)
 {
     qDebug() << "sendAck" << node << type;
-    auto mavId = utils::mavIdFromNode(node);
+    Vehicle* vehicle = m_vehiclesService->vehicle(node);
+    auto mavId = m_context->vehicles.key(vehicle, 0);
     if (!mavId)
         return;
 
@@ -133,7 +137,8 @@ void MissionHandler::sendAck(const QString& node, MAV_MISSION_RESULT type)
 void MissionHandler::sendMissionSetCurrent(const QString& node, int waypoint)
 {
     qDebug() << "sendMissionSetCurrent" << node << waypoint;
-    auto mavId = utils::mavIdFromNode(node);
+    Vehicle* vehicle = m_vehiclesService->vehicle(node);
+    auto mavId = m_context->vehicles.key(vehicle, 0);
     if (!mavId)
         return;
 
@@ -151,18 +156,18 @@ void MissionHandler::sendMissionSetCurrent(const QString& node, int waypoint)
 
 void MissionHandler::processMissionItem(const mavlink_message_t& message)
 {
-    QString node = utils::nodeFromMavId(message.sysid);
-    if (node.isEmpty())
+    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
+    if (!vehicle)
         return;
 
-    Mission* mission = m_downloadingMissions.value(node, nullptr);
+    Mission* mission = m_downloadingMissions.value(vehicle->id(), nullptr);
     if (!mission)
         return;
 
     mavlink_mission_item_t item;
     mavlink_msg_mission_item_decode(&message, &item);
 
-    qDebug() << "processMissionItem" << node << item.seq;
+    qDebug() << "processMissionItem" << vehicle->id() << item.seq;
 
     Route* route = mission->route();
     Waypoint* waypoint = nullptr;
@@ -187,63 +192,63 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
         qWarning() << "Unhandled mission item type" << item.command;
     }
 
-    MissionStatus status(item.seq + 1, m_statuses[node].total());
-    m_statuses[node] = status;
+    MissionStatus status(item.seq + 1, m_statuses[vehicle->id()].total());
+    m_statuses[vehicle->id()] = status;
     emit statusUpdate(mission->id(), status);
 
     if (status.isComplete())
     {
-        m_downloadingMissions.remove(node);
-        this->sendAck(node, MAV_MISSION_ACCEPTED);
+        m_downloadingMissions.remove(vehicle->id());
+        this->sendAck(vehicle->id(), MAV_MISSION_ACCEPTED);
     }
     else
     {
         // Request next waypoint
-        this->sendMissionItemRequest(node, status.progress());
+        this->sendMissionItemRequest(vehicle->id(), status.progress());
     }
 }
 
 void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
 {
-    QString node = utils::nodeFromMavId(message.sysid);
-    if (node.isEmpty())
+    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
+    if (!vehicle)
         return;
 
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    m_context->pTree->appendProperties(node, { { tmi::wp, mission_current.seq } });
+    m_context->pTree->appendProperties(vehicle->id(), { { tmi::wp, mission_current.seq } });
 }
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
 {
-    QString node = utils::nodeFromMavId(message.sysid);
-    if (node.isEmpty())
+    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
+    if (!vehicle)
         return;
 
     mavlink_mission_count_t mission_count;
     mavlink_msg_mission_count_decode(&message, &mission_count);
 
-    if (!m_obtainedNodes.contains(node))
-        m_obtainedNodes.append(node);
+    if (!m_obtainedNodes.contains(vehicle->id()))
+        m_obtainedNodes.append(vehicle->id());
 
-    m_context->pTree->appendProperties(node, { { tmi::wpCount, mission_count.count } });
+    m_context->pTree->appendProperties(vehicle->id(), { { tmi::wpCount, mission_count.count } });
 
-    Mission* mission = m_downloadingMissions.value(node, nullptr);
+    Mission* mission = m_downloadingMissions.value(vehicle->id(), nullptr);
     if (mission)
     {
         MissionStatus status(0, mission_count.count);
-        m_statuses[node] = status;
+        m_statuses[vehicle->id()] = status;
 
         emit statusUpdate(mission->id(), status);
-        this->sendMissionItemRequest(node, status.progress());
+        this->sendMissionItemRequest(vehicle->id(), status.progress());
     }
 }
 
 void MissionHandler::processMissionReached(const mavlink_message_t& message)
 {
-    QString node = utils::nodeFromMavId(message.sysid);
-    if (node.isEmpty())
+    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
+    if (!vehicle)
         return;
 
     mavlink_mission_item_reached_t reached;

@@ -6,6 +6,7 @@
 #include <QObject>
 
 #include "i_property_tree.h"
+#include "vehicle.h"
 
 namespace md::domain
 {
@@ -15,6 +16,7 @@ struct MavlinkHandlerContext
     quint8 compId = 0;
 
     IPropertyTree* pTree = nullptr;
+    QMap<quint8, Vehicle*> vehicles;
 };
 
 class IMavlinkHandler : public QObject

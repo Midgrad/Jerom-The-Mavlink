@@ -4,19 +4,22 @@
 #include "i_mavlink_handlers_factory.h"
 #include "i_missions_service.h"
 #include "i_property_tree.h"
+#include "i_vehicles_service.h"
 
 namespace md::domain
 {
 class MavlinkHandlerFactory : public IMavlinkHandlerFactory
 {
 public:
-    MavlinkHandlerFactory(IPropertyTree* pTree, IMissionsService* missionsService);
+    MavlinkHandlerFactory(IPropertyTree* pTree, IMissionsService* missionsService,
+                          IVehiclesService* vehiclesService);
 
     QVector<IMavlinkHandler*> create(MavlinkHandlerContext* context) override;
 
 private:
     IPropertyTree* const m_pTree;
     IMissionsService* const m_missionsService;
+    IVehiclesService* const m_vehiclesService;
 };
 
 } // namespace md::domain
