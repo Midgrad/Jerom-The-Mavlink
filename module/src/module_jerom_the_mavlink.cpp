@@ -2,8 +2,6 @@
 
 #include <QDebug>
 
-#include "i_missions_service.h"
-#include "i_vehicles_service.h"
 #include "locator.h"
 
 #include "link_configuration.h"
@@ -34,9 +32,12 @@ void ModuleJeromTheMavlink::init()
     auto vehiclesService = Locator::get<domain::IVehiclesService>();
     Q_ASSERT(vehiclesService);
 
+    auto commandsService = Locator::get<domain::ICommandsService>();
+    Q_ASSERT(commandsService);
+
     missionService->registerMissionType(&domain::mavlink_mission::missionType);
 
-    domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService);
+    domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
 
     data_source::LinkConfiguration configuration(::linksFileName);
     m_transceiver = new domain::MavlinkTranscieverThreaded(

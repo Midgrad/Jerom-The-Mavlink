@@ -2,6 +2,7 @@
 #define HEARTBEAT_HANDLER_H
 
 #include "abstract_command_handler.h"
+#include "i_command_service.h"
 #include "i_mode_helper.h"
 #include "i_vehicles_service.h"
 
@@ -16,7 +17,7 @@ class HeartbeatHandler : public AbstractCommandHandler
 
 public:
     HeartbeatHandler(MavlinkHandlerContext* context, IVehiclesService* vehiclesService,
-                     QObject* parent = nullptr);
+                     ICommandsService* commandsService, QObject* parent = nullptr);
     ~HeartbeatHandler() override;
 
     bool canParse(quint32 msgId) override;

@@ -1,6 +1,7 @@
 #ifndef MISSION_HANDLER_H
 #define MISSION_HANDLER_H
 
+#include "i_command_service.h"
 #include "i_mavlink_handler.h"
 #include "i_missions_service.h"
 #include "i_vehicles_service.h"
@@ -14,7 +15,8 @@ class MissionHandler : public IMavlinkHandler
 
 public:
     MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
-                   IVehiclesService* vehiclesService, QObject* parent = nullptr);
+                   IVehiclesService* vehiclesService, ICommandsService* commandsService,
+                   QObject* parent = nullptr);
     ~MissionHandler() override;
 
     bool canParse(quint32 msgId) override;

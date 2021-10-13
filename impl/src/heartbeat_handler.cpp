@@ -75,21 +75,31 @@ std::string decodeState(uint8_t state)
 } // namespace
 
 HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context,
-                                   IVehiclesService* vehiclesService, QObject* parent) :
+                                   IVehiclesService* vehiclesService,
+                                   ICommandsService* commandsService, QObject* parent) :
     AbstractCommandHandler(context, parent),
     m_vehiclesService(vehiclesService)
 {
-    this->subscribeCommand(tmi::setMode, [this](const QString& node, const QVariant& args) {
-        this->sendMode(node, args.toString());
-    });
-    this->subscribeCommand(tmi::setArmed, [this](const QString& node, const QVariant& args) {
-        this->sendArm(node, args.toBool());
-    });
-
     connect(vehiclesService, &IVehiclesService::vehicleRemoved, this, [this](Vehicle* vehicle) {
         if (!m_vehicleTimers.contains(vehicle))
             delete m_vehicleTimers.take(vehicle);
     });
+
+    commandsService->requestCommand(tmi::setMode)
+        ->subscribe(
+            [this](const QString& target, const QVariantList& args) {
+                if (!args.isEmpty())
+                    this->sendMode(target, args.first().toString());
+            },
+            this);
+
+    commandsService->requestCommand(tmi::setArmed)
+        ->subscribe(
+            [this](const QString& target, const QVariantList& args) {
+                if (!args.isEmpty())
+                    this->sendArm(target, args.first().toBool());
+            },
+            this);
 }
 
 HeartbeatHandler::~HeartbeatHandler()

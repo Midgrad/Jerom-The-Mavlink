@@ -10,25 +10,25 @@
 using namespace md::domain;
 
 MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
-                               IVehiclesService* vehiclesService, QObject* parent) :
+                               IVehiclesService* vehiclesService, ICommandsService* commandsService,
+                               QObject* parent) :
     IMavlinkHandler(context, parent),
     m_vehiclesService(vehiclesService)
 {
+    commandsService->requestCommand(tmi::setWp)
+        ->subscribe(
+            [this](const QString& target, const QVariantList& args) {
+                if (!args.isEmpty())
+                    this->sendMissionSetCurrent(target, args.first().toInt());
+            },
+            this);
+
     connect(m_context->pTree, &IPropertyTree::rootNodesChanged, this,
             [this](const QStringList& nodes) {
                 for (const QString& node : nodes)
                 {
                     if (!m_obtainedNodes.contains(node))
                         this->sendMissionRequest(node);
-                }
-            });
-    // TODO: common command subsribe
-    connect(m_context->pTree, &IPropertyTree::propertiesChanged, this,
-            [this](const QString& node, const QVariantMap& properties) {
-                if (properties.contains(tmi::setWp))
-                {
-                    this->m_context->pTree->removeProperties(node, { tmi::setWp });
-                    this->sendMissionSetCurrent(node, properties.value(tmi::setWp).toInt());
                 }
             });
 
