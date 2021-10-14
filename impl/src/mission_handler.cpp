@@ -15,28 +15,11 @@ MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService*
     IMavlinkHandler(context, parent),
     m_vehiclesService(vehiclesService)
 {
-    commandsService->requestCommand(tmi::setWp)
-        ->subscribe(
-            [this](const QString& target, const QVariantList& args) {
-                if (!args.isEmpty())
-                    this->sendMissionSetCurrent(target, args.first().toInt());
-            },
-            this);
+    // TODO: mission request & creation
 
-    connect(m_context->pTree, &IPropertyTree::rootNodesChanged, this,
-            [this](const QStringList& nodes) {
-                for (const QString& node : nodes)
-                {
-                    if (!m_obtainedNodes.contains(node))
-                        this->sendMissionRequest(node);
-                }
-            });
-
-    connect(missionsService, &IMissionsService::upload, this, &MissionHandler::upload);
-    connect(missionsService, &IMissionsService::download, this, &MissionHandler::download);
-    connect(missionsService, &IMissionsService::cancel, this, &MissionHandler::cancel);
-    connect(missionsService, &IMissionsService::missionRemoved, this, &MissionHandler::cancel);
-    connect(this, &MissionHandler::statusUpdate, missionsService, &IMissionsService::updateStatus);
+    connect(missionsService, &IMissionsService::missionAdded, this, &MissionHandler::onMissionAdded);
+    connect(missionsService, &IMissionsService::missionRemoved, this,
+            &MissionHandler::onMissionRemoved);
 }
 
 MissionHandler::~MissionHandler()
@@ -81,6 +64,8 @@ void MissionHandler::sendMissionRequest(const QString& node)
 
     request.target_system = mavId;
     request.target_component = MAV_COMP_ID_MISSIONPLANNER;
+
+    qDebug() << "MAGIC QDEBUG"; // FIXME: locked thread
 
     mavlink_msg_mission_request_list_encode_chan(m_context->systemId, m_context->compId, 0,
                                                  &message,
@@ -160,9 +145,15 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     if (!vehicle)
         return;
 
-    Mission* mission = m_downloadingMissions.value(vehicle->id(), nullptr);
+    Mission* mission = m_vehicleMissions.value(vehicle->id(), nullptr);
     if (!mission)
         return;
+
+    if (m_missionStates.value(mission, Idle) != WaitingItem)
+    {
+        qDebug() << vehicle->id() << "mavlink_mission_item_t ignored";
+        return;
+    }
 
     mavlink_mission_item_t item;
     mavlink_msg_mission_item_decode(&message, &item);
@@ -192,19 +183,16 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
         qWarning() << "Unhandled mission item type" << item.command;
     }
 
-    MissionStatus status(item.seq + 1, m_statuses[vehicle->id()].total());
-    m_statuses[vehicle->id()] = status;
-    emit statusUpdate(mission->id(), status);
-
-    if (status.isComplete())
+    mission->updateStatusProgress(item.seq + 1);
+    if (mission->status().isComplete())
     {
-        m_downloadingMissions.remove(vehicle->id());
         this->sendAck(vehicle->id(), MAV_MISSION_ACCEPTED);
+        m_missionStates[mission] = Idle;
     }
     else
     {
         // Request next waypoint
-        this->sendMissionItemRequest(vehicle->id(), status.progress());
+        this->sendMissionItemRequest(vehicle->id(), mission->status().progress());
     }
 }
 
@@ -214,10 +202,14 @@ void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
     if (!vehicle)
         return;
 
+    Mission* mission = m_vehicleMissions.value(vehicle->id(), nullptr);
+    if (!mission)
+        return;
+
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    m_context->pTree->appendProperties(vehicle->id(), { { tmi::wp, mission_current.seq } });
+    mission->setCurrentWaypoint(mission_current.seq);
 }
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
@@ -226,23 +218,24 @@ void MissionHandler::processMissionCount(const mavlink_message_t& message)
     if (!vehicle)
         return;
 
+    Mission* mission = m_vehicleMissions.value(vehicle->id(), nullptr);
+    if (!mission)
+        return;
+
+    if (m_missionStates.value(mission, Idle) != WaitingCount)
+    {
+        qDebug() << vehicle->id() << "mavlink_mission_count_t ignored";
+        return;
+    }
+
     mavlink_mission_count_t mission_count;
     mavlink_msg_mission_count_decode(&message, &mission_count);
 
-    if (!m_obtainedNodes.contains(vehicle->id()))
-        m_obtainedNodes.append(vehicle->id());
+    qDebug() << "processMissionCount" << vehicle->id() << mission_count.count;
 
-    m_context->pTree->appendProperties(vehicle->id(), { { tmi::wpCount, mission_count.count } });
-
-    Mission* mission = m_downloadingMissions.value(vehicle->id(), nullptr);
-    if (mission)
-    {
-        MissionStatus status(0, mission_count.count);
-        m_statuses[vehicle->id()] = status;
-
-        emit statusUpdate(mission->id(), status);
-        this->sendMissionItemRequest(vehicle->id(), status.progress());
-    }
+    mission->updateStatus(MissionStatus::Downloading, 0, mission_count.count);
+    m_missionStates[mission] = WaitingItem;
+    this->sendMissionItemRequest(vehicle->id(), mission->status().progress());
 }
 
 void MissionHandler::processMissionReached(const mavlink_message_t& message)
@@ -257,38 +250,54 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     // TODO: mark waypoint with reached flag
 }
 
+void MissionHandler::onMissionAdded(Mission* mission)
+{
+    m_missionStates[mission] = Idle;
+    m_vehicleMissions.insert(mission->vehicle(), mission);
+
+    connect(mission, &Mission::upload, this, [this, mission]() {
+        this->upload(mission);
+    });
+    connect(mission, &Mission::download, this, [this, mission]() {
+        this->download(mission);
+    });
+    connect(mission, &Mission::cancel, this, [this, mission]() {
+        this->cancel(mission);
+    });
+    connect(mission, &Mission::switchWaypoint, this, [this, mission](int index) {
+        this->sendMissionSetCurrent(mission->vehicle(), index);
+        this->cancel(mission);
+    });
+}
+
+void MissionHandler::onMissionRemoved(Mission* mission)
+{
+    m_missionStates.remove(mission);
+    m_vehicleMissions.remove(mission->vehicle());
+
+    disconnect(mission, nullptr, this, nullptr);
+
+    this->cancel(mission);
+}
+
 void MissionHandler::upload(Mission* mission)
 {
-    if (mission->vehicle().isEmpty())
-        return;
-
-    m_uploadingMissions[mission->vehicle()] = mission;
-    //TODO: this->sendMissionCount(mission->vehicle(), mission->route()->count());
+    int count = mission->route()->count();
+    mission->updateStatus(MissionStatus::Uploading, 0, count);
+    //TODO: this->sendMissionCount(mission->vehicle(), count);
+    m_missionStates[mission] = WaitingRequest;
 }
 
 void MissionHandler::download(Mission* mission)
 {
-    if (mission->vehicle().isEmpty())
-        return;
-
-    m_downloadingMissions[mission->vehicle()] = mission;
+    mission->updateStatus(MissionStatus::Downloading, 0, 0);
     this->sendMissionRequest(mission->vehicle());
+    m_missionStates[mission] = WaitingCount;
 }
 
 void MissionHandler::cancel(Mission* mission)
 {
-    QString node = m_downloadingMissions.key(mission);
-    if (node.length())
-    {
-        m_downloadingMissions.remove(node);
-    }
-
-    node = m_uploadingMissions.key(mission);
-    if (node.length())
-    {
-        m_uploadingMissions.remove(node);
-    }
-
-    m_statuses.remove(node);
-    emit statusUpdate(mission->id(), MissionStatus());
+    // TODO: repeat timers, stop timers
+    mission->updateStatus(MissionStatus::NotActual, 0, 0);
+    m_missionStates[mission] = Idle;
 }

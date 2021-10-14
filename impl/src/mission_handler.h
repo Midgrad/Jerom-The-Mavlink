@@ -14,6 +14,15 @@ class MissionHandler : public IMavlinkHandler
     Q_OBJECT
 
 public:
+    enum State
+    {
+        Idle,
+        WaitingCount,
+        WaitingItem,
+        WaitingRequest,
+        WaitingAck
+    };
+
     MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
                    IVehiclesService* vehiclesService, ICommandsService* commandsService,
                    QObject* parent = nullptr);
@@ -32,10 +41,10 @@ public:
     void processMissionCount(const mavlink_message_t& message);
     void processMissionReached(const mavlink_message_t& message);
 
-signals:
-    void statusUpdate(QVariant missionId, MissionStatus status);
-
 private slots:
+    void onMissionAdded(Mission* mission);
+    void onMissionRemoved(Mission* mission);
+
     void upload(Mission* mission);
     void download(Mission* mission);
     void cancel(Mission* mission);
@@ -43,10 +52,8 @@ private slots:
 private:
     IVehiclesService* const m_vehiclesService;
     MavlinkItemConvertorsPool m_convertors;
-    QStringList m_obtainedNodes;
-    QMap<QString, Mission*> m_downloadingMissions;
-    QMap<QString, Mission*> m_uploadingMissions;
-    QMap<QString, MissionStatus> m_statuses;
+    QMap<QString, Mission*> m_vehicleMissions;
+    QMap<Mission*, State> m_missionStates;
 };
 } // namespace md::domain
 
