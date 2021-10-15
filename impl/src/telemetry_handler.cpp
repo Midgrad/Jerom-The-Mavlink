@@ -61,14 +61,14 @@ void TelemetryHandler::parseMessage(const mavlink_message_t& message)
 
 void TelemetryHandler::processAttitude(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isEmpty())
         return;
 
     mavlink_attitude_t attitude;
     mavlink_msg_attitude_decode(&message, &attitude);
 
-    m_context->pTree->appendProperties(vehicle->id(),
+    m_context->pTree->appendProperties(vehicleId,
                                        {
                                            { tmi::pitch,
                                              utils::fromRadiansToDegrees(attitude.pitch) },
@@ -80,8 +80,8 @@ void TelemetryHandler::processAttitude(const mavlink_message_t& message)
 // FIXME: Ardupilot doesn't send this packet, but we should prioritize this one
 void TelemetryHandler::processAltitude(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isEmpty())
         return;
 
     mavlink_altitude_t altitude;
@@ -89,7 +89,7 @@ void TelemetryHandler::processAltitude(const mavlink_message_t& message)
 
     m_hasAltitudeMessage = true;
 
-    m_context->pTree->appendProperties(vehicle->id(),
+    m_context->pTree->appendProperties(vehicleId,
                                        { { tmi::altitudeAmsl, altitude.altitude_amsl },
                                          { tmi::altitudeRelative, altitude.altitude_relative },
                                          { tmi::altitudeTerrain, altitude.altitude_terrain } });
@@ -97,8 +97,8 @@ void TelemetryHandler::processAltitude(const mavlink_message_t& message)
 
 void TelemetryHandler::processGlobalPosition(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isEmpty())
         return;
 
     mavlink_global_position_int_t global_position;
@@ -115,20 +115,20 @@ void TelemetryHandler::processGlobalPosition(const mavlink_message_t& message)
                           utils::decodeAltitude(global_position.relative_alt));
     }
 
-    m_context->pTree->appendProperties(vehicle->id(), properties);
+    m_context->pTree->appendProperties(vehicleId, properties);
 }
 
 void TelemetryHandler::processHomePosition(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isEmpty())
         return;
 
     mavlink_home_position_t home_position;
     mavlink_msg_home_position_decode(&message, &home_position);
 
     m_context->pTree
-        ->appendProperties(vehicle->id(),
+        ->appendProperties(vehicleId,
                            {
                                { tmi::homeLatitude, utils::decodeLatLon(home_position.latitude) },
                                { tmi::homeLongitude, utils::decodeLatLon(home_position.longitude) },
@@ -139,14 +139,14 @@ void TelemetryHandler::processHomePosition(const mavlink_message_t& message)
 
 void TelemetryHandler::processNavControllerOutput(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isEmpty())
         return;
 
     mavlink_nav_controller_output_t nav_controller_output;
     mavlink_msg_nav_controller_output_decode(&message, &nav_controller_output);
 
-    m_context->pTree->appendProperties(vehicle->id(),
+    m_context->pTree->appendProperties(vehicleId,
                                        { { tmi::desiredRoll, nav_controller_output.nav_roll },
                                          { tmi::desiredPitch, nav_controller_output.nav_pitch },
                                          { tmi::desiredHeading, nav_controller_output.nav_bearing },
@@ -157,14 +157,14 @@ void TelemetryHandler::processNavControllerOutput(const mavlink_message_t& messa
 
 void TelemetryHandler::processVfrHud(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isEmpty())
         return;
 
     mavlink_vfr_hud_t vfr_hud;
     mavlink_msg_vfr_hud_decode(&message, &vfr_hud);
 
-    m_context->pTree->appendProperties(vehicle->id(),
+    m_context->pTree->appendProperties(vehicleId,
                                        { { tmi::ias, vfr_hud.airspeed },
                                          { tmi::tas,
                                            utils::trueAirspeed(vfr_hud.airspeed, vfr_hud.alt) },
@@ -175,14 +175,14 @@ void TelemetryHandler::processVfrHud(const mavlink_message_t& message)
 
 void TelemetryHandler::processGpsRaw(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isEmpty())
         return;
 
     mavlink_gps_raw_int_t gps_raw;
     mavlink_msg_gps_raw_int_decode(&message, &gps_raw);
 
-    m_context->pTree->appendProperties(vehicle->id(),
+    m_context->pTree->appendProperties(vehicleId,
                                        {
                                            { tmi::satellitesVisible, gps_raw.satellites_visible },
                                            { tmi::gpsFix, gps_raw.fix_type },

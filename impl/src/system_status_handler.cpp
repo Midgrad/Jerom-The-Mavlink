@@ -31,8 +31,8 @@ void SystemStatusHandler::parseMessage(const mavlink_message_t& message)
 
 void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isEmpty())
         return;
 
     mavlink_sys_status_t sysStatus;
@@ -124,5 +124,5 @@ void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
 
     // TODO: load, drop rate, errors
 
-    m_context->pTree->appendProperties(vehicle->id(), status);
+    m_context->pTree->appendProperties(vehicleId, status);
 }

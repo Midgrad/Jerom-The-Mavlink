@@ -1,7 +1,6 @@
 #ifndef MISSION_HANDLER_H
 #define MISSION_HANDLER_H
 
-#include "i_command_service.h"
 #include "i_mavlink_handler.h"
 #include "i_missions_service.h"
 #include "i_vehicles_service.h"
@@ -24,17 +23,16 @@ public:
     };
 
     MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
-                   IVehiclesService* vehiclesService, ICommandsService* commandsService,
-                   QObject* parent = nullptr);
+                   IVehiclesService* vehiclesService, QObject* parent = nullptr);
     ~MissionHandler() override;
 
     bool canParse(quint32 msgId) override;
     void parseMessage(const mavlink_message_t& message) override;
 
-    void sendMissionRequest(const QString& node);
-    void sendMissionItemRequest(const QString& node, int index);
-    void sendAck(const QString& node, MAV_MISSION_RESULT type);
-    void sendMissionSetCurrent(const QString& node, int waypoint);
+    void sendMissionRequest(const QString& vehicleId);
+    void sendMissionItemRequest(const QString& vehicleId, int index);
+    void sendAck(const QString& vehicleId, MAV_MISSION_RESULT type);
+    void sendMissionSetCurrent(const QString& vehicleId, int waypoint);
 
     void processMissionItem(const mavlink_message_t& message);
     void processMissionCurrent(const mavlink_message_t& message);
@@ -50,7 +48,6 @@ private slots:
     void cancel(Mission* mission);
 
 private:
-    IVehiclesService* const m_vehiclesService;
     MavlinkItemConvertorsPool m_convertors;
     QMap<QString, Mission*> m_vehicleMissions;
     QMap<Mission*, State> m_missionStates;

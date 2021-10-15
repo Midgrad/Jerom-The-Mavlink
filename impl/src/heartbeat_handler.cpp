@@ -120,12 +120,10 @@ void HeartbeatHandler::parseMessage(const mavlink_message_t& message)
     this->processHeartbeat(message);
 }
 
-void HeartbeatHandler::sendMode(const QString& node, const QString& mode)
+void HeartbeatHandler::sendMode(const QString& vehicleId, const QString& mode)
 {
-    qDebug() << "setMode" << node << mode;
-
-    Vehicle* vehicle = m_vehiclesService->vehicle(node);
-    auto mavId = m_context->vehicles.key(vehicle, 0);
+    qDebug() << "setMode" << vehicleId << mode;
+    auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
 
@@ -145,11 +143,10 @@ void HeartbeatHandler::sendMode(const QString& node, const QString& mode)
     emit sendMessage(message);
 }
 
-void HeartbeatHandler::sendArm(const QString& node, bool arm)
+void HeartbeatHandler::sendArm(const QString& vehicleId, bool arm)
 {
-    qDebug() << "setArm" << node << arm;
-    Vehicle* vehicle = m_vehiclesService->vehicle(node);
-    auto mavId = m_context->vehicles.key(vehicle, 0);
+    qDebug() << "setArm" << vehicleId << arm;
+    auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
 
@@ -171,14 +168,14 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     mavlink_msg_heartbeat_decode(&message, &heartbeat);
 
     // Get or create vehicle
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
+    Vehicle* vehicle = m_vehiclesService->vehicle(m_context->vehicleIds.value(message.sysid));
     // TODO: auto add MAV flag to properties
     if (!vehicle)
     {
         vehicle = new Vehicle(::decodeMavType(heartbeat.type), QString("mav_%1").arg(message.sysid),
                               QString("MAV %1").arg(message.sysid));
         m_vehiclesService->saveVehicle(vehicle);
-        m_context->vehicles.insert(message.sysid, vehicle);
+        m_context->vehicleIds.insert(message.sysid, vehicle->id());
     }
 
     // Vehicle timer and base mode

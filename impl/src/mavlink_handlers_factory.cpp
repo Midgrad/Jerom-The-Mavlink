@@ -25,8 +25,7 @@ QVector<IMavlinkHandler*> MavlinkHandlerFactory::create(MavlinkHandlerContext* c
     QVector<IMavlinkHandler*> handlers;
     handlers.append(new HeartbeatHandler(context, m_vehiclesService, m_commandsService));
     handlers.append(new TelemetryHandler(context));
-    handlers.append(
-        new MissionHandler(context, m_missionsService, m_vehiclesService, m_commandsService));
+    handlers.append(new MissionHandler(context, m_missionsService, m_vehiclesService));
     handlers.append(new SystemStatusHandler(context));
     return handlers;
 }

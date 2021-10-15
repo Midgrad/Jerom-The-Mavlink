@@ -10,10 +10,8 @@
 using namespace md::domain;
 
 MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
-                               IVehiclesService* vehiclesService, ICommandsService* commandsService,
-                               QObject* parent) :
-    IMavlinkHandler(context, parent),
-    m_vehiclesService(vehiclesService)
+                               IVehiclesService* vehiclesService, QObject* parent) :
+    IMavlinkHandler(context, parent)
 {
     // TODO: mission request & creation
 
@@ -51,11 +49,10 @@ void MissionHandler::parseMessage(const mavlink_message_t& message)
     }
 }
 
-void MissionHandler::sendMissionRequest(const QString& node)
+void MissionHandler::sendMissionRequest(const QString& vehicleId)
 {
-    qDebug() << "sendMissionRequest" << node;
-    Vehicle* vehicle = m_vehiclesService->vehicle(node);
-    auto mavId = m_context->vehicles.key(vehicle, 0);
+    qDebug() << "sendMissionRequest" << vehicleId;
+    auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
 
@@ -73,11 +70,10 @@ void MissionHandler::sendMissionRequest(const QString& node)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendMissionItemRequest(const QString& node, int index)
+void MissionHandler::sendMissionItemRequest(const QString& vehicleId, int index)
 {
-    qDebug() << "sendMissionItemRequest" << node << index;
-    Vehicle* vehicle = m_vehiclesService->vehicle(node);
-    auto mavId = m_context->vehicles.key(vehicle, 0);
+    qDebug() << "sendMissionItemRequest" << vehicleId << index;
+    auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
 
@@ -96,11 +92,10 @@ void MissionHandler::sendMissionItemRequest(const QString& node, int index)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendAck(const QString& node, MAV_MISSION_RESULT type)
+void MissionHandler::sendAck(const QString& vehicleId, MAV_MISSION_RESULT type)
 {
-    qDebug() << "sendAck" << node << type;
-    Vehicle* vehicle = m_vehiclesService->vehicle(node);
-    auto mavId = m_context->vehicles.key(vehicle, 0);
+    qDebug() << "sendAck" << vehicleId << type;
+    auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
 
@@ -119,11 +114,10 @@ void MissionHandler::sendAck(const QString& node, MAV_MISSION_RESULT type)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendMissionSetCurrent(const QString& node, int waypoint)
+void MissionHandler::sendMissionSetCurrent(const QString& vehicleId, int waypoint)
 {
-    qDebug() << "sendMissionSetCurrent" << node << waypoint;
-    Vehicle* vehicle = m_vehiclesService->vehicle(node);
-    auto mavId = m_context->vehicles.key(vehicle, 0);
+    qDebug() << "sendMissionSetCurrent" << vehicleId << waypoint;
+    auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
 
@@ -141,24 +135,24 @@ void MissionHandler::sendMissionSetCurrent(const QString& node, int waypoint)
 
 void MissionHandler::processMissionItem(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isNull())
         return;
 
-    Mission* mission = m_vehicleMissions.value(vehicle->id(), nullptr);
+    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
     if (!mission)
         return;
 
     if (m_missionStates.value(mission, Idle) != WaitingItem)
     {
-        qDebug() << vehicle->id() << "mavlink_mission_item_t ignored";
+        qDebug() << vehicleId << "mavlink_mission_item_t ignored";
         return;
     }
 
     mavlink_mission_item_t item;
     mavlink_msg_mission_item_decode(&message, &item);
 
-    qDebug() << "processMissionItem" << vehicle->id() << item.seq;
+    qDebug() << "processMissionItem" << vehicleId << item.seq;
 
     Route* route = mission->route();
     Waypoint* waypoint = nullptr;
@@ -186,23 +180,23 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     mission->updateStatusProgress(item.seq + 1);
     if (mission->status().isComplete())
     {
-        this->sendAck(vehicle->id(), MAV_MISSION_ACCEPTED);
+        this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);
         m_missionStates[mission] = Idle;
     }
     else
     {
         // Request next waypoint
-        this->sendMissionItemRequest(vehicle->id(), mission->status().progress());
+        this->sendMissionItemRequest(vehicleId, mission->status().progress());
     }
 }
 
 void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isNull())
         return;
 
-    Mission* mission = m_vehicleMissions.value(vehicle->id(), nullptr);
+    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
     if (!mission)
         return;
 
@@ -214,34 +208,34 @@ void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isNull())
         return;
 
-    Mission* mission = m_vehicleMissions.value(vehicle->id(), nullptr);
+    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
     if (!mission)
         return;
 
     if (m_missionStates.value(mission, Idle) != WaitingCount)
     {
-        qDebug() << vehicle->id() << "mavlink_mission_count_t ignored";
+        qDebug() << vehicleId << "mavlink_mission_count_t ignored";
         return;
     }
 
     mavlink_mission_count_t mission_count;
     mavlink_msg_mission_count_decode(&message, &mission_count);
 
-    qDebug() << "processMissionCount" << vehicle->id() << mission_count.count;
+    qDebug() << "processMissionCount" << vehicleId << mission_count.count;
 
     mission->updateStatus(MissionStatus::Downloading, 0, mission_count.count);
     m_missionStates[mission] = WaitingItem;
-    this->sendMissionItemRequest(vehicle->id(), mission->status().progress());
+    this->sendMissionItemRequest(vehicleId, mission->status().progress());
 }
 
 void MissionHandler::processMissionReached(const mavlink_message_t& message)
 {
-    Vehicle* vehicle = m_context->vehicles.value(message.sysid, nullptr);
-    if (!vehicle)
+    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    if (vehicleId.isNull())
         return;
 
     mavlink_mission_item_reached_t reached;
