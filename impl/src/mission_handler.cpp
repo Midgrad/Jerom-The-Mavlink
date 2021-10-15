@@ -6,12 +6,14 @@
 #include "mavlink_mission_traits.h"
 #include "mavlink_protocol_helpers.h"
 #include "mavlink_tmi.h"
+#include "utils.h"
 
 using namespace md::domain;
 
 MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
-                               IVehiclesService* vehiclesService, QObject* parent) :
-    IMavlinkHandler(context, parent)
+                               QObject* parent) :
+    IMavlinkHandler(context, parent),
+    m_missionsService(missionsService)
 {
     // TODO: mission request & creation
 
@@ -181,6 +183,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     if (mission->status().isComplete())
     {
         this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);
+        m_missionsService->saveMission(mission);
         m_missionStates[mission] = Idle;
     }
     else
@@ -242,6 +245,22 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
     // TODO: mark waypoint with reached flag
+}
+
+void MissionHandler::onVehicleObtained(Vehicle* vehicle)
+{
+    // Check we already have mission
+    Mission* mission = m_missionsService->missionForVehicle(vehicle->id());
+    if (mission)
+        return;
+
+    // Autocrete mission for new vehicle
+    QString name = tr("%1 mission").arg(vehicle->name());
+    mission = new Mission(mavlink_mission::missionType, utils::nameToId(name), name, vehicle->id());
+    m_missionsService->saveMission(mission);
+
+    // Automaticaly download mission TODO: to settings
+    this->download(mission);
 }
 
 void MissionHandler::onMissionAdded(Mission* mission)

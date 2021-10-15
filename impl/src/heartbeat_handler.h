@@ -28,6 +28,9 @@ public:
 
     void processHeartbeat(const mavlink_message_t& message);
 
+signals:
+    void vehicleObtained(Vehicle* vehicle);
+
 protected:
     void timerEvent(QTimerEvent* event) override;
 

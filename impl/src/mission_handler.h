@@ -23,7 +23,7 @@ public:
     };
 
     MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
-                   IVehiclesService* vehiclesService, QObject* parent = nullptr);
+                   QObject* parent = nullptr);
     ~MissionHandler() override;
 
     bool canParse(quint32 msgId) override;
@@ -39,6 +39,9 @@ public:
     void processMissionCount(const mavlink_message_t& message);
     void processMissionReached(const mavlink_message_t& message);
 
+public slots:
+    void onVehicleObtained(Vehicle* vehicle);
+
 private slots:
     void onMissionAdded(Mission* mission);
     void onMissionRemoved(Mission* mission);
@@ -48,6 +51,7 @@ private slots:
     void cancel(Mission* mission);
 
 private:
+    IMissionsService* const m_missionsService;
     MavlinkItemConvertorsPool m_convertors;
     QMap<QString, Mission*> m_vehicleMissions;
     QMap<Mission*, State> m_missionStates;

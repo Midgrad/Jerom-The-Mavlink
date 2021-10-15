@@ -22,10 +22,16 @@ QVector<IMavlinkHandler*> MavlinkHandlerFactory::create(MavlinkHandlerContext* c
 {
     context->pTree = m_pTree;
 
+    auto heartbeat = new HeartbeatHandler(context, m_vehiclesService, m_commandsService);
+    auto mission = new MissionHandler(context, m_missionsService);
+    // Load mission for new MAVLINK vehicles
+    QObject::connect(heartbeat, &HeartbeatHandler::vehicleObtained, mission,
+                     &MissionHandler::onVehicleObtained);
+
     QVector<IMavlinkHandler*> handlers;
-    handlers.append(new HeartbeatHandler(context, m_vehiclesService, m_commandsService));
+    handlers.append(heartbeat);
+    handlers.append(mission);
     handlers.append(new TelemetryHandler(context));
-    handlers.append(new MissionHandler(context, m_missionsService, m_vehiclesService));
     handlers.append(new SystemStatusHandler(context));
     return handlers;
 }

@@ -176,6 +176,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
                               QString("MAV %1").arg(message.sysid));
         m_vehiclesService->saveVehicle(vehicle);
         m_context->vehicleIds.insert(message.sysid, vehicle->id());
+        emit vehicleObtained(vehicle);
     }
 
     // Vehicle timer and base mode
