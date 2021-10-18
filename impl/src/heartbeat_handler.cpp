@@ -167,12 +167,17 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     mavlink_heartbeat_t heartbeat;
     mavlink_msg_heartbeat_decode(&message, &heartbeat);
 
+    // Ignore generic heartbeat
+    auto type = ::decodeMavType(heartbeat.type);
+    if (type == Vehicle::Generic)
+        return;
+
     // Get or create vehicle
     Vehicle* vehicle = m_vehiclesService->vehicle(m_context->vehicleIds.value(message.sysid));
     // TODO: auto add MAV flag to properties
     if (!vehicle)
     {
-        vehicle = new Vehicle(::decodeMavType(heartbeat.type), QString("mav_%1").arg(message.sysid),
+        vehicle = new Vehicle(type, QString("mav_%1").arg(message.sysid),
                               QString("MAV %1").arg(message.sysid));
         m_vehiclesService->saveVehicle(vehicle);
         m_context->vehicleIds.insert(message.sysid, vehicle->id());
