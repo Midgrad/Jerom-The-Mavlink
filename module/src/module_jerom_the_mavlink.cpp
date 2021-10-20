@@ -41,7 +41,7 @@ void ModuleJeromTheMavlink::init()
 
     data_source::LinkConfiguration configuration(::linksFileName);
     m_transceiver = new domain::MavlinkTranscieverThreaded(
-        new domain::MavlinkTransceiver(configuration.readLinks(), &factory, nullptr), this);
+        new domain::MavlinkTransceiver(configuration.createLinks(), &factory, nullptr), this);
 }
 
 void ModuleJeromTheMavlink::start()

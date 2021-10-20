@@ -13,7 +13,7 @@ class LinkConfiguration
 public:
     LinkConfiguration(const QString& fileName);
 
-    LinkPtrMap readLinks();
+    LinkPtrMap createLinks();
 
 private:
     QScopedPointer<IJsonSource> m_source;

@@ -1,5 +1,7 @@
 #include "link_configuration.h"
 
+#include <QDebug>
+
 #include <QJsonArray>
 #include <QJsonObject>
 
@@ -12,7 +14,7 @@ namespace
 {
 constexpr char type[] = "type";
 constexpr char name[] = "name";
-constexpr char port[] = "port";
+constexpr char localPort[] = "local_port";
 
 } // namespace
 
@@ -21,7 +23,7 @@ LinkConfiguration::LinkConfiguration(const QString& fileName) :
 {
 }
 
-LinkPtrMap LinkConfiguration::readLinks()
+LinkPtrMap LinkConfiguration::createLinks()
 {
     QJsonDocument document = m_source->read();
 
@@ -31,7 +33,17 @@ LinkPtrMap LinkConfiguration::readLinks()
         QJsonObject linkConfig = value.toObject();
 
         loodsman::LinkFactory factory;
-        LinkPtr link(factory.createIp(loodsman::LinkType::udp, linkConfig.value(::port).toInt()));
+
+        QString type = (linkConfig.value(::type).toString());
+        LinkPtr link;
+
+        if (type == "udp")
+            link = LinkPtr(factory.create(loodsman::LinkType::udp, linkConfig.value(::localPort).toInt()));
+        else if (type == "tcp")
+            link = LinkPtr(factory.create(loodsman::LinkType::tcp, linkConfig.value(::localPort).toInt()));
+        else
+            qDebug() << "Wrong link type in " <<  linkConfig.value(::name).toString();
+
 
         if (link)
             links[linkConfig.value(::name).toString()] = link;
