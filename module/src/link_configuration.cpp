@@ -31,7 +31,6 @@ LinkPtrMap LinkConfiguration::readLinks()
         QJsonObject linkConfig = value.toObject();
 
         loodsman::LinkFactory factory;
-        (linkConfig.value(::port).toInt());
         LinkPtr link(factory.createIp(loodsman::LinkType::udp, linkConfig.value(::port).toInt()));
 
         if (link)
