@@ -256,7 +256,8 @@ void MissionHandler::onVehicleObtained(Vehicle* vehicle)
 
     // Autocrete mission for new vehicle
     QString name = tr("%1 mission").arg(vehicle->name());
-    mission = new Mission(mavlink_mission::missionType, utils::nameToId(name), name, vehicle->id());
+    // TODO: uuid
+    mission = new Mission(&mavlink_mission::missionType, utils::nameToId(name), name, vehicle->id());
     m_missionsService->saveMission(mission);
 
     // Automaticaly download mission TODO: to settings
@@ -266,7 +267,7 @@ void MissionHandler::onVehicleObtained(Vehicle* vehicle)
 void MissionHandler::onMissionAdded(Mission* mission)
 {
     m_missionStates[mission] = Idle;
-    m_vehicleMissions.insert(mission->vehicle(), mission);
+    m_vehicleMissions.insert(mission->vehicleId(), mission);
 
     connect(mission, &Mission::upload, this, [this, mission]() {
         this->upload(mission);
@@ -278,7 +279,7 @@ void MissionHandler::onMissionAdded(Mission* mission)
         this->cancel(mission);
     });
     connect(mission, &Mission::switchWaypoint, this, [this, mission](int index) {
-        this->sendMissionSetCurrent(mission->vehicle(), index);
+        this->sendMissionSetCurrent(mission->vehicleId(), index);
         this->cancel(mission);
     });
 }
@@ -286,7 +287,7 @@ void MissionHandler::onMissionAdded(Mission* mission)
 void MissionHandler::onMissionRemoved(Mission* mission)
 {
     m_missionStates.remove(mission);
-    m_vehicleMissions.remove(mission->vehicle());
+    m_vehicleMissions.remove(mission->vehicleId());
 
     disconnect(mission, nullptr, this, nullptr);
 
@@ -304,7 +305,7 @@ void MissionHandler::upload(Mission* mission)
 void MissionHandler::download(Mission* mission)
 {
     mission->updateStatus(MissionStatus::Downloading, 0, 0);
-    this->sendMissionRequest(mission->vehicle());
+    this->sendMissionRequest(mission->vehicleId());
     m_missionStates[mission] = WaitingCount;
 }
 
