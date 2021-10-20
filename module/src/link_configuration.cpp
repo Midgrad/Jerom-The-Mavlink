@@ -4,7 +4,7 @@
 #include <QJsonObject>
 
 #include "json_source_file.h"
-#include "udp_link_factory.h"
+#include "link_factory.h"
 
 using namespace md::data_source;
 
@@ -30,8 +30,9 @@ LinkPtrMap LinkConfiguration::readLinks()
     {
         QJsonObject linkConfig = value.toObject();
 
-        loodsman::UdpLinkFactory factory(linkConfig.value(::port).toInt());
-        LinkPtr link(factory.create());
+        loodsman::LinkFactory factory;
+        (linkConfig.value(::port).toInt());
+        LinkPtr link(factory.createIp(loodsman::LinkType::udp, linkConfig.value(::port).toInt()));
 
         if (link)
             links[linkConfig.value(::name).toString()] = link;
