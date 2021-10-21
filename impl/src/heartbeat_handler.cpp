@@ -177,8 +177,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     // TODO: auto add MAV flag to properties
     if (!vehicle)
     {
-        vehicle = new Vehicle(type, QString("mav_%1").arg(message.sysid),
-                              QString("MAV %1").arg(message.sysid));
+        vehicle = new Vehicle(type, QString("MAV %1").arg(message.sysid));
         m_vehiclesService->saveVehicle(vehicle);
         m_context->vehicleIds.insert(message.sysid, vehicle->id());
         emit vehicleObtained(vehicle);

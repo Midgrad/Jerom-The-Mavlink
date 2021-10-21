@@ -255,9 +255,9 @@ void MissionHandler::onVehicleObtained(Vehicle* vehicle)
         return;
 
     // Autocrete mission for new vehicle
-    QString name = tr("%1 mission").arg(vehicle->name());
+    QString name = tr("%1 Mission").arg(vehicle->name());
     // TODO: uuid
-    mission = new Mission(&mavlink_mission::missionType, utils::nameToId(name), name, vehicle->id());
+    mission = new Mission(&mavlink_mission::missionType, name, vehicle->id());
     m_missionsService->saveMission(mission);
 
     // Automaticaly download mission TODO: to settings
