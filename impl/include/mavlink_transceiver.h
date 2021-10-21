@@ -10,6 +10,7 @@
 
 #include "i_mavlink_handlers_factory.h"
 #include "jerom_traits.h"
+#include "link_transceiver_threaded.h"
 
 namespace md::domain
 {
@@ -29,14 +30,19 @@ protected:
     void timerEvent(QTimerEvent* event) override;
 
 private slots:
-    void receiveData();
-    void parseMessage(const QByteArray& data);
-    void send(const mavlink_message_t& message);
+    void receiveData(const QByteArray& data);
+
+    void sendMessage(const mavlink_message_t& message);
+
+signals:
+    void sendData(const QByteArray& data);
 
 private:
+    void parseMessage(const QByteArray& data);
     int m_timerId = 0;
     MavlinkHandlerContext m_context;
     data_source::LinkPtrMap const m_links;
+    QVector<data_source::LinkTransceiverThreaded*> m_linkTransceiverThreaded;
     QVector<IMavlinkHandler*> const m_handlers;
 };
 } // namespace md::domain

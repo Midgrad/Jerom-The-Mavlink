@@ -38,12 +38,13 @@ LinkPtrMap LinkConfiguration::createLinks()
         LinkPtr link;
 
         if (type == "udp")
-            link = LinkPtr(factory.create(loodsman::LinkType::udp, linkConfig.value(::localPort).toInt()));
+            link = LinkPtr(
+                factory.create(loodsman::LinkType::udp, linkConfig.value(::localPort).toInt()));
         else if (type == "tcp")
-            link = LinkPtr(factory.create(loodsman::LinkType::tcp, linkConfig.value(::localPort).toInt()));
+            link = LinkPtr(
+                factory.create(loodsman::LinkType::tcp, linkConfig.value(::localPort).toInt()));
         else
-            qDebug() << "Wrong link type in " <<  linkConfig.value(::name).toString();
-
+            qWarning() << "Wrong link type in " << linkConfig.value(::name).toString();
 
         if (link)
             links[linkConfig.value(::name).toString()] = link;
