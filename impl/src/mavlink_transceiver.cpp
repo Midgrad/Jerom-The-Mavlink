@@ -67,7 +67,7 @@ void MavlinkTransceiver::timerEvent(QTimerEvent* event)
     //    this->receiveData();
 }
 
-void MavlinkTransceiver::receiveData(const QByteArray& data)
+void MavlinkTransceiver::receiveData(QByteArray data)
 {
     //    qDebug() << "Parsing data";
     this->parseMessage(data);
@@ -93,7 +93,7 @@ void MavlinkTransceiver::parseMessage(const QByteArray& data)
     }
 }
 
-void MavlinkTransceiver::sendMessage(const mavlink_message_t& message)
+void MavlinkTransceiver::sendMessage(mavlink_message_t message)
 {
     quint8 buffer[MAVLINK_MAX_PACKET_LEN];
     int lenght = mavlink_msg_to_send_buffer(buffer, &message);

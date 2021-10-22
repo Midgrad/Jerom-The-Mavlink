@@ -29,20 +29,20 @@ public slots:
 protected:
     void timerEvent(QTimerEvent* event) override;
 
-private slots:
-    void receiveData(const QByteArray& data);
-
-    void sendMessage(const mavlink_message_t& message);
-
 signals:
-    void sendData(const QByteArray& data);
+    void sendData(QByteArray data);
+
+private slots:
+    void receiveData(QByteArray data);
+    void sendMessage(mavlink_message_t message);
 
 private:
     void parseMessage(const QByteArray& data);
+
     int m_timerId = 0;
     MavlinkHandlerContext m_context;
     data_source::LinkPtrMap const m_links;
-    QVector<data_source::LinkTransceiverThreaded*> m_linkTransceiverThreaded;
+    QVector<data_source::ILinkTransceiver*> m_linkTransceiverThreaded;
     QVector<IMavlinkHandler*> const m_handlers;
 };
 } // namespace md::domain

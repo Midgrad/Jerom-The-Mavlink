@@ -24,10 +24,11 @@ public slots:
     //    void timerEvent(QTimerEvent* event) override;
 
 signals:
-    void receivedData(const QByteArray& data);
+    void receivedData(QByteArray data);
 
 private:
     void receiveData();
+    
     data_source::LinkPtr const m_link;
 };
 } // namespace md::data_source

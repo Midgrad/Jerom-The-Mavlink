@@ -5,7 +5,7 @@
 namespace
 {
 constexpr int timeout = 500;
-constexpr char threadName[] = "mavlink_transciever";
+constexpr char threadName[] = "mavlink_transceiver";
 } // namespace
 
 using namespace md::domain;
