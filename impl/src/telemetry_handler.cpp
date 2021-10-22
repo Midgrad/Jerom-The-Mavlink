@@ -61,7 +61,7 @@ void TelemetryHandler::parseMessage(const mavlink_message_t& message)
 
 void TelemetryHandler::processAttitude(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isEmpty())
         return;
 
@@ -80,7 +80,7 @@ void TelemetryHandler::processAttitude(const mavlink_message_t& message)
 // FIXME: Ardupilot doesn't send this packet, but we should prioritize this one
 void TelemetryHandler::processAltitude(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isEmpty())
         return;
 
@@ -97,7 +97,7 @@ void TelemetryHandler::processAltitude(const mavlink_message_t& message)
 
 void TelemetryHandler::processGlobalPosition(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isEmpty())
         return;
 
@@ -120,7 +120,7 @@ void TelemetryHandler::processGlobalPosition(const mavlink_message_t& message)
 
 void TelemetryHandler::processHomePosition(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isEmpty())
         return;
 
@@ -139,7 +139,7 @@ void TelemetryHandler::processHomePosition(const mavlink_message_t& message)
 
 void TelemetryHandler::processNavControllerOutput(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isEmpty())
         return;
 
@@ -157,7 +157,7 @@ void TelemetryHandler::processNavControllerOutput(const mavlink_message_t& messa
 
 void TelemetryHandler::processVfrHud(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isEmpty())
         return;
 
@@ -175,7 +175,7 @@ void TelemetryHandler::processVfrHud(const mavlink_message_t& message)
 
 void TelemetryHandler::processGpsRaw(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isEmpty())
         return;
 

@@ -29,10 +29,10 @@ public:
     bool canParse(quint32 msgId) override;
     void parseMessage(const mavlink_message_t& message) override;
 
-    void sendMissionRequest(const QString& vehicleId);
-    void sendMissionItemRequest(const QString& vehicleId, int index);
-    void sendAck(const QString& vehicleId, MAV_MISSION_RESULT type);
-    void sendMissionSetCurrent(const QString& vehicleId, int waypoint);
+    void sendMissionRequest(const QUuid& vehicleId);
+    void sendMissionItemRequest(const QUuid& vehicleId, int index);
+    void sendAck(const QUuid& vehicleId, MAV_MISSION_RESULT type);
+    void sendMissionSetCurrent(const QUuid& vehicleId, int waypoint);
 
     void processMissionItem(const mavlink_message_t& message);
     void processMissionCurrent(const mavlink_message_t& message);
@@ -53,7 +53,7 @@ private slots:
 private:
     IMissionsService* const m_missionsService;
     MavlinkItemConvertorsPool m_convertors;
-    QMap<QString, Mission*> m_vehicleMissions;
+    QMap<QUuid, Mission*> m_vehicleMissions;
     QMap<Mission*, State> m_missionStates;
 };
 } // namespace md::domain

@@ -51,7 +51,7 @@ void MissionHandler::parseMessage(const mavlink_message_t& message)
     }
 }
 
-void MissionHandler::sendMissionRequest(const QString& vehicleId)
+void MissionHandler::sendMissionRequest(const QUuid& vehicleId)
 {
     qDebug() << "sendMissionRequest" << vehicleId;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
@@ -72,7 +72,7 @@ void MissionHandler::sendMissionRequest(const QString& vehicleId)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendMissionItemRequest(const QString& vehicleId, int index)
+void MissionHandler::sendMissionItemRequest(const QUuid& vehicleId, int index)
 {
     qDebug() << "sendMissionItemRequest" << vehicleId << index;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
@@ -94,7 +94,7 @@ void MissionHandler::sendMissionItemRequest(const QString& vehicleId, int index)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendAck(const QString& vehicleId, MAV_MISSION_RESULT type)
+void MissionHandler::sendAck(const QUuid& vehicleId, MAV_MISSION_RESULT type)
 {
     qDebug() << "sendAck" << vehicleId << type;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
@@ -116,7 +116,7 @@ void MissionHandler::sendAck(const QString& vehicleId, MAV_MISSION_RESULT type)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendMissionSetCurrent(const QString& vehicleId, int waypoint)
+void MissionHandler::sendMissionSetCurrent(const QUuid& vehicleId, int waypoint)
 {
     qDebug() << "sendMissionSetCurrent" << vehicleId << waypoint;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
@@ -137,7 +137,7 @@ void MissionHandler::sendMissionSetCurrent(const QString& vehicleId, int waypoin
 
 void MissionHandler::processMissionItem(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isNull())
         return;
 
@@ -195,7 +195,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
 
 void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isNull())
         return;
 
@@ -211,7 +211,7 @@ void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isNull())
         return;
 
@@ -237,7 +237,7 @@ void MissionHandler::processMissionCount(const mavlink_message_t& message)
 
 void MissionHandler::processMissionReached(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isNull())
         return;
 

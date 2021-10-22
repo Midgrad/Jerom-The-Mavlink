@@ -31,7 +31,7 @@ void SystemStatusHandler::parseMessage(const mavlink_message_t& message)
 
 void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
 {
-    QString vehicleId = m_context->vehicleIds.value(message.sysid);
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
     if (vehicleId.isEmpty())
         return;
 

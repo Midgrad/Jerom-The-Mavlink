@@ -14,6 +14,8 @@ namespace
 {
 constexpr int onlineTimout = 2000;
 
+constexpr char mavId[] = "mavId";
+
 Vehicle::Type decodeMavType(uint8_t type)
 {
     switch (type)
@@ -174,10 +176,23 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
 
     // Get or create vehicle
     Vehicle* vehicle = m_vehiclesService->vehicle(m_context->vehicleIds.value(message.sysid));
-    // TODO: auto add MAV flag to properties
+
+    // TODO: todo with request vehicle with mavId
+    for (Vehicle* vehicleCandidate : m_vehiclesService->vehicles())
+    {
+        quint8 mavIdandidate = vehicleCandidate->parameter(::mavId).toUInt();
+        if (mavIdandidate == message.sysid)
+        {
+            vehicle = vehicleCandidate;
+            m_context->vehicleIds.insert(message.sysid, vehicle->id());
+        }
+    }
+
+    // Create new vehicle on heartbeat from unknown mav
     if (!vehicle)
     {
         vehicle = new Vehicle(type, QString("MAV %1").arg(message.sysid));
+        vehicle->setParameter(::mavId, message.sysid);
         m_vehiclesService->saveVehicle(vehicle);
         m_context->vehicleIds.insert(message.sysid, vehicle->id());
         emit vehicleObtained(vehicle);
@@ -210,7 +225,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
         properties.insert(tmi::mode, modeHelper->customModeToMode(heartbeat.custom_mode));
     }
 
-    m_context->pTree->appendProperties(vehicle->id(), properties);
+    m_context->pTree->appendProperties(vehicle->id().toString(), properties);
 }
 
 void HeartbeatHandler::timerEvent(QTimerEvent* event)
@@ -222,7 +237,7 @@ void HeartbeatHandler::timerEvent(QTimerEvent* event)
 
         Vehicle* vehicle = m_vehicleTimers.key(timer);
         if (vehicle)
-            m_context->pTree->appendProperties(vehicle->id(), { { tmi::online, false } });
+            m_context->pTree->appendProperties(vehicle->id().toString(), { { tmi::online, false } });
 
         timer->stop();
     }
