@@ -16,7 +16,7 @@ struct MavlinkHandlerContext
     quint8 compId = 0;
 
     IPropertyTree* pTree = nullptr;
-    QMap<quint8, QUuid> vehicleIds;
+    QMap<quint8, QVariant> vehicleIds;
 };
 
 class IMavlinkHandler : public QObject

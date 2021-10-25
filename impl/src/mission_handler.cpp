@@ -51,7 +51,7 @@ void MissionHandler::parseMessage(const mavlink_message_t& message)
     }
 }
 
-void MissionHandler::sendMissionRequest(const QUuid& vehicleId)
+void MissionHandler::sendMissionRequest(const QVariant& vehicleId)
 {
     qDebug() << "sendMissionRequest" << vehicleId;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
@@ -72,7 +72,7 @@ void MissionHandler::sendMissionRequest(const QUuid& vehicleId)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendMissionItemRequest(const QUuid& vehicleId, int index)
+void MissionHandler::sendMissionItemRequest(const QVariant& vehicleId, int index)
 {
     qDebug() << "sendMissionItemRequest" << vehicleId << index;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
@@ -94,7 +94,7 @@ void MissionHandler::sendMissionItemRequest(const QUuid& vehicleId, int index)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendAck(const QUuid& vehicleId, MAV_MISSION_RESULT type)
+void MissionHandler::sendAck(const QVariant& vehicleId, MAV_MISSION_RESULT type)
 {
     qDebug() << "sendAck" << vehicleId << type;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
@@ -116,7 +116,7 @@ void MissionHandler::sendAck(const QUuid& vehicleId, MAV_MISSION_RESULT type)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendMissionSetCurrent(const QUuid& vehicleId, int waypoint)
+void MissionHandler::sendMissionSetCurrent(const QVariant& vehicleId, int waypoint)
 {
     qDebug() << "sendMissionSetCurrent" << vehicleId << waypoint;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
@@ -256,7 +256,6 @@ void MissionHandler::onVehicleObtained(Vehicle* vehicle)
 
     // Autocrete mission for new vehicle
     QString name = tr("%1 Mission").arg(vehicle->name());
-    // TODO: uuid
     mission = new Mission(&mavlink_mission::missionType, name, vehicle->id());
     m_missionsService->saveMission(mission);
 
