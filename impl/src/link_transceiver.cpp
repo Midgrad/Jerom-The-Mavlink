@@ -1,22 +1,30 @@
 #include "link_transceiver.h"
 
 #include <QDebug>
+#include <QThread>
+#include <QTimerEvent>
 
 using namespace md::data_source;
 
-LinkTransceiver::LinkTransceiver(const data_source::LinkPtr& link, QObject* parent) :
+namespace
+{
+constexpr int interval = 100;
+} // namespace
+
+LinkTransceiver::LinkTransceiver(const data_source::LinkPtr& link,
+                                 loodsman::LinkFactory* linkFactory, QObject* parent) :
     ILinkTransceiver(parent),
-    m_link(link)
+    m_link(link),
+    m_factory(linkFactory)
+
 {
 }
 
 void LinkTransceiver::start()
 {
-    // FIXME: for testing purposes only
-    while (true)
-    {
-        receiveData();
-    }
+    m_timerId = this->startTimer(::interval);
+
+    receiveData();
 }
 
 void LinkTransceiver::stop()
@@ -24,18 +32,25 @@ void LinkTransceiver::stop()
     emit finished();
 }
 
+void LinkTransceiver::timerEvent(QTimerEvent* event)
+{
+    if (event->timerId() != m_timerId)
+        return QObject::timerEvent(event);
+
+    m_factory->checkHandlers();
+}
+
 void LinkTransceiver::receiveData()
 {
-    std::string received_data;
-    // FIXME: unblocking read
-    received_data = m_link->receive();
-
-    //    qDebug() << "Emitting received data";
-    emit receivedData(QByteArray::fromStdString(received_data));
+    m_link->asyncReceive([this](const std::string& received_data) {
+        emit receivedData(QByteArray::fromStdString(received_data));
+        receiveData();
+    });
 }
 
 void LinkTransceiver::send(const QByteArray& data)
 {
-    //    qDebug() << "Sending data";
-    m_link->send(data.toStdString());
+    m_link->asyncSend(data.toStdString(), [](std::size_t size) {
+        //        qDebug() << "Sent bytes: " << size;
+    });
 }

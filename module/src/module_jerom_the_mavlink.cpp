@@ -39,9 +39,11 @@ void ModuleJeromTheMavlink::init()
 
     domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
 
-    data_source::LinkConfiguration configuration(::linksFileName);
-    m_transceiver = new domain::MavlinkTranscieverThreaded(
-        new domain::MavlinkTransceiver(configuration.createLinks(), &factory, nullptr), this);
+    auto configuration = new data_source::LinkConfiguration(::linksFileName);
+    m_transceiver =
+        new domain::MavlinkTranscieverThreaded(new domain::MavlinkTransceiver(configuration,
+                                                                              &factory, nullptr),
+                                               this);
 }
 
 void ModuleJeromTheMavlink::start()
@@ -57,4 +59,6 @@ void ModuleJeromTheMavlink::done()
     missionService->unregisterMissionType(&domain::mavlink_mission::missionType);
 
     m_transceiver->stop();
+
+    delete m_transceiver;
 }

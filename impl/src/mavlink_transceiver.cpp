@@ -10,13 +10,13 @@ using namespace md::domain;
 
 namespace
 {
-constexpr int interval = 1;
+constexpr int interval = 100;
 } // namespace
 
-MavlinkTransceiver::MavlinkTransceiver(const data_source::LinkPtrMap& links,
+MavlinkTransceiver::MavlinkTransceiver(data_source::LinkConfiguration* configuration,
                                        IMavlinkHandlerFactory* factory, QObject* parent) :
     IMavlinkTransceiver(parent),
-    m_links(links),
+    m_configuration(configuration),
     m_handlers(factory->create(&m_context))
 {
     for (IMavlinkHandler* handler : qAsConst(m_handlers))
@@ -25,9 +25,9 @@ MavlinkTransceiver::MavlinkTransceiver(const data_source::LinkPtrMap& links,
         connect(handler, &IMavlinkHandler::sendMessage, this, &MavlinkTransceiver::sendMessage);
     }
 
-    for (auto link : links)
+    for (const auto& link : m_configuration->links())
     {
-        auto linkT = new data_source::LinkTransceiver(link, nullptr);
+        auto linkT = new data_source::LinkTransceiver(link, m_configuration->factory(), nullptr);
         auto linkTT = new data_source::LinkTransceiverThreaded(linkT, this);
         m_linkTransceiverThreaded.append(linkTT);
 
@@ -40,8 +40,6 @@ MavlinkTransceiver::MavlinkTransceiver(const data_source::LinkPtrMap& links,
 
 void MavlinkTransceiver::start()
 {
-    m_timerId = this->startTimer(::interval);
-
     for (auto thread : m_linkTransceiverThreaded)
     {
         thread->start();
@@ -59,17 +57,8 @@ void MavlinkTransceiver::stop()
     emit finished();
 }
 
-void MavlinkTransceiver::timerEvent(QTimerEvent* event)
+void MavlinkTransceiver::receiveData(const QByteArray& data)
 {
-    if (event->timerId() != m_timerId)
-        return QObject::timerEvent(event);
-
-    //    this->receiveData();
-}
-
-void MavlinkTransceiver::receiveData(QByteArray data)
-{
-    //    qDebug() << "Parsing data";
     this->parseMessage(data);
 }
 
@@ -93,7 +82,7 @@ void MavlinkTransceiver::parseMessage(const QByteArray& data)
     }
 }
 
-void MavlinkTransceiver::sendMessage(mavlink_message_t message)
+void MavlinkTransceiver::sendMessage(const mavlink_message_t& message)
 {
     quint8 buffer[MAVLINK_MAX_PACKET_LEN];
     int lenght = mavlink_msg_to_send_buffer(buffer, &message);
@@ -102,6 +91,5 @@ void MavlinkTransceiver::sendMessage(mavlink_message_t message)
 
     QByteArray data((const char*) buffer, lenght);
 
-    //    qDebug() << "Emitting send data";
     emit sendData(data);
 }
