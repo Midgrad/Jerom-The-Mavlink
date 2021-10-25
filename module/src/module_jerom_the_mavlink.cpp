@@ -26,18 +26,18 @@ void ModuleJeromTheMavlink::init()
     auto pTree = Locator::get<domain::IPropertyTree>();
     Q_ASSERT(pTree);
 
-    auto missionService = Locator::get<domain::IMissionsService>();
+    auto missionService = Locator::get<domain::IMissionsRepository>();
     Q_ASSERT(missionService);
 
-    auto vehiclesService = Locator::get<domain::IVehiclesService>();
-    Q_ASSERT(vehiclesService);
+    auto vehiclesRepository = Locator::get<domain::IVehiclesRepository>();
+    Q_ASSERT(vehiclesRepository);
 
     auto commandsService = Locator::get<domain::ICommandsService>();
     Q_ASSERT(commandsService);
 
     missionService->registerMissionType(&domain::mavlink_mission::missionType);
 
-    domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
+    domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesRepository, commandsService);
 
     data_source::LinkConfiguration configuration(::linksFileName);
     m_transceiver = new domain::MavlinkTranscieverThreaded(
@@ -51,7 +51,7 @@ void ModuleJeromTheMavlink::start()
 
 void ModuleJeromTheMavlink::done()
 {
-    auto missionService = Locator::get<domain::IMissionsService>();
+    auto missionService = Locator::get<domain::IMissionsRepository>();
     Q_ASSERT(missionService);
 
     missionService->unregisterMissionType(&domain::mavlink_mission::missionType);

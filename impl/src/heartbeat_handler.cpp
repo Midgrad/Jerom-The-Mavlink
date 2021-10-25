@@ -77,15 +77,16 @@ std::string decodeState(uint8_t state)
 } // namespace
 
 HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context,
-                                   IVehiclesService* vehiclesService,
+                                   IVehiclesRepository* vehiclesRepository,
                                    ICommandsService* commandsService, QObject* parent) :
     AbstractCommandHandler(context, parent),
-    m_vehiclesService(vehiclesService)
+    m_vehiclesRepository(vehiclesRepository)
 {
-    connect(vehiclesService, &IVehiclesService::vehicleRemoved, this, [this](Vehicle* vehicle) {
-        if (!m_vehicleTimers.contains(vehicle))
-            delete m_vehicleTimers.take(vehicle);
-    });
+    connect(vehiclesRepository, &IVehiclesRepository::vehicleRemoved, this,
+            [this](Vehicle* vehicle) {
+                if (!m_vehicleTimers.contains(vehicle))
+                    delete m_vehicleTimers.take(vehicle);
+            });
 
     commandsService->requestCommand(tmi::setMode)
         ->subscribe(
@@ -175,10 +176,10 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
         return;
 
     // Get or create vehicle
-    Vehicle* vehicle = m_vehiclesService->vehicle(m_context->vehicleIds.value(message.sysid));
+    Vehicle* vehicle = m_vehiclesRepository->vehicle(m_context->vehicleIds.value(message.sysid));
 
     // TODO: todo with request vehicle with mavId
-    for (Vehicle* vehicleCandidate : m_vehiclesService->vehicles())
+    for (Vehicle* vehicleCandidate : m_vehiclesRepository->vehicles())
     {
         quint8 mavIdandidate = vehicleCandidate->parameter(::mavId).toUInt();
         if (mavIdandidate == message.sysid)
@@ -193,7 +194,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     {
         vehicle = new Vehicle(type, QString("MAV %1").arg(message.sysid));
         vehicle->setParameter(::mavId, message.sysid);
-        m_vehiclesService->saveVehicle(vehicle);
+        m_vehiclesRepository->saveVehicle(vehicle);
         m_context->vehicleIds.insert(message.sysid, vehicle->id());
         emit vehicleObtained(vehicle);
     }

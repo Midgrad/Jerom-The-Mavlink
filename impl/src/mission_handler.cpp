@@ -10,15 +10,15 @@
 
 using namespace md::domain;
 
-MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
+MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsRepository* missionsRepository,
                                QObject* parent) :
     IMavlinkHandler(context, parent),
-    m_missionsService(missionsService)
+    m_missionsRepository(missionsRepository)
 {
     // TODO: mission request & creation
 
-    connect(missionsService, &IMissionsService::missionAdded, this, &MissionHandler::onMissionAdded);
-    connect(missionsService, &IMissionsService::missionRemoved, this,
+    connect(missionsRepository, &IMissionsRepository::missionAdded, this, &MissionHandler::onMissionAdded);
+    connect(missionsRepository, &IMissionsRepository::missionRemoved, this,
             &MissionHandler::onMissionRemoved);
 }
 
@@ -183,7 +183,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     if (mission->status().isComplete())
     {
         this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);
-        m_missionsService->saveMission(mission);
+        m_missionsRepository->saveMission(mission);
         m_missionStates[mission] = Idle;
     }
     else
@@ -250,14 +250,14 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
 void MissionHandler::onVehicleObtained(Vehicle* vehicle)
 {
     // Check we already have mission
-    Mission* mission = m_missionsService->missionForVehicle(vehicle->id());
+    Mission* mission = m_missionsRepository->missionForVehicle(vehicle->id());
     if (mission)
         return;
 
     // Autocrete mission for new vehicle
     QString name = tr("%1 Mission").arg(vehicle->name());
     mission = new Mission(&mavlink_mission::missionType, name, vehicle->id());
-    m_missionsService->saveMission(mission);
+    m_missionsRepository->saveMission(mission);
 
     // Automaticaly download mission TODO: to settings
     this->download(mission);
