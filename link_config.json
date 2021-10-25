@@ -2,6 +2,11 @@
 {
     "name": "SITL",
     "type": "udp",
-    "port": 14550
+    "local_port": 14550
+},
+{
+    "name": "SITL_TCP",
+    "type": "tcp",
+    "local_port": 5760
 }
 ]

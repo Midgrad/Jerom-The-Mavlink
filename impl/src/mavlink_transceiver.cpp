@@ -3,29 +3,47 @@
 #include <QDebug>
 #include <QTimerEvent>
 
+#include "link_transceiver.h"
+#include "link_transceiver_threaded.h"
+
 using namespace md::domain;
 
 namespace
 {
-constexpr int interval = 1;
+constexpr int interval = 100;
 } // namespace
 
-MavlinkTransceiver::MavlinkTransceiver(const data_source::LinkPtrMap& links,
+MavlinkTransceiver::MavlinkTransceiver(data_source::LinkConfiguration* configuration,
                                        IMavlinkHandlerFactory* factory, QObject* parent) :
     IMavlinkTransceiver(parent),
-    m_links(links),
+    m_configuration(configuration),
     m_handlers(factory->create(&m_context))
 {
     for (IMavlinkHandler* handler : qAsConst(m_handlers))
     {
         handler->setParent(this);
-        connect(handler, &IMavlinkHandler::sendMessage, this, &MavlinkTransceiver::send);
+        connect(handler, &IMavlinkHandler::sendMessage, this, &MavlinkTransceiver::sendMessage);
+    }
+
+    for (const auto& link : m_configuration->links())
+    {
+        auto linkT = new data_source::LinkTransceiver(link, m_configuration->factory(), nullptr);
+        auto linkTT = new data_source::LinkTransceiverThreaded(linkT, this);
+        m_linkTransceiverThreaded.append(linkTT);
+
+        QObject::connect(linkT, &data_source::LinkTransceiver::receivedData, this,
+                         &domain::MavlinkTransceiver::receiveData);
+        QObject::connect(this, &domain::MavlinkTransceiver::sendData, linkT,
+                         &data_source::LinkTransceiver::send);
     }
 }
 
 void MavlinkTransceiver::start()
 {
-    m_timerId = this->startTimer(::interval);
+    for (auto thread : m_linkTransceiverThreaded)
+    {
+        thread->start();
+    }
 }
 
 void MavlinkTransceiver::stop()
@@ -39,23 +57,9 @@ void MavlinkTransceiver::stop()
     emit finished();
 }
 
-void MavlinkTransceiver::timerEvent(QTimerEvent* event)
+void MavlinkTransceiver::receiveData(const QByteArray& data)
 {
-    if (event->timerId() != m_timerId)
-        return QObject::timerEvent(event);
-
-    this->receiveData();
-}
-
-void MavlinkTransceiver::receiveData()
-{
-    std::string received_data;
-    for (const data_source::LinkPtr& link : qAsConst(m_links))
-    {
-        // FIXME: unblocking read
-        received_data = link->receive();
-        this->parseMessage(QByteArray::fromStdString(received_data));
-    }
+    this->parseMessage(data);
 }
 
 void MavlinkTransceiver::parseMessage(const QByteArray& data)
@@ -78,7 +82,7 @@ void MavlinkTransceiver::parseMessage(const QByteArray& data)
     }
 }
 
-void MavlinkTransceiver::send(const mavlink_message_t& message)
+void MavlinkTransceiver::sendMessage(const mavlink_message_t& message)
 {
     quint8 buffer[MAVLINK_MAX_PACKET_LEN];
     int lenght = mavlink_msg_to_send_buffer(buffer, &message);
@@ -86,8 +90,6 @@ void MavlinkTransceiver::send(const mavlink_message_t& message)
         return;
 
     QByteArray data((const char*) buffer, lenght);
-    for (const data_source::LinkPtr& link : qAsConst(m_links))
-    {
-        link->send(data.toStdString());
-    }
+
+    emit sendData(data);
 }

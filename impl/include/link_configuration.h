@@ -5,6 +5,7 @@
 
 #include "i_json_source.h"
 #include "jerom_traits.h"
+#include "link_factory.h"
 
 namespace md::data_source
 {
@@ -13,9 +14,17 @@ class LinkConfiguration
 public:
     LinkConfiguration(const QString& fileName);
 
-    LinkPtrMap readLinks();
+    LinkPtrMap links();
+    loodsman::LinkFactory* factory();
+
+    void checkHandlers();
+    void runHandlers();
 
 private:
+    LinkPtrMap createLinks();
+
+    loodsman::LinkFactory m_factory;
+    data_source::LinkPtrMap m_links;
     QScopedPointer<IJsonSource> m_source;
 };
 
