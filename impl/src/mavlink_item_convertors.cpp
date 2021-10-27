@@ -26,16 +26,16 @@ class PositionedConvertor : public IMavlinkItemConvertor
 public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
-        waypoint->setAndCheckParameter(mavlink_mission::latitude.name, item.x);
-        waypoint->setAndCheckParameter(mavlink_mission::longitude.name, item.y);
-        waypoint->setAndCheckParameter(mavlink_mission::altitude.name, item.z);
+        waypoint->setAndCheckParameter(mission::latitude.name, item.x);
+        waypoint->setAndCheckParameter(mission::longitude.name, item.y);
+        waypoint->setAndCheckParameter(mission::altitude.name, item.z);
     }
 
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
-        item.x = waypoint->parameter(mavlink_mission::latitude.name).toReal();
-        item.y = waypoint->parameter(mavlink_mission::longitude.name).toReal();
-        item.z = waypoint->parameter(mavlink_mission::altitude.name).toReal();
+        item.x = waypoint->parameter(mission::latitude.name).toReal();
+        item.y = waypoint->parameter(mission::longitude.name).toReal();
+        item.z = waypoint->parameter(mission::altitude.name).toReal();
     }
 };
 
@@ -66,7 +66,7 @@ public:
     {
         waypoint->setType(&mavlink_mission::waypoint);
         PositionedConvertor::itemToWaypoint(item, waypoint);
-        waypoint->setAndCheckParameter(mavlink_mission::relative.name,
+        waypoint->setAndCheckParameter(mission::relative.name,
                                        item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
         waypoint->setAndCheckParameter(mavlink_mission::time.name, item.param1);
         waypoint->setAndCheckParameter(mavlink_mission::radius.name, item.param2);
@@ -78,7 +78,7 @@ public:
     {
         item.command = MAV_CMD_NAV_WAYPOINT;
         PositionedConvertor::waypointToItem(waypoint, item);
-        item.frame = waypoint->parameter(mavlink_mission::relative.name).toBool()
+        item.frame = waypoint->parameter(mission::relative.name).toBool()
                          ? MAV_FRAME_GLOBAL_RELATIVE_ALT
                          : MAV_FRAME_GLOBAL;
         item.param1 = waypoint->parameter(mavlink_mission::time.name).toInt();

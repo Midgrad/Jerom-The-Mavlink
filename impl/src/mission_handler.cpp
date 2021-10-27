@@ -10,14 +10,15 @@
 
 using namespace md::domain;
 
-MissionHandler::MissionHandler(MavlinkHandlerContext* context, IMissionsRepository* missionsRepository,
-                               QObject* parent) :
+MissionHandler::MissionHandler(MavlinkHandlerContext* context,
+                               IMissionsRepository* missionsRepository, QObject* parent) :
     IMavlinkHandler(context, parent),
     m_missionsRepository(missionsRepository)
 {
     // TODO: mission request & creation
 
-    connect(missionsRepository, &IMissionsRepository::missionAdded, this, &MissionHandler::onMissionAdded);
+    connect(missionsRepository, &IMissionsRepository::missionAdded, this,
+            &MissionHandler::onMissionAdded);
     connect(missionsRepository, &IMissionsRepository::missionRemoved, this,
             &MissionHandler::onMissionRemoved);
 }
@@ -164,8 +165,8 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     }
     else
     {
-        waypoint = new Waypoint(item.seq ? tr("WPT %1").arg(item.seq) : QObject::tr("HOME"),
-                                &mavlink_mission::waypoint);
+        waypoint = new Waypoint(&mavlink_mission::waypoint,
+                                item.seq ? tr("WPT %1").arg(item.seq) : QObject::tr("HOME"));
         route->addWaypoint(waypoint);
     }
 
