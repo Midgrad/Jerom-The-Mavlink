@@ -148,7 +148,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
 
     if (m_missionStates.value(mission, Idle) != WaitingItem)
     {
-        qDebug() << vehicleId << "mavlink_mission_item_t ignored";
+        // TODO: target waypoint
         return;
     }
 
@@ -157,7 +157,15 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
 
     qDebug() << "processMissionItem" << vehicleId << item.seq;
 
+    // Get or create route
     Route* route = mission->route();
+    if (!route)
+    {
+        route = new Route(&mavlink_mission::routeType, tr("%1 route").arg(mission->name()));
+        mission->setRoute(route);
+        m_missionsRepository->saveMission(mission);
+    }
+
     Waypoint* waypoint = nullptr;
     if (item.seq < route->count())
     {
@@ -180,7 +188,9 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
         qWarning() << "Unhandled mission item type" << item.command;
     }
 
+    // Update mission progress
     mission->updateStatusProgress(item.seq + 1);
+
     if (mission->missionStatus().isComplete())
     {
         this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);
@@ -256,8 +266,8 @@ void MissionHandler::onVehicleObtained(Vehicle* vehicle)
         return;
 
     // Autocrete mission for new vehicle
-    QString name = tr("%1 Mission").arg(vehicle->name());
-    mission = new Mission(&mavlink_mission::missionType, name, vehicle->id());
+    mission = new Mission(&mavlink_mission::missionType, tr("%1 mission").arg(vehicle->name()),
+                          vehicle->id());
     m_missionsRepository->saveMission(mission);
 
     // Automaticaly download mission TODO: to settings
@@ -296,7 +306,10 @@ void MissionHandler::onMissionRemoved(Mission* mission)
 
 void MissionHandler::upload(Mission* mission)
 {
-    int count = mission->route()->count();
+    int count = mission->route() ? mission->route()->count() : 0;
+    if (!count)
+        return;
+
     mission->updateStatus(MissionStatus::Uploading, 0, count);
     //TODO: this->sendMissionCount(mission->vehicle(), count);
     m_missionStates[mission] = WaitingRequest;
