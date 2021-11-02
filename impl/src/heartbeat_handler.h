@@ -23,8 +23,8 @@ public:
     bool canParse(quint32 msgId) override;
     void parseMessage(const mavlink_message_t& message) override;
 
-    void sendMode(const QString& vehicleId, const QString& mode);
-    void sendArm(const QString& vehicleId, bool arm);
+    void sendMode(const QVariant& vehicleId, const QString& mode);
+    void sendArm(const QVariant& vehicleId, bool arm);
 
     void processHeartbeat(const mavlink_message_t& message);
 

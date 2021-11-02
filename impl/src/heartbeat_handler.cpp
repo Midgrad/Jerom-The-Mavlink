@@ -90,7 +90,7 @@ HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context,
 
     commandsService->requestCommand(tmi::setMode)
         ->subscribe(
-            [this](const QString& target, const QVariantList& args) {
+            [this](const QVariant& target, const QVariantList& args) {
                 if (!args.isEmpty())
                     this->sendMode(target, args.first().toString());
             },
@@ -98,7 +98,7 @@ HeartbeatHandler::HeartbeatHandler(MavlinkHandlerContext* context,
 
     commandsService->requestCommand(tmi::setArmed)
         ->subscribe(
-            [this](const QString& target, const QVariantList& args) {
+            [this](const QVariant& target, const QVariantList& args) {
                 if (!args.isEmpty())
                     this->sendArm(target, args.first().toBool());
             },
@@ -123,7 +123,7 @@ void HeartbeatHandler::parseMessage(const mavlink_message_t& message)
     this->processHeartbeat(message);
 }
 
-void HeartbeatHandler::sendMode(const QString& vehicleId, const QString& mode)
+void HeartbeatHandler::sendMode(const QVariant& vehicleId, const QString& mode)
 {
     qDebug() << "setMode" << vehicleId << mode;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
@@ -146,7 +146,7 @@ void HeartbeatHandler::sendMode(const QString& vehicleId, const QString& mode)
     emit sendMessage(message);
 }
 
-void HeartbeatHandler::sendArm(const QString& vehicleId, bool arm)
+void HeartbeatHandler::sendArm(const QVariant& vehicleId, bool arm)
 {
     qDebug() << "setArm" << vehicleId << arm;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
