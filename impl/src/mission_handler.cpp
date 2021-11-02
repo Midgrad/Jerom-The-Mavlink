@@ -158,12 +158,13 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     qDebug() << "processMissionItem" << vehicleId << item.seq;
 
     // Get or create route
-    Route* route = mission->route();
+    MissionRoute* route = mission->route();
     if (!route)
     {
-        route = new Route(&mavlink_mission::routeType, tr("%1 route").arg(mission->name()));
-        mission->setRoute(route);
+        mission->assignRoute(
+            new Route(&mavlink_mission::routeType, tr("%1 route").arg(mission->name())));
         m_missionsRepository->saveMission(mission);
+        route = mission->route();
     }
 
     Waypoint* waypoint = nullptr;
@@ -189,9 +190,9 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     }
 
     // Update mission progress
-    mission->updateStatusProgress(item.seq + 1);
+    mission->operation()->setProgress(item.seq + 1);
 
-    if (mission->missionStatus().isComplete())
+    if (mission->operation()->isComplete())
     {
         this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);
         m_missionsRepository->saveMission(mission);
@@ -200,7 +201,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     else
     {
         // Request next waypoint
-        this->sendMissionItemRequest(vehicleId, mission->missionStatus().progress());
+        this->sendMissionItemRequest(vehicleId, mission->operation()->progress());
     }
 }
 
@@ -214,7 +215,7 @@ void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
     if (!mission)
         return;
 
-    RouteStatus* routeStatus = mission->routeStatus();
+    MissionRoute* routeStatus = mission->route();
     if (!routeStatus)
         return;
 
@@ -245,9 +246,9 @@ void MissionHandler::processMissionCount(const mavlink_message_t& message)
 
     qDebug() << "processMissionCount" << vehicleId << mission_count.count;
 
-    mission->updateStatus(MissionStatus::Downloading, 0, mission_count.count);
+    mission->operation()->startDownload(mission_count.count);
     m_missionStates[mission] = WaitingItem;
-    this->sendMissionItemRequest(vehicleId, mission->missionStatus().progress());
+    this->sendMissionItemRequest(vehicleId, mission->operation()->progress());
 }
 
 void MissionHandler::processMissionReached(const mavlink_message_t& message)
@@ -260,14 +261,14 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     if (!mission)
         return;
 
-    RouteStatus* routeStatus = mission->routeStatus();
+    MissionRoute* routeStatus = mission->route();
     if (!routeStatus)
         return;
 
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    routeStatus->setWaypointStatus(reached.seq, WaypointStatus::Reached);
+    routeStatus->setWaypointStatus(reached.seq, MissionWaypoint::Reached);
 }
 
 void MissionHandler::onVehicleObtained(Vehicle* vehicle)
@@ -291,29 +292,29 @@ void MissionHandler::onMissionAdded(Mission* mission)
     m_missionStates[mission] = Idle;
     m_vehicleMissions.insert(mission->vehicleId(), mission);
 
-    connect(mission, &Mission::upload, this, [this, mission]() {
+    connect(mission->operation(), &MissionOperation::upload, this, [this, mission]() {
         this->upload(mission);
     });
-    connect(mission, &Mission::download, this, [this, mission]() {
+    connect(mission->operation(), &MissionOperation::download, this, [this, mission]() {
         this->download(mission);
     });
-    connect(mission, &Mission::cancel, this, [this, mission]() {
+    connect(mission->operation(), &MissionOperation::cancel, this, [this, mission]() {
         this->cancel(mission);
     });
 
     // TODO: Immutable
-    auto func = [this, mission](RouteStatus* routeStatus) {
-        connect(routeStatus, &RouteStatus::switchWaypoint, this, [this, mission](int index) {
+    auto func = [this, mission](MissionRoute* routeStatus) {
+        connect(routeStatus, &MissionRoute::switchWaypoint, this, [this, mission](int index) {
             this->sendMissionSetCurrent(mission->vehicleId(), index);
             this->cancel(mission);
         });
     };
 
-    if (mission->routeStatus())
-        func(mission->routeStatus());
+    if (mission->route())
+        func(mission->route());
 
     connect(mission, &Mission::routeChanged, this, [this, mission, func]() {
-        func(mission->routeStatus());
+        func(mission->route());
     });
 }
 
@@ -329,25 +330,24 @@ void MissionHandler::onMissionRemoved(Mission* mission)
 
 void MissionHandler::upload(Mission* mission)
 {
-    int count = mission->route() ? mission->route()->count() : 0;
+    int count = mission->route() ? mission->route()->route()->count() : 0;
     if (!count)
         return;
 
-    mission->updateStatus(MissionStatus::Uploading, 0, count);
+    mission->operation()->startUpload(count);
     //TODO: this->sendMissionCount(mission->vehicle(), count);
     m_missionStates[mission] = WaitingRequest;
 }
 
 void MissionHandler::download(Mission* mission)
 {
-    mission->updateStatus(MissionStatus::Downloading, 0, 0);
-    this->sendMissionRequest(mission->vehicleId());
     m_missionStates[mission] = WaitingCount;
+    this->sendMissionRequest(mission->vehicleId());
 }
 
 void MissionHandler::cancel(Mission* mission)
 {
     // TODO: repeat timers, stop timers
-    mission->updateStatus(MissionStatus::NotActual, 0, 0);
     m_missionStates[mission] = Idle;
+    mission->operation()->stop();
 }
