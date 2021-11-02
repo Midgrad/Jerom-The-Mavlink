@@ -214,10 +214,14 @@ void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
     if (!mission)
         return;
 
+    RouteStatus* routeStatus = mission->routeStatus();
+    if (!routeStatus)
+        return;
+
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    mission->setCurrentWaypoint(mission_current.seq);
+    routeStatus->setCurrentWaypoint(mission_current.seq);
 }
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
@@ -252,10 +256,18 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     if (vehicleId.isNull())
         return;
 
+    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
+    if (!mission)
+        return;
+
+    RouteStatus* routeStatus = mission->routeStatus();
+    if (!routeStatus)
+        return;
+
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    // TODO: mark waypoint with reached flag
+    routeStatus->setWaypointStatus(reached.seq, WaypointStatus::Reached);
 }
 
 void MissionHandler::onVehicleObtained(Vehicle* vehicle)
@@ -288,9 +300,20 @@ void MissionHandler::onMissionAdded(Mission* mission)
     connect(mission, &Mission::cancel, this, [this, mission]() {
         this->cancel(mission);
     });
-    connect(mission, &Mission::switchWaypoint, this, [this, mission](int index) {
-        this->sendMissionSetCurrent(mission->vehicleId(), index);
-        this->cancel(mission);
+
+    // TODO: Immutable
+    auto func = [this, mission](RouteStatus* routeStatus) {
+        connect(routeStatus, &RouteStatus::switchWaypoint, this, [this, mission](int index) {
+            this->sendMissionSetCurrent(mission->vehicleId(), index);
+            this->cancel(mission);
+        });
+    };
+
+    if (mission->routeStatus())
+        func(mission->routeStatus());
+
+    connect(mission, &Mission::routeChanged, this, [this, mission, func]() {
+        func(mission->routeStatus());
     });
 }
 
