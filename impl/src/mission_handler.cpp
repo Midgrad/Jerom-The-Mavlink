@@ -181,7 +181,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     }
 
     mission->updateStatusProgress(item.seq + 1);
-    if (mission->status().isComplete())
+    if (mission->missionStatus().isComplete())
     {
         this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);
         m_missionsRepository->saveMission(mission);
@@ -190,7 +190,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     else
     {
         // Request next waypoint
-        this->sendMissionItemRequest(vehicleId, mission->status().progress());
+        this->sendMissionItemRequest(vehicleId, mission->missionStatus().progress());
     }
 }
 
@@ -233,7 +233,7 @@ void MissionHandler::processMissionCount(const mavlink_message_t& message)
 
     mission->updateStatus(MissionStatus::Downloading, 0, mission_count.count);
     m_missionStates[mission] = WaitingItem;
-    this->sendMissionItemRequest(vehicleId, mission->status().progress());
+    this->sendMissionItemRequest(vehicleId, mission->missionStatus().progress());
 }
 
 void MissionHandler::processMissionReached(const mavlink_message_t& message)
