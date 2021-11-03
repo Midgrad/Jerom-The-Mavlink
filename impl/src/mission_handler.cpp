@@ -31,8 +31,8 @@ bool MissionHandler::canParse(quint32 msgId)
 {
     return (msgId == MAVLINK_MSG_ID_MISSION_CURRENT) || (msgId == MAVLINK_MSG_ID_MISSION_COUNT) ||
            (msgId == MAVLINK_MSG_ID_MISSION_ITEM_REACHED) ||
-           (msgId == MAVLINK_MSG_ID_MISSION_ACK) || (msgId == MAVLINK_MSG_ID_MISSION_ITEM) ||
-           (msgId == MAVLINK_MSG_ID_MISSION_ITEM_INT);
+           (msgId == MAVLINK_MSG_ID_MISSION_ACK) || (msgId == MAVLINK_MSG_ID_MISSION_REQUEST) ||
+           (msgId == MAVLINK_MSG_ID_MISSION_ITEM) || (msgId == MAVLINK_MSG_ID_MISSION_ITEM_INT);
 }
 
 void MissionHandler::parseMessage(const mavlink_message_t& message)
@@ -50,6 +50,8 @@ void MissionHandler::parseMessage(const mavlink_message_t& message)
         return this->processMissionItem(message);
     case MAVLINK_MSG_ID_MISSION_ACK:
         return this->processMissionAck(message);
+    case MAVLINK_MSG_ID_MISSION_REQUEST:
+        return this->processMissionRequest(message);
     default:
         break;
     }
@@ -68,7 +70,9 @@ void MissionHandler::sendMissionRequest(const QVariant& vehicleId)
     request.target_system = mavId;
     request.target_component = MAV_COMP_ID_MISSIONPLANNER;
 
-    qDebug() << "MAGIC QDEBUG"; // FIXME: locked thread
+#ifdef MAVLINK_V2
+    request.mission_type = MAV_MISSION_TYPE_MISSION;
+#endif
 
     mavlink_msg_mission_request_list_encode_chan(m_context->systemId, m_context->compId, 0,
                                                  &message,
@@ -85,6 +89,7 @@ void MissionHandler::sendMissionItemRequest(const QVariant& vehicleId, int index
 
     mavlink_message_t message;
     mavlink_mission_request_t request;
+
     request.target_system = mavId;
     request.target_component = 0;
     request.seq = index;
@@ -107,6 +112,7 @@ void MissionHandler::sendAck(const QVariant& vehicleId, MAV_MISSION_RESULT type)
 
     mavlink_message_t message;
     mavlink_mission_ack_t ack;
+
     ack.target_system = mavId;
     ack.target_component = 0;
     ack.type = type;
@@ -136,6 +142,29 @@ void MissionHandler::sendMissionSetCurrent(const QVariant& vehicleId, int index)
     mavlink_message_t message;
     mavlink_msg_mission_set_current_encode_chan(m_context->systemId, m_context->compId, 0, &message,
                                                 &setCurrent); // TODO: link channel
+    emit sendMessage(message);
+}
+
+void MissionHandler::sendMissionCount(const QVariant& vehicleId, int count)
+{
+    qDebug() << "sendMissionCount" << vehicleId << count;
+    auto mavId = m_context->vehicleIds.key(vehicleId, 0);
+    if (!mavId)
+        return;
+
+    mavlink_mission_count_t countItem;
+
+    countItem.target_system = mavId;
+    countItem.target_component = MAV_COMP_ID_MISSIONPLANNER;
+    countItem.count = count;
+
+#ifdef MAVLINK_V2
+    countItem.mission_type = MAV_MISSION_TYPE_MISSION;
+#endif
+
+    mavlink_message_t message;
+    mavlink_msg_mission_count_encode_chan(m_context->systemId, m_context->compId, 0, &message,
+                                          &countItem); // TODO: link channel
     emit sendMessage(message);
 }
 
@@ -175,6 +204,10 @@ void MissionHandler::sendMissionItem(const QVariant& vehicleId, Waypoint* waypoi
 
 void MissionHandler::processMissionAck(const mavlink_message_t& message)
 {
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
+    if (vehicleId.isNull())
+        return;
+
     mavlink_mission_ack_t ack;
     mavlink_msg_mission_ack_decode(&message, &ack);
 
@@ -182,6 +215,61 @@ void MissionHandler::processMissionAck(const mavlink_message_t& message)
         qDebug() << "Accepted";
     else
         qDebug() << "Denied" << ack.type;
+
+    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
+    if (!mission || !mission->route())
+        return;
+
+    if (m_missionStates.value(mission, Idle) == WaitingAck && mission->route()->count())
+    {
+        if (ack.type == MAV_MISSION_ACCEPTED)
+            mission->route()->waypoints().last()->setConfirmed(true);
+
+        mission->operation()->stop();
+        m_missionStates[mission] = Idle;
+    }
+}
+
+void MissionHandler::processMissionRequest(const mavlink_message_t& message)
+{
+    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
+    if (vehicleId.isNull())
+        return;
+
+    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
+    if (!mission || !mission->route())
+        return;
+
+    if (m_missionStates.value(mission, Idle) != WaitingRequest)
+    {
+        qDebug() << "Got unexpexcted mission request";
+        return;
+    }
+
+    mavlink_mission_request_t request;
+    mavlink_msg_mission_request_decode(&message, &request);
+
+    // Mark previous waypoint as confirmed
+    if (request.seq > 0)
+    {
+        Waypoint* previousWaypoint = mission->route()->waypoint(request.seq - 1);
+        if (previousWaypoint)
+            previousWaypoint->setConfirmed(true);
+    }
+
+    Waypoint* waypoint = mission->route()->waypoint(request.seq);
+    if (!waypoint)
+        return;
+
+    // Update mission progress
+    mission->operation()->setProgress(request.seq + 1);
+
+    // Waiting ack after last waypoint send
+    if (request.seq == mission->route()->count() - 1)
+        m_missionStates[mission] = WaitingAck;
+
+    // Send reqested waypoint
+    this->sendMissionItem(vehicleId, waypoint, request.seq);
 }
 
 void MissionHandler::processMissionItem(const mavlink_message_t& message)
@@ -399,8 +487,8 @@ void MissionHandler::upload(Mission* mission)
         return;
 
     mission->operation()->startUpload(count);
-    //TODO: this->sendMissionCount(mission->vehicle(), count);
     m_missionStates[mission] = WaitingRequest;
+    this->sendMissionCount(mission->vehicleId(), count);
 }
 
 void MissionHandler::download(Mission* mission)

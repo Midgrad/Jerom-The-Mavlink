@@ -33,9 +33,11 @@ public:
     void sendMissionItemRequest(const QVariant& vehicleId, int index);
     void sendAck(const QVariant& vehicleId, MAV_MISSION_RESULT type);
     void sendMissionSetCurrent(const QVariant& vehicleId, int index);
+    void sendMissionCount(const QVariant& vehicleId, int count);
     void sendMissionItem(const QVariant& vehicleId, Waypoint* waypoint, int index);
 
     void processMissionAck(const mavlink_message_t& message);
+    void processMissionRequest(const mavlink_message_t& message);
     void processMissionItem(const mavlink_message_t& message);
     void processMissionCurrent(const mavlink_message_t& message);
     void processMissionCount(const mavlink_message_t& message);
