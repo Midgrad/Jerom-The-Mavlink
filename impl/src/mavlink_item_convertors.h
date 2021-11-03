@@ -26,7 +26,7 @@ public:
     IMavlinkItemConvertor* convertor(uint16_t commandType);
 
 private:
-    const QMap<const WaypointType*, IMavlinkItemConvertor*> m_convertors;
+    const QMap<QString, IMavlinkItemConvertor*> m_convertors;
 };
 
 } // namespace md::domain

@@ -32,8 +32,10 @@ public:
     void sendMissionRequest(const QVariant& vehicleId);
     void sendMissionItemRequest(const QVariant& vehicleId, int index);
     void sendAck(const QVariant& vehicleId, MAV_MISSION_RESULT type);
-    void sendMissionSetCurrent(const QVariant& vehicleId, int waypoint);
+    void sendMissionSetCurrent(const QVariant& vehicleId, int index);
+    void sendMissionItem(const QVariant& vehicleId, Waypoint* waypoint, int index);
 
+    void processMissionAck(const mavlink_message_t& message);
     void processMissionItem(const mavlink_message_t& message);
     void processMissionCurrent(const mavlink_message_t& message);
     void processMissionCount(const mavlink_message_t& message);
@@ -46,6 +48,7 @@ private slots:
     void onMissionAdded(Mission* mission);
     void onMissionRemoved(Mission* mission);
 
+    void uploadItem(Mission* mission, int index);
     void upload(Mission* mission);
     void download(Mission* mission);
     void cancel(Mission* mission);

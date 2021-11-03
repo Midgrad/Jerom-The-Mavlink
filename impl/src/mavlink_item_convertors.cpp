@@ -9,13 +9,13 @@ using namespace md::domain;
 
 namespace
 {
-const QMap<uint16_t, const WaypointType*> commandTypes = {
-    { MAV_CMD_DO_SET_HOME, &mavlink_mission::home },
-    { MAV_CMD_NAV_WAYPOINT, &mavlink_mission::waypoint },
-    { MAV_CMD_NAV_TAKEOFF, &mavlink_mission::takeoff },
-    { MAV_CMD_NAV_LAND, &mavlink_mission::landing },
-    { MAV_CMD_NAV_LOITER_TURNS, &mavlink_mission::loiterTurns },
-    { MAV_CMD_NAV_LOITER_TO_ALT, &mavlink_mission::loiterAlt }
+const QMap<uint16_t, QString> commandTypes = {
+    { MAV_CMD_DO_SET_HOME, mavlink_mission::home.name },
+    { MAV_CMD_NAV_WAYPOINT, mavlink_mission::waypoint.name },
+    { MAV_CMD_NAV_TAKEOFF, mavlink_mission::takeoff.name },
+    { MAV_CMD_NAV_LAND, mavlink_mission::landing.name },
+    { MAV_CMD_NAV_LOITER_TURNS, mavlink_mission::loiterTurns.name },
+    { MAV_CMD_NAV_LOITER_TO_ALT, mavlink_mission::loiterAlt.name }
 };
 }
 
@@ -55,6 +55,9 @@ public:
         item.command = MAV_CMD_DO_SET_HOME;
         PositionedConvertor::waypointToItem(waypoint, item);
         item.frame = MAV_FRAME_GLOBAL;
+        item.param1 = 0;
+        item.param2 = 0;
+        item.param3 = 0;
         item.param4 = waypoint->parameter(mavlink_mission::yaw.name).toReal();
     }
 };
@@ -104,6 +107,8 @@ public:
         item.command = MAV_CMD_NAV_TAKEOFF;
         WaypointConvertor::waypointToItem(waypoint, item);
         item.param1 = waypoint->parameter(mavlink_mission::pitch.name).toReal();
+        item.param2 = 0;
+        item.param3 = 0;
         item.param4 = waypoint->parameter(mavlink_mission::yaw.name).toReal();
     }
 };
@@ -125,6 +130,8 @@ public:
         item.command = MAV_CMD_NAV_LAND;
         WaypointConvertor::waypointToItem(waypoint, item);
         item.param1 = waypoint->parameter(mavlink_mission::abortAltitude.name).toReal();
+        item.param2 = 0;
+        item.param3 = 0;
         item.param4 = waypoint->parameter(mavlink_mission::yaw.name).toReal();
     }
 };
@@ -147,9 +154,11 @@ public:
         item.command = MAV_CMD_NAV_LOITER_TURNS;
         WaypointConvertor::waypointToItem(waypoint, item);
         item.param1 = waypoint->parameter(mavlink_mission::loops.name).toInt();
+        item.param2 = 0;
         auto radius = waypoint->parameter(mavlink_mission::radius.name).toReal();
         item.param3 = waypoint->parameter(mavlink_mission::clockwise.name).toBool() ? radius
                                                                                     : -radius;
+        item.param4 = 0;
     }
 };
 
@@ -169,21 +178,24 @@ public:
     {
         item.command = MAV_CMD_NAV_LOITER_TO_ALT;
         WaypointConvertor::waypointToItem(waypoint, item);
+        item.param1 = 0;
         auto radius = waypoint->parameter(mavlink_mission::radius.name).toReal();
         item.param2 = waypoint->parameter(mavlink_mission::clockwise.name).toBool() ? radius
                                                                                     : -radius;
+        item.param3 = 0;
+        item.param4 = 0;
     }
 };
 } // namespace md::domain
 
 MavlinkItemConvertorsPool::MavlinkItemConvertorsPool() :
     m_convertors({
-        { &mavlink_mission::home, new HomeConvertor() },
-        { &mavlink_mission::waypoint, new WaypointConvertor() },
-        { &mavlink_mission::takeoff, new TakeoffConvertor() },
-        { &mavlink_mission::landing, new LandingConvertor() },
-        { &mavlink_mission::loiterTurns, new LoiterTurnsConvertor() },
-        { &mavlink_mission::loiterAlt, new LoiterAltConvertor() },
+        { mavlink_mission::home.name, new HomeConvertor() },
+        { mavlink_mission::waypoint.name, new WaypointConvertor() },
+        { mavlink_mission::takeoff.name, new TakeoffConvertor() },
+        { mavlink_mission::landing.name, new LandingConvertor() },
+        { mavlink_mission::loiterTurns.name, new LoiterTurnsConvertor() },
+        { mavlink_mission::loiterAlt.name, new LoiterAltConvertor() },
     })
 {
 }
@@ -195,7 +207,7 @@ MavlinkItemConvertorsPool::~MavlinkItemConvertorsPool()
 
 IMavlinkItemConvertor* MavlinkItemConvertorsPool::convertor(const WaypointType* type)
 {
-    return m_convertors.value(type, nullptr);
+    return m_convertors.value(type->name, nullptr);
 }
 
 IMavlinkItemConvertor* MavlinkItemConvertorsPool::convertor(uint16_t commandType)

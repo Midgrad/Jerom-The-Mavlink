@@ -31,7 +31,8 @@ bool MissionHandler::canParse(quint32 msgId)
 {
     return (msgId == MAVLINK_MSG_ID_MISSION_CURRENT) || (msgId == MAVLINK_MSG_ID_MISSION_COUNT) ||
            (msgId == MAVLINK_MSG_ID_MISSION_ITEM_REACHED) ||
-           (msgId == MAVLINK_MSG_ID_MISSION_ITEM) || (msgId == MAVLINK_MSG_ID_MISSION_ITEM_INT);
+           (msgId == MAVLINK_MSG_ID_MISSION_ACK) || (msgId == MAVLINK_MSG_ID_MISSION_ITEM) ||
+           (msgId == MAVLINK_MSG_ID_MISSION_ITEM_INT);
 }
 
 void MissionHandler::parseMessage(const mavlink_message_t& message)
@@ -47,6 +48,8 @@ void MissionHandler::parseMessage(const mavlink_message_t& message)
     case MAVLINK_MSG_ID_MISSION_ITEM:
     case MAVLINK_MSG_ID_MISSION_ITEM_INT:
         return this->processMissionItem(message);
+    case MAVLINK_MSG_ID_MISSION_ACK:
+        return this->processMissionAck(message);
     default:
         break;
     }
@@ -117,23 +120,68 @@ void MissionHandler::sendAck(const QVariant& vehicleId, MAV_MISSION_RESULT type)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendMissionSetCurrent(const QVariant& vehicleId, int waypoint)
+void MissionHandler::sendMissionSetCurrent(const QVariant& vehicleId, int index)
 {
-    qDebug() << "sendMissionSetCurrent" << vehicleId << waypoint;
+    qDebug() << "sendMissionSetCurrent" << vehicleId << index;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
 
-    mavlink_message_t message;
     mavlink_mission_set_current_t setCurrent;
 
     setCurrent.target_system = mavId;
     setCurrent.target_component = MAV_COMP_ID_MISSIONPLANNER;
-    setCurrent.seq = waypoint;
+    setCurrent.seq = index;
 
+    mavlink_message_t message;
     mavlink_msg_mission_set_current_encode_chan(m_context->systemId, m_context->compId, 0, &message,
                                                 &setCurrent); // TODO: link channel
     emit sendMessage(message);
+}
+
+void MissionHandler::sendMissionItem(const QVariant& vehicleId, Waypoint* waypoint, int index)
+{
+    qDebug() << "sendMissionItem" << vehicleId << index;
+    auto mavId = m_context->vehicleIds.key(vehicleId, 0);
+    if (!mavId)
+        return;
+
+    auto convertor = m_convertors.convertor(waypoint->type());
+    if (!convertor)
+    {
+        qWarning() << "Unhandled waypoint type" << waypoint->type()->name;
+        return;
+    }
+
+    mavlink_mission_item_t item;
+
+    item.target_system = mavId;
+    item.target_component = MAV_COMP_ID_MISSIONPLANNER;
+    item.seq = index;
+    item.current = waypoint->current();
+    item.autocontinue = true; // TODO: is last
+
+#ifdef MAVLINK_V2
+    item.mission_type = MAV_MISSION_TYPE_MISSION;
+#endif
+
+    convertor->waypointToItem(waypoint, item);
+
+    mavlink_message_t message;
+    mavlink_msg_mission_item_encode_chan(m_context->systemId, m_context->compId, 0, &message,
+                                         &item); // TODO: link channel
+    emit sendMessage(message);
+}
+
+void MissionHandler::processMissionAck(const mavlink_message_t& message)
+{
+    mavlink_mission_ack_t ack;
+    mavlink_msg_mission_ack_decode(&message, &ack);
+
+    if (ack.type == MAV_MISSION_ACCEPTED)
+        qDebug() << "Accepted";
+    else
+        qDebug() << "Denied" << ack.type;
 }
 
 void MissionHandler::processMissionItem(const mavlink_message_t& message)
@@ -270,7 +318,9 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    route->waypoint(reached.seq)->setReached(true);
+    Waypoint* wpt = route->waypoint(reached.seq);
+    if (wpt)
+        wpt->setReached(true);
 }
 
 void MissionHandler::onVehicleObtained(Vehicle* vehicle)
@@ -294,6 +344,9 @@ void MissionHandler::onMissionAdded(Mission* mission)
     m_missionStates[mission] = Idle;
     m_vehicleMissions.insert(mission->vehicleId(), mission);
 
+    connect(mission->operation(), &MissionOperation::uploadItem, this, [this, mission](int index) {
+        this->uploadItem(mission, index);
+    });
     connect(mission->operation(), &MissionOperation::upload, this, [this, mission]() {
         this->upload(mission);
     });
@@ -328,6 +381,15 @@ void MissionHandler::onMissionRemoved(Mission* mission)
     disconnect(mission, nullptr, this, nullptr);
 
     this->cancel(mission);
+}
+
+void MissionHandler::uploadItem(Mission* mission, int index)
+{
+    Waypoint* wpt = mission->route() ? mission->route()->waypoint(index) : nullptr;
+    if (!wpt)
+        return;
+
+    this->sendMissionItem(mission->vehicleId(), wpt, index);
 }
 
 void MissionHandler::upload(Mission* mission)
