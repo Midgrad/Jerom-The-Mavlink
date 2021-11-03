@@ -183,12 +183,12 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     if (convertor)
     {
         convertor->itemToWaypoint(item, waypoint);
-        waypoint->setState(Waypoint::Normal);
+        waypoint->setConfirmed(true);
     }
     else
     {
         qWarning() << "Unhandled mission item type" << item.command;
-        waypoint->setState(Waypoint::Unconfirmed);
+        waypoint->setConfirmed(false);
     }
 
     // Update mission progress
@@ -270,7 +270,7 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    route->waypoint(reached.seq)->setState(Waypoint::Reached);
+    route->waypoint(reached.seq)->setReached(true);
 }
 
 void MissionHandler::onVehicleObtained(Vehicle* vehicle)
