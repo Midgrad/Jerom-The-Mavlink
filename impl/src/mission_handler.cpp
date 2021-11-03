@@ -158,7 +158,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     qDebug() << "processMissionItem" << vehicleId << item.seq;
 
     // Get or create route
-    MissionRoute* route = mission->route();
+    Route* route = mission->route();
     if (!route)
     {
         mission->assignRoute(
@@ -183,10 +183,12 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     if (convertor)
     {
         convertor->itemToWaypoint(item, waypoint);
+        waypoint->setState(Waypoint::Normal);
     }
     else
     {
         qWarning() << "Unhandled mission item type" << item.command;
+        waypoint->setState(Waypoint::Unconfirmed);
     }
 
     // Update mission progress
@@ -215,14 +217,14 @@ void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
     if (!mission)
         return;
 
-    MissionRoute* routeStatus = mission->route();
-    if (!routeStatus)
+    Route* route = mission->route();
+    if (!route)
         return;
 
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    routeStatus->setCurrentWaypoint(mission_current.seq);
+    route->setCurrentWaypointIndex(mission_current.seq);
 }
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
@@ -261,14 +263,14 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     if (!mission)
         return;
 
-    MissionRoute* routeStatus = mission->route();
-    if (!routeStatus)
+    Route* route = mission->route();
+    if (!route)
         return;
 
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    routeStatus->setWaypointStatus(reached.seq, MissionWaypoint::Reached);
+    route->waypoint(reached.seq)->setState(Waypoint::Reached);
 }
 
 void MissionHandler::onVehicleObtained(Vehicle* vehicle)
@@ -303,8 +305,8 @@ void MissionHandler::onMissionAdded(Mission* mission)
     });
 
     // TODO: Immutable
-    auto func = [this, mission](MissionRoute* routeStatus) {
-        connect(routeStatus, &MissionRoute::switchWaypoint, this, [this, mission](int index) {
+    auto func = [this, mission](Route* route) {
+        connect(route, &Route::switchWaypoint, this, [this, mission](int index) {
             this->sendMissionSetCurrent(mission->vehicleId(), index);
             this->cancel(mission);
         });
@@ -330,7 +332,7 @@ void MissionHandler::onMissionRemoved(Mission* mission)
 
 void MissionHandler::upload(Mission* mission)
 {
-    int count = mission->route() ? mission->route()->route()->count() : 0;
+    int count = mission->route() ? mission->route()->count() : 0;
     if (!count)
         return;
 
