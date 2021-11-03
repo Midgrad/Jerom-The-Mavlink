@@ -91,13 +91,15 @@ public:
     }
 };
 
-class TakeoffConvertor : public WaypointConvertor
+class TakeoffConvertor : public PositionedConvertor
 {
 public:
+    /* Takeoff from ground / hand. Vehicles that support multiple takeoff modes (e.g. VTOL quadplane) should take off using the currently configured mode.
+     * Yaw angle (if magnetometer present), ignored without magnetometer. NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.).| Latitude| Longitude| Altitude|  */
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&mavlink_mission::takeoff);
-        WaypointConvertor::itemToWaypoint(item, waypoint);
+        PositionedConvertor::itemToWaypoint(item, waypoint);
         waypoint->setAndCheckParameter(mavlink_mission::pitch.name, item.param1);
         waypoint->setAndCheckParameter(mavlink_mission::yaw.name, item.param4);
     }
@@ -105,7 +107,7 @@ public:
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_TAKEOFF;
-        WaypointConvertor::waypointToItem(waypoint, item);
+        PositionedConvertor::waypointToItem(waypoint, item);
         item.param1 = waypoint->parameter(mavlink_mission::pitch.name).toReal();
         item.param2 = 0;
         item.param3 = 0;

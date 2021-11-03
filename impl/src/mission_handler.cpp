@@ -315,7 +315,8 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
         route->addWaypoint(waypoint);
     }
 
-    auto convertor = m_convertors.convertor(item.command);
+    // APM "eats" home's type
+    auto convertor = m_convertors.convertor(item.seq ? item.command : MAV_CMD_DO_SET_HOME);
     if (convertor)
     {
         convertor->itemToWaypoint(item, waypoint);
