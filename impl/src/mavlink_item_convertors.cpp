@@ -26,6 +26,8 @@ class PositionedConvertor : public IMavlinkItemConvertor
 public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
+        waypoint->setAndCheckParameter(mission::relative.name,
+                                       item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
         waypoint->setAndCheckParameter(mission::latitude.name, item.x);
         waypoint->setAndCheckParameter(mission::longitude.name, item.y);
         waypoint->setAndCheckParameter(mission::altitude.name, item.z);
@@ -33,6 +35,9 @@ public:
 
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
+        item.frame = waypoint->parameter(mission::relative.name).toBool()
+                         ? MAV_FRAME_GLOBAL_RELATIVE_ALT
+                         : MAV_FRAME_GLOBAL;
         item.x = waypoint->parameter(mission::latitude.name).toReal();
         item.y = waypoint->parameter(mission::longitude.name).toReal();
         item.z = waypoint->parameter(mission::altitude.name).toReal();
@@ -54,7 +59,6 @@ public:
     {
         item.command = MAV_CMD_DO_SET_HOME;
         PositionedConvertor::waypointToItem(waypoint, item);
-        item.frame = MAV_FRAME_GLOBAL;
         item.param1 = 0;
         item.param2 = 0;
         item.param3 = 0;
@@ -69,8 +73,6 @@ public:
     {
         waypoint->setType(&mavlink_mission::waypoint);
         PositionedConvertor::itemToWaypoint(item, waypoint);
-        waypoint->setAndCheckParameter(mission::relative.name,
-                                       item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
         waypoint->setAndCheckParameter(mavlink_mission::time.name, item.param1);
         waypoint->setAndCheckParameter(mavlink_mission::radius.name, item.param2);
         waypoint->setAndCheckParameter(mavlink_mission::passRadius.name, item.param3);
@@ -81,9 +83,6 @@ public:
     {
         item.command = MAV_CMD_NAV_WAYPOINT;
         PositionedConvertor::waypointToItem(waypoint, item);
-        item.frame = waypoint->parameter(mission::relative.name).toBool()
-                         ? MAV_FRAME_GLOBAL_RELATIVE_ALT
-                         : MAV_FRAME_GLOBAL;
         item.param1 = waypoint->parameter(mavlink_mission::time.name).toInt();
         item.param2 = waypoint->parameter(mavlink_mission::radius.name).toReal();
         item.param3 = waypoint->parameter(mavlink_mission::passRadius.name).toReal();
@@ -115,13 +114,13 @@ public:
     }
 };
 
-class LandingConvertor : public WaypointConvertor
+class LandingConvertor : public PositionedConvertor
 {
 public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&mavlink_mission::landing);
-        WaypointConvertor::itemToWaypoint(item, waypoint);
+        PositionedConvertor::itemToWaypoint(item, waypoint);
         waypoint->setAndCheckParameter(mavlink_mission::abortAltitude.name, item.param1);
         waypoint->setAndCheckParameter(mavlink_mission::yaw.name, item.param4);
         // NOTE: Precision land mode
@@ -130,7 +129,7 @@ public:
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_LAND;
-        WaypointConvertor::waypointToItem(waypoint, item);
+        PositionedConvertor::waypointToItem(waypoint, item);
         item.param1 = waypoint->parameter(mavlink_mission::abortAltitude.name).toReal();
         item.param2 = 0;
         item.param3 = 0;
@@ -138,13 +137,13 @@ public:
     }
 };
 
-class LoiterTurnsConvertor : public WaypointConvertor
+class LoiterTurnsConvertor : public PositionedConvertor
 {
 public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&mavlink_mission::loiterTurns);
-        WaypointConvertor::itemToWaypoint(item, waypoint);
+        PositionedConvertor::itemToWaypoint(item, waypoint);
         waypoint->setAndCheckParameter(mavlink_mission::loops.name, item.param1);
         waypoint->setAndCheckParameter(mavlink_mission::clockwise.name, item.param3 > 0);
         waypoint->setAndCheckParameter(mavlink_mission::radius.name, item.param3);
@@ -154,7 +153,7 @@ public:
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_LOITER_TURNS;
-        WaypointConvertor::waypointToItem(waypoint, item);
+        PositionedConvertor::waypointToItem(waypoint, item);
         item.param1 = waypoint->parameter(mavlink_mission::loops.name).toInt();
         item.param2 = 0;
         auto radius = waypoint->parameter(mavlink_mission::radius.name).toReal();
@@ -164,13 +163,13 @@ public:
     }
 };
 
-class LoiterAltConvertor : public WaypointConvertor
+class LoiterAltConvertor : public PositionedConvertor
 {
 public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&mavlink_mission::loiterAlt);
-        WaypointConvertor::itemToWaypoint(item, waypoint);
+        PositionedConvertor::itemToWaypoint(item, waypoint);
         waypoint->setAndCheckParameter(mavlink_mission::clockwise.name, item.param2 > 0);
         waypoint->setAndCheckParameter(mavlink_mission::radius.name, item.param2);
         // NOTE: Heading Required, Xtrack Location
@@ -179,7 +178,7 @@ public:
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_LOITER_TO_ALT;
-        WaypointConvertor::waypointToItem(waypoint, item);
+        PositionedConvertor::waypointToItem(waypoint, item);
         item.param1 = 0;
         auto radius = waypoint->parameter(mavlink_mission::radius.name).toReal();
         item.param2 = waypoint->parameter(mavlink_mission::clockwise.name).toBool() ? radius

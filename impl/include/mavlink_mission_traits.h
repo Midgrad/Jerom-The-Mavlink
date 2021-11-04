@@ -16,7 +16,8 @@ const Parameter yaw = { "yaw", Parameter::Real, qQNaN() };
 
 // TODO: remove home point with route reference altitude
 const WaypointType home = { "home",
-                            { &mission::latitude, &mission::longitude, &mission::altitude, &yaw } };
+                            { &mission::latitude, &mission::longitude, &mission::altitude,
+                              &mission::relative, &yaw } };
 const WaypointType waypoint = { "waypoint",
                                 { &mission::latitude, &mission::longitude, &mission::altitude,
                                   &mission::relative, &time, &radius, &passRadius, &yaw } };
