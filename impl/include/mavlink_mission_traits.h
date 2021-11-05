@@ -35,8 +35,8 @@ const WaypointType loiterAlt = { "loiter_alt",
                                    &mission::relative, &radius, &clockwise, &yaw } };
 
 const RouteType routeType = { "mavlink_route",
-                              { &home, &waypoint, &takeoff, &landing, &loiterTurns, &loiterAlt } };
-const MissionType missionType = { "mavlink_mission", &routeType };
+                              { &waypoint, &takeoff, &landing, &loiterTurns, &loiterAlt } };
+const MissionType missionType = { "mavlink_mission", &routeType, &home };
 
 } // namespace md::domain::mavlink_mission
 

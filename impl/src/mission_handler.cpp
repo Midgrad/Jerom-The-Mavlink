@@ -217,13 +217,13 @@ void MissionHandler::processMissionAck(const mavlink_message_t& message)
         qDebug() << "Denied" << ack.type;
 
     Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
-    if (!mission || !mission->route())
+    if (!mission)
         return;
 
-    if (m_missionStates.value(mission, Idle) == WaitingAck && mission->route()->count())
+    if (m_missionStates.value(mission, Idle) == WaitingAck && mission->count())
     {
         if (ack.type == MAV_MISSION_ACCEPTED)
-            mission->route()->waypoints().last()->setConfirmed(true);
+            mission->waypoint(mission->count() - 1)->setConfirmed(true);
 
         mission->operation()->stop();
         m_missionStates[mission] = Idle;
@@ -237,7 +237,7 @@ void MissionHandler::processMissionRequest(const mavlink_message_t& message)
         return;
 
     Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
-    if (!mission || !mission->route())
+    if (!mission)
         return;
 
     if (m_missionStates.value(mission, Idle) != WaitingRequest)
@@ -252,12 +252,12 @@ void MissionHandler::processMissionRequest(const mavlink_message_t& message)
     // Mark previous waypoint as confirmed
     if (request.seq > 0)
     {
-        Waypoint* previousWaypoint = mission->route()->waypoint(request.seq - 1);
+        Waypoint* previousWaypoint = mission->waypoint(request.seq - 1);
         if (previousWaypoint)
             previousWaypoint->setConfirmed(true);
     }
 
-    Waypoint* waypoint = mission->route()->waypoint(request.seq);
+    Waypoint* waypoint = mission->waypoint(request.seq);
     if (!waypoint)
         return;
 
@@ -265,7 +265,7 @@ void MissionHandler::processMissionRequest(const mavlink_message_t& message)
     mission->operation()->setProgress(request.seq + 1);
 
     // Waiting ack after last waypoint send
-    if (request.seq == mission->route()->count() - 1)
+    if (request.seq == mission->count() - 1)
         m_missionStates[mission] = WaitingAck;
 
     // Send reqested waypoint
@@ -293,30 +293,29 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
 
     qDebug() << "processMissionItem" << vehicleId << item.seq;
 
-    // Get or create route
-    Route* route = mission->route();
-    if (!route)
-    {
-        mission->assignRoute(
-            new Route(&mavlink_mission::routeType, tr("%1 route").arg(mission->name())));
-        m_missionsRepository->saveMission(mission);
-        route = mission->route();
-    }
-
+    // Get or create waypoint
     Waypoint* waypoint = nullptr;
-    if (item.seq < route->count())
+    if (item.seq < mission->count())
     {
-        waypoint = route->waypoint(item.seq);
+        waypoint = mission->waypoint(item.seq);
     }
     else
     {
-        waypoint = new Waypoint(&mavlink_mission::waypoint,
-                                item.seq ? tr("WPT %1").arg(item.seq) : QObject::tr("HOME"));
+        // Get or create route
+        Route* route = mission->route();
+        if (!route)
+        {
+            mission->assignRoute(
+                new Route(&mavlink_mission::routeType, tr("%1 route").arg(mission->name())));
+            m_missionsRepository->saveMission(mission);
+            route = mission->route();
+        }
+
+        waypoint = new Waypoint(&mavlink_mission::waypoint, tr("WPT %1").arg(item.seq));
         route->addWaypoint(waypoint);
     }
 
-    // APM "eats" home's type
-    auto convertor = m_convertors.convertor(item.seq ? item.command : MAV_CMD_DO_SET_HOME);
+    auto convertor = m_convertors.convertor(item.command);
     if (convertor)
     {
         convertor->itemToWaypoint(item, waypoint);
@@ -354,14 +353,10 @@ void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
     if (!mission)
         return;
 
-    Route* route = mission->route();
-    if (!route)
-        return;
-
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    route->setCurrentWaypointIndex(mission_current.seq);
+    mission->setCurrentWaypointIndex(mission_current.seq);
 }
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
@@ -385,6 +380,8 @@ void MissionHandler::processMissionCount(const mavlink_message_t& message)
 
     qDebug() << "processMissionCount" << vehicleId << mission_count.count;
 
+    // TODO: crop route in mission
+
     mission->operation()->startDownload(mission_count.count);
     m_missionStates[mission] = WaitingItem;
     this->sendMissionItemRequest(vehicleId, mission->operation()->progress());
@@ -400,16 +397,12 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     if (!mission)
         return;
 
-    Route* route = mission->route();
-    if (!route)
-        return;
-
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    Waypoint* wpt = route->waypoint(reached.seq);
-    if (wpt)
-        wpt->setReached(true);
+    Waypoint* waypoint = mission->waypoint(reached.seq);
+    if (waypoint)
+        waypoint->setReached(true);
 }
 
 void MissionHandler::onVehicleObtained(Vehicle* vehicle)
@@ -446,19 +439,8 @@ void MissionHandler::onMissionAdded(Mission* mission)
         this->cancel(mission);
     });
 
-    // TODO: Immutable
-    auto func = [this, mission](Route* route) {
-        connect(route, &Route::switchWaypoint, this, [this, mission](int index) {
-            this->sendMissionSetCurrent(mission->vehicleId(), index);
-            this->cancel(mission);
-        });
-    };
-
-    if (mission->route())
-        func(mission->route());
-
-    connect(mission, &Mission::routeChanged, this, [this, mission, func]() {
-        func(mission->route());
+    connect(mission, &Mission::switchWaypoint, this, [this, mission](int index) {
+        this->sendMissionSetCurrent(mission->vehicleId(), index);
     });
 }
 
@@ -483,9 +465,7 @@ void MissionHandler::uploadItem(Mission* mission, int index)
 
 void MissionHandler::upload(Mission* mission)
 {
-    int count = mission->route() ? mission->route()->count() : 0;
-    if (!count)
-        return;
+    int count = mission->count();
 
     mission->operation()->startUpload(count);
     m_missionStates[mission] = WaitingRequest;
