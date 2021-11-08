@@ -3,60 +3,93 @@
 
 #include "mission_traits.h"
 
-namespace md::domain::mavlink_mission
+namespace md::domain::mission
 {
+// Params
 const Parameter abortAltitude = { "abort_altitude", QT_TRANSLATE_NOOP("Route", "Abort alt."),
                                   Parameter::Real, 50.0 };
-const Parameter pitch = { "pitch", QT_TRANSLATE_NOOP("Route", "Pitch"), Parameter::Real, 15.0 };
-const Parameter radius = { "radius", QT_TRANSLATE_NOOP("Route", "Radius"), Parameter::Real, 100 };
 const Parameter passRadius = { "pass_radius", QT_TRANSLATE_NOOP("Route", "Pass radius"),
                                Parameter::Real, 0 };
-const Parameter loops = { "loops", QT_TRANSLATE_NOOP("Route", "Loops"), Parameter::Int, 1 };
-const Parameter time = { "time", QT_TRANSLATE_NOOP("Route", "Time"), Parameter::Int, 0 };
+const Parameter turns = { "turns", QT_TRANSLATE_NOOP("Route", "Turns"), Parameter::Int, 1 };
 const Parameter clockwise = { "clockwise", QT_TRANSLATE_NOOP("Route", "Clockwise"), Parameter::Bool,
                               true };
-const Parameter yaw = { "yaw", QT_TRANSLATE_NOOP("Route", "Yaw"), Parameter::Real, qQNaN() };
+const Parameter headingRequired{ "heading_required", QT_TRANSLATE_NOOP("Route", "Hdg req."),
+                                 Parameter::Bool, false };
+const Parameter xtrack{ "xtrack", QT_TRANSLATE_NOOP("Route", "XTrack"), Parameter::Real, qQNaN(), 0,
+                        360 };
+const Parameter shutter = { "shutter", QT_TRANSLATE_NOOP("Route", "Shutter"), Parameter::Int, 0 };
+const Parameter trgOnce = { "trg_once", QT_TRANSLATE_NOOP("Route", "Trigger"), Parameter::Bool,
+                            false };
+const Parameter interval = { "interval", QT_TRANSLATE_NOOP("Route", "Interval"), Parameter::Int, 0 };
 
-// TODO: remove home point with route reference altitude
+// Basic
 const WaypointType home = { "home",
                             QT_TRANSLATE_NOOP("Route", "Home"),
                             QT_TRANSLATE_NOOP("Route", "HOME"),
-                            { &mission::latitude, &mission::longitude, &mission::altitude,
-                              &mission::relative, &yaw } };
+                            { &latitude, &longitude, &altitude, &relative, &yaw } };
 const WaypointType waypoint = { "waypoint",
                                 QT_TRANSLATE_NOOP("Route", "Waypoint"),
                                 QT_TRANSLATE_NOOP("Route", "WPT"),
-                                { &mission::latitude, &mission::longitude, &mission::altitude,
-                                  &mission::relative, &time, &radius, &passRadius, &yaw } };
+                                { &latitude, &longitude, &altitude, &relative, &time, &radius,
+                                  &passRadius, &yaw } };
+// Takeoff & landing
 const WaypointType takeoff = { "takeoff",
                                QT_TRANSLATE_NOOP("Route", "Takeoff"),
                                QT_TRANSLATE_NOOP("Route", "TKFF"),
-                               { &mission::latitude, &mission::longitude, &mission::altitude,
-                                 &mission::relative, &pitch, &yaw } };
+                               { &latitude, &longitude, &altitude, &relative, &pitch, &yaw } };
+const WaypointType landStart = { "landing_start",
+                                 QT_TRANSLATE_NOOP("Route", "Landing start"),
+                                 QT_TRANSLATE_NOOP("Route", "LND SRT"),
+                                 { &latitude, &longitude, &altitude, &relative } };
 const WaypointType landing = { "landing",
                                QT_TRANSLATE_NOOP("Route", "Landing"),
-                               QT_TRANSLATE_NOOP("Route", "LAND"),
-                               { &mission::latitude, &mission::longitude, &mission::altitude,
-                                 &mission::relative, &yaw, &abortAltitude } };
+                               QT_TRANSLATE_NOOP("Route", "LANDING"),
+                               { &latitude, &longitude, &altitude, &relative, &yaw,
+                                 &abortAltitude } };
+// Loiters
 const WaypointType loiterTurns = { "loiter_turns",
-                                   QT_TRANSLATE_NOOP("Route", "Loiter Turns"),
+                                   QT_TRANSLATE_NOOP("Route", "Loiter turns"),
                                    QT_TRANSLATE_NOOP("Route", "LTR TRN"),
-                                   { &mission::latitude, &mission::longitude, &mission::altitude,
-                                     &mission::relative, &radius, &loops, &clockwise, &yaw } };
+                                   { &latitude, &longitude, &altitude, &relative, &radius,
+                                     &clockwise, &turns, &headingRequired, &xtrack } };
 const WaypointType loiterAlt = { "loiter_alt",
-                                 QT_TRANSLATE_NOOP("Route", "Loiter Alt"),
+                                 QT_TRANSLATE_NOOP("Route", "Loiter alt"),
                                  QT_TRANSLATE_NOOP("Route", "LTR ALT"),
-                                 { &mission::latitude, &mission::longitude, &mission::altitude,
-                                   &mission::relative, &radius, &clockwise, &yaw } };
+                                 { &latitude, &longitude, &altitude, &relative, &radius, &clockwise,
+                                   &headingRequired, &xtrack } };
+const WaypointType loiterUnlim = { "loiter_unlim",
+                                   QT_TRANSLATE_NOOP("Route", "Loiter unlim"),
+                                   QT_TRANSLATE_NOOP("Route", "LTR UNL"),
+                                   { &latitude, &longitude, &altitude, &relative, &radius,
+                                     &clockwise, &yaw } };
+const WaypointType loiterTime = { "loiter_time",
+                                  QT_TRANSLATE_NOOP("Route", "Loiter time"),
+                                  QT_TRANSLATE_NOOP("Route", "LTR TM"),
+                                  { &latitude, &longitude, &altitude, &relative, &radius,
+                                    &clockwise, &time, &headingRequired, &xtrack } };
+// Payload control
+const WaypointType setTriggerDist = { "cam_tg_dist",
+                                      QT_TRANSLATE_NOOP("Route", "Camera tg. dist."),
+                                      QT_TRANSLATE_NOOP("Route", "CAM DST"),
+                                      { &latitude, &longitude, &altitude, &relative, &distance,
+                                        &shutter, &trgOnce } };
+const WaypointType setTriggerInt = { "cam_tg_int",
+                                     QT_TRANSLATE_NOOP("Route", "Camera tg. int"),
+                                     QT_TRANSLATE_NOOP("Route", "CAM INT"),
+                                     { &latitude, &longitude, &altitude, &relative, &interval,
+                                       &shutter } };
 
+// Routes
 const RouteType routeType = { "mavlink_route",
                               QT_TRANSLATE_NOOP("Route", "Plain route (Mavlink)"),
-                              { &waypoint, &takeoff, &landing, &loiterTurns, &loiterAlt } };
+                              { &waypoint, &takeoff, &landStart, &landing, &loiterTurns, &loiterAlt,
+                                &loiterUnlim, &loiterTime, &setTriggerDist, &setTriggerInt } };
+// Mission
 
 const MissionType missionType = { "mavlink_mission",
                                   QT_TRANSLATE_NOOP("Mission", "Mavlink Mission"), &routeType,
                                   &home };
 
-} // namespace md::domain::mavlink_mission
+} // namespace md::domain::mission
 
 #endif // MAVLINK_MISSION_TRAITS_H

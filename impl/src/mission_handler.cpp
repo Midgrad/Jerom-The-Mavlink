@@ -306,12 +306,12 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
         if (!route)
         {
             mission->assignRoute(
-                new Route(&mavlink_mission::routeType, tr("%1 route").arg(mission->name())));
+                new Route(&mission::routeType, tr("%1 route").arg(mission->name())));
             m_missionsRepository->saveMission(mission);
             route = mission->route();
         }
 
-        waypoint = new Waypoint(&mavlink_mission::waypoint, tr("WPT %1").arg(item.seq));
+        waypoint = new Waypoint(&mission::waypoint, tr("WPT %1").arg(item.seq));
         route->addWaypoint(waypoint);
     }
 
@@ -415,7 +415,7 @@ void MissionHandler::onVehicleObtained(Vehicle* vehicle)
         return;
 
     // Autocrete mission for new vehicle
-    mission = new Mission(&mavlink_mission::missionType, tr("%1 mission").arg(vehicle->name()),
+    mission = new Mission(&mission::missionType, tr("%1 mission").arg(vehicle->name()),
                           vehicle->id());
     m_missionsRepository->saveMission(mission);
 
