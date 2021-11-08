@@ -40,7 +40,7 @@ class PositionedConvertor : public IMavlinkItemConvertor
 public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
-        waypoint->setAndCheckParameter(mission::relative.id,
+        waypoint->setAndCheckParameter(mission::relativeAlt.id,
                                        item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
         waypoint->setAndCheckParameter(mission::latitude.id, item.x);
         waypoint->setAndCheckParameter(mission::longitude.id, item.y);
@@ -49,7 +49,7 @@ public:
 
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
-        item.frame = waypoint->parameter(mission::relative.id).toBool()
+        item.frame = waypoint->parameter(mission::relativeAlt.id).toBool()
                          ? MAV_FRAME_GLOBAL_RELATIVE_ALT
                          : MAV_FRAME_GLOBAL;
         item.x = waypoint->parameter(mission::latitude.id).toReal();
@@ -104,7 +104,7 @@ public:
     }
 };
 
-class TakeoffConvertor : public PositionedConvertor
+class TakeoffConvertor : public IMavlinkItemConvertor
 {
 public:
     /* Takeoff from ground / hand. Vehicles that support multiple takeoff modes (e.g. VTOL quadplane) should take off using the currently configured mode.
@@ -112,7 +112,9 @@ public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&mission::takeoff);
-        PositionedConvertor::itemToWaypoint(item, waypoint);
+        waypoint->setAndCheckParameter(mission::relativeAlt.id,
+                                       item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
+        waypoint->setAndCheckParameter(mission::altitude.id, item.z);
         waypoint->setAndCheckParameter(mission::pitch.id, item.param1);
         waypoint->setAndCheckParameter(mission::yaw.id, item.param4);
     }
@@ -120,7 +122,10 @@ public:
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_TAKEOFF;
-        PositionedConvertor::waypointToItem(waypoint, item);
+        item.frame = waypoint->parameter(mission::relativeAlt.id).toBool()
+                         ? MAV_FRAME_GLOBAL_RELATIVE_ALT
+                         : MAV_FRAME_GLOBAL;
+        item.z = waypoint->parameter(mission::altitude.id).toReal();
         item.param1 = waypoint->parameter(mission::pitch.id).toReal();
         item.param2 = 0;
         item.param3 = 0;
@@ -128,19 +133,17 @@ public:
     }
 };
 
-class LandStartConvertor : public PositionedConvertor
+class LandStartConvertor : public IMavlinkItemConvertor
 {
 public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&mission::landStart);
-        PositionedConvertor::itemToWaypoint(item, waypoint);
     }
 
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_LAND_START;
-        PositionedConvertor::waypointToItem(waypoint, item);
         item.param1 = 0;
         item.param2 = 0;
         item.param3 = 0;
@@ -272,13 +275,12 @@ public:
     }
 };
 
-class SetTriggerDistConvertor : public PositionedConvertor
+class SetTriggerDistConvertor : public IMavlinkItemConvertor
 {
 public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&mission::setTriggerDist);
-        PositionedConvertor::itemToWaypoint(item, waypoint);
         waypoint->setAndCheckParameter(mission::distance.id, item.param1);
         waypoint->setAndCheckParameter(mission::shutter.id, item.param2);
         waypoint->setAndCheckParameter(mission::trgOnce.id, item.param3);
@@ -287,20 +289,18 @@ public:
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_SET_CAM_TRIGG_DIST;
-        PositionedConvertor::waypointToItem(waypoint, item);
         item.param1 = waypoint->parameter(mission::distance.id).toReal();
         item.param2 = waypoint->parameter(mission::shutter.id).toInt();
         item.param3 = waypoint->parameter(mission::trgOnce.id).toBool();
         item.param4 = 0;
     }
 };
-class SetTriggerIntConvertor : public PositionedConvertor
+class SetTriggerIntConvertor : public IMavlinkItemConvertor
 {
 public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&mission::setTriggerInt);
-        PositionedConvertor::itemToWaypoint(item, waypoint);
         waypoint->setAndCheckParameter(mission::interval.id, item.param1);
         waypoint->setAndCheckParameter(mission::shutter.id, item.param2);
     }
@@ -308,7 +308,6 @@ public:
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_SET_CAM_TRIGG_INTERVAL;
-        PositionedConvertor::waypointToItem(waypoint, item);
         item.param1 = waypoint->parameter(mission::interval.id).toInt();
         item.param2 = waypoint->parameter(mission::shutter.id).toInt();
         item.param3 = 0;
