@@ -19,27 +19,33 @@ const Parameter yaw = { "yaw", QT_TRANSLATE_NOOP("Route", "Yaw"), Parameter::Rea
 
 // TODO: remove home point with route reference altitude
 const WaypointType home = { "home",
+                            QT_TRANSLATE_NOOP("Route", "Home"),
                             QT_TRANSLATE_NOOP("Route", "HOME"),
                             { &mission::latitude, &mission::longitude, &mission::altitude,
                               &mission::relative, &yaw } };
 const WaypointType waypoint = { "waypoint",
-                                QT_TRANSLATE_NOOP("Route", "WAYPOINT"),
+                                QT_TRANSLATE_NOOP("Route", "Waypoint"),
+                                QT_TRANSLATE_NOOP("Route", "WPT"),
                                 { &mission::latitude, &mission::longitude, &mission::altitude,
                                   &mission::relative, &time, &radius, &passRadius, &yaw } };
 const WaypointType takeoff = { "takeoff",
-                               QT_TRANSLATE_NOOP("Route", "TAKEOFF"),
+                               QT_TRANSLATE_NOOP("Route", "Takeoff"),
+                               QT_TRANSLATE_NOOP("Route", "TKFF"),
                                { &mission::latitude, &mission::longitude, &mission::altitude,
                                  &mission::relative, &pitch, &yaw } };
 const WaypointType landing = { "landing",
-                               QT_TRANSLATE_NOOP("Route", "LANDING"),
+                               QT_TRANSLATE_NOOP("Route", "Landing"),
+                               QT_TRANSLATE_NOOP("Route", "LAND"),
                                { &mission::latitude, &mission::longitude, &mission::altitude,
                                  &mission::relative, &yaw, &abortAltitude } };
 const WaypointType loiterTurns = { "loiter_turns",
-                                   QT_TRANSLATE_NOOP("Route", "LOITER TURNS"),
+                                   QT_TRANSLATE_NOOP("Route", "Loiter Turns"),
+                                   QT_TRANSLATE_NOOP("Route", "LTR TRN"),
                                    { &mission::latitude, &mission::longitude, &mission::altitude,
                                      &mission::relative, &radius, &loops, &clockwise, &yaw } };
 const WaypointType loiterAlt = { "loiter_alt",
-                                 QT_TRANSLATE_NOOP("Route", "LOITER ALT"),
+                                 QT_TRANSLATE_NOOP("Route", "Loiter Alt"),
+                                 QT_TRANSLATE_NOOP("Route", "LTR ALT"),
                                  { &mission::latitude, &mission::longitude, &mission::altitude,
                                    &mission::relative, &radius, &clockwise, &yaw } };
 

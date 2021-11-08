@@ -320,6 +320,8 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     {
         convertor->itemToWaypoint(item, waypoint);
         waypoint->setConfirmed(true);
+        if (item.seq)
+            waypoint->setName(waypoint->type()->shortName);
     }
     else
     {
