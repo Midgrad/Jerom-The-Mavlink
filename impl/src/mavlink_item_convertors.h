@@ -3,7 +3,7 @@
 
 #include <common/mavlink.h>
 
-#include "route_item.h"
+#include "waypoint.h"
 
 namespace md::domain
 {
@@ -12,8 +12,17 @@ class IMavlinkItemConvertor
 public:
     virtual ~IMavlinkItemConvertor() = default;
 
-    virtual void itemToWaypoint(const mavlink_mission_item_t& item, RouteItem* waypoint) = 0;
-    virtual void waypointToItem(const RouteItem* waypoint, mavlink_mission_item_t& item) = 0;
+    virtual void toItem(const mavlink_mission_item_t& item, RouteItem* routeItem) = 0;
+    virtual void fromItem(const RouteItem* routeItem, mavlink_mission_item_t& item) = 0;
+};
+
+class IMavlinkWaypointConvertor
+{
+public:
+    virtual ~IMavlinkWaypointConvertor() = default;
+
+    virtual void toWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) = 0;
+    virtual void fromWaypoint(const Waypoint* waypoint, mavlink_mission_item_t& item) = 0;
 };
 
 class MavlinkItemConvertorsPool
@@ -22,11 +31,12 @@ public:
     MavlinkItemConvertorsPool();
     ~MavlinkItemConvertorsPool();
 
-    IMavlinkItemConvertor* convertor(const RouteItemType* type);
-    IMavlinkItemConvertor* convertor(uint16_t commandType);
+    IMavlinkWaypointConvertor* convertor(const QString& typeId);
+    IMavlinkWaypointConvertor* convertor(uint16_t commandType);
 
 private:
-    const QMap<QString, IMavlinkItemConvertor*> m_convertors;
+    const QMap<QString, IMavlinkItemConvertor*> m_itemConvertors;
+    const QMap<QString, IMavlinkWaypointConvertor*> m_waypointConvertors;
 };
 
 } // namespace md::domain

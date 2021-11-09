@@ -168,14 +168,14 @@ void MissionHandler::sendMissionCount(const QVariant& vehicleId, int count)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendMissionItem(const QVariant& vehicleId, RouteItem* waypoint, int index)
+void MissionHandler::sendMissionItem(const QVariant& vehicleId, Waypoint* waypoint, int index)
 {
     qDebug() << "sendMissionItem" << vehicleId << index;
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
 
-    auto convertor = m_convertors.convertor(waypoint->type());
+    auto convertor = m_convertors.convertor(waypoint->type()->id);
     if (!convertor)
     {
         qWarning() << "Unhandled waypoint type" << waypoint->type()->name;
@@ -194,7 +194,7 @@ void MissionHandler::sendMissionItem(const QVariant& vehicleId, RouteItem* waypo
     item.mission_type = MAV_MISSION_TYPE_MISSION;
 #endif
 
-    convertor->waypointToItem(waypoint, item);
+    convertor->fromWaypoint(waypoint, item);
 
     mavlink_message_t message;
     mavlink_msg_mission_item_encode_chan(m_context->systemId, m_context->compId, 0, &message,
@@ -252,12 +252,12 @@ void MissionHandler::processMissionRequest(const mavlink_message_t& message)
     // Mark previous waypoint as confirmed
     if (request.seq > 0)
     {
-        RouteItem* previousWaypoint = mission->waypoint(request.seq - 1);
+        Waypoint* previousWaypoint = mission->waypoint(request.seq - 1);
         if (previousWaypoint)
             previousWaypoint->setConfirmed(true);
     }
 
-    RouteItem* waypoint = mission->waypoint(request.seq);
+    Waypoint* waypoint = mission->waypoint(request.seq);
     if (!waypoint)
         return;
 
@@ -294,7 +294,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     qDebug() << "processMissionItem" << vehicleId << item.seq;
 
     // Get or create waypoint
-    RouteItem* waypoint = nullptr;
+    Waypoint* waypoint = nullptr;
     if (item.seq < mission->count())
     {
         waypoint = mission->waypoint(item.seq);
@@ -311,14 +311,14 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
             route = mission->route();
         }
 
-        waypoint = new RouteItem(&route::waypoint, tr("WPT %1").arg(item.seq));
+        waypoint = new Waypoint(&route::waypoint, tr("WPT %1").arg(item.seq));
         route->addWaypoint(waypoint);
     }
 
     auto convertor = m_convertors.convertor(item.command);
     if (convertor)
     {
-        convertor->itemToWaypoint(item, waypoint);
+        convertor->toWaypoint(item, waypoint);
         waypoint->setConfirmed(true);
         if (item.seq)
             waypoint->setName(waypoint->type()->shortName);
@@ -402,7 +402,7 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    RouteItem* waypoint = mission->waypoint(reached.seq);
+    Waypoint* waypoint = mission->waypoint(reached.seq);
     if (waypoint)
         waypoint->setReached(true);
 }
@@ -458,7 +458,7 @@ void MissionHandler::onMissionRemoved(Mission* mission)
 
 void MissionHandler::uploadItem(Mission* mission, int index)
 {
-    RouteItem* wpt = mission->route() ? mission->route()->waypoint(index) : nullptr;
+    Waypoint* wpt = mission->route() ? mission->route()->waypoint(index) : nullptr;
     if (!wpt)
         return;
 
