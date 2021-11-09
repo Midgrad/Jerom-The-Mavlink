@@ -104,7 +104,7 @@ public:
     }
 };
 
-class TakeoffConvertor : public IMavlinkItemConvertor
+class TakeoffConvertor : public PositionedConvertor
 {
 public:
     /* Takeoff from ground / hand. Vehicles that support multiple takeoff modes (e.g. VTOL quadplane) should take off using the currently configured mode.
@@ -112,9 +112,7 @@ public:
     void itemToWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&mission::takeoff);
-        waypoint->setAndCheckParameter(mission::relativeAlt.id,
-                                       item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
-        waypoint->setAndCheckParameter(mission::altitude.id, item.z);
+        PositionedConvertor::itemToWaypoint(item, waypoint);
         waypoint->setAndCheckParameter(mission::pitch.id, item.param1);
         waypoint->setAndCheckParameter(mission::yaw.id, item.param4);
     }
@@ -122,10 +120,7 @@ public:
     void waypointToItem(const Waypoint* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_TAKEOFF;
-        item.frame = waypoint->parameter(mission::relativeAlt.id).toBool()
-                         ? MAV_FRAME_GLOBAL_RELATIVE_ALT
-                         : MAV_FRAME_GLOBAL;
-        item.z = waypoint->parameter(mission::altitude.id).toReal();
+        PositionedConvertor::waypointToItem(waypoint, item);
         item.param1 = waypoint->parameter(mission::pitch.id).toReal();
         item.param2 = 0;
         item.param3 = 0;

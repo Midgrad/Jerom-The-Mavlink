@@ -36,7 +36,7 @@ const WaypointType waypoint = { "waypoint",
 const WaypointType takeoff = { "takeoff",
                                QT_TRANSLATE_NOOP("Route", "Takeoff"),
                                QT_TRANSLATE_NOOP("Route", "TKFF"),
-                               { &altitude, &relativeAlt, &pitch, &yaw } };
+                               { &latitude, &longitude, &altitude, &relativeAlt, &pitch, &yaw } };
 const WaypointType landStart = { "landing_start",
                                  QT_TRANSLATE_NOOP("Route", "Landing start"),
                                  QT_TRANSLATE_NOOP("Route", "LND SRT"),
