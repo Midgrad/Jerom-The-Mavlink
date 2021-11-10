@@ -8,77 +8,70 @@ namespace md::domain
 namespace route
 {
 // Params
-const Parameter abortAltitude = { "abort_altitude", QT_TRANSLATE_NOOP("Route", "Abort alt."),
-                                  Parameter::Real, 50.0 };
-const Parameter passRadius = { "pass_radius", QT_TRANSLATE_NOOP("Route", "Pass radius"),
-                               Parameter::Real, 0 };
-const Parameter turns = { "turns", QT_TRANSLATE_NOOP("Route", "Turns"), Parameter::Int, 1 };
-const Parameter clockwise = { "clockwise", QT_TRANSLATE_NOOP("Route", "Clockwise"), Parameter::Bool,
-                              true };
-const Parameter headingRequired{ "heading_required", QT_TRANSLATE_NOOP("Route", "Hdg req."),
-                                 Parameter::Bool, false };
-const Parameter xtrack{ "xtrack", QT_TRANSLATE_NOOP("Route", "XTrack"), Parameter::Real, qQNaN(), 0,
-                        360 };
-const Parameter shutter = { "shutter", QT_TRANSLATE_NOOP("Route", "Shutter"), Parameter::Int, 0 };
-const Parameter trgOnce = { "trg_once", QT_TRANSLATE_NOOP("Route", "Trigger"), Parameter::Bool,
-                            false };
-const Parameter interval = { "interval", QT_TRANSLATE_NOOP("Route", "Interval"), Parameter::Int, 0 };
+const Parameter abortAltitude = { "abort_altitude", TR_ROUTE("Abort alt."),
+                                  Parameter::Real,  50.0,
+                                  minAltitude,      maxAltitude };
+const Parameter passRadius = { "pass_radius", TR_ROUTE("Pass radius"), Parameter::Real, 0, 0,
+                               maxRadius };
+const Parameter turns = { "turns", TR_ROUTE("Turns"), Parameter::Int, 1, 1, 100 };
+const Parameter clockwise = { "clockwise", TR_ROUTE("Clockwise"), true };
+const Parameter headingRequired{ "heading_required", TR_ROUTE("Hdg req."), false };
+const Parameter xtrack{ "xtrack", TR_ROUTE("XTrack"), Parameter::Real, qQNaN(), 0, 360 };
+const Parameter shutter = { "shutter", TR_ROUTE("Shutter"), Parameter::Int, 0, 0, 1000 };
+const Parameter trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
+const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0, 0, 1000 };
 
 // RouteItems
 const RouteItemType setTriggerDist = { "mavlink_cam_tg_dist",
-                                       QT_TRANSLATE_NOOP("Route", "Camera tg. dist."),
-                                       QT_TRANSLATE_NOOP("Route", "CAM DST"),
+                                       TR_ROUTE("Camera tg. dist."),
+                                       TR_ROUTE("CAM DST"),
                                        { &distance, &shutter, &trgOnce } };
-const RouteItemType setTriggerInt = { "mavlink_cam_tg_int",
-                                      QT_TRANSLATE_NOOP("Route", "Camera tg. int"),
-                                      QT_TRANSLATE_NOOP("Route", "CAM INT"),
-                                      { &interval, &shutter } };
+const RouteItemType setTriggerInt = {
+    "mavlink_cam_tg_int", TR_ROUTE("Camera tg. int"), TR_ROUTE("CAM INT"), { &interval, &shutter }
+};
 
-const RouteItemType landStart = { "mavlink_landing_start",
-                                  QT_TRANSLATE_NOOP("Route", "Landing start"),
-                                  QT_TRANSLATE_NOOP("Route", "LND SRT"),
-                                  {} };
+const RouteItemType landStart = {
+    "mavlink_landing_start", TR_ROUTE("Landing start"), TR_ROUTE("LND SRT"), {}
+};
 
 // Waypoints
-const WaypointType home = { "mavlink_home",
-                            QT_TRANSLATE_NOOP("Route", "Home"),
-                            QT_TRANSLATE_NOOP("Route", "HOME"),
-                            { &relativeAlt, &yaw } };
+const WaypointType home = {
+    "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), { &relativeAlt, &yaw }
+};
 const WaypointType waypoint = { "mavlink_waypoint",
-                                QT_TRANSLATE_NOOP("Route", "Waypoint"),
-                                QT_TRANSLATE_NOOP("Route", "WPT"),
+                                TR_ROUTE("Waypoint"),
+                                TR_ROUTE("WPT"),
                                 { &relativeAlt, &time, &radius, &passRadius, &yaw },
                                 { &setTriggerDist, &setTriggerInt, &landStart } };
-const WaypointType takeoff = { "mavlink_takeoff",
-                               QT_TRANSLATE_NOOP("Route", "Takeoff"),
-                               QT_TRANSLATE_NOOP("Route", "TKFF"),
-                               { &relativeAlt, &pitch, &yaw } };
+const WaypointType takeoff = {
+    "mavlink_takeoff", TR_ROUTE("Takeoff"), TR_ROUTE("TKFF"), { &relativeAlt, &pitch, &yaw }
+};
 const WaypointType landing = { "mavlink_landing",
-                               QT_TRANSLATE_NOOP("Route", "Landing"),
-                               QT_TRANSLATE_NOOP("Route", "LANDING"),
+                               TR_ROUTE("Landing"),
+                               TR_ROUTE("LANDING"),
                                { &relativeAlt, &yaw, &abortAltitude } };
 const WaypointType loiterTurns = { "mavlink_loiter_turns",
-                                   QT_TRANSLATE_NOOP("Route", "Loiter turns"),
-                                   QT_TRANSLATE_NOOP("Route", "LTR TRN"),
+                                   TR_ROUTE("Loiter turns"),
+                                   TR_ROUTE("LTR TRN"),
                                    { &relativeAlt, &radius, &clockwise, &turns, &headingRequired,
                                      &xtrack } };
 const WaypointType loiterAlt = { "mavlink_loiter_alt",
-                                 QT_TRANSLATE_NOOP("Route", "Loiter alt"),
-                                 QT_TRANSLATE_NOOP("Route", "LTR ALT"),
+                                 TR_ROUTE("Loiter alt"),
+                                 TR_ROUTE("LTR ALT"),
                                  { &relativeAlt, &radius, &clockwise, &headingRequired, &xtrack } };
 const WaypointType loiterUnlim = { "mavlink_loiter_unlim",
-                                   QT_TRANSLATE_NOOP("Route", "Loiter unlim"),
-                                   QT_TRANSLATE_NOOP("Route", "LTR UNL"),
+                                   TR_ROUTE("Loiter unlim"),
+                                   TR_ROUTE("LTR UNL"),
                                    { &relativeAlt, &radius, &clockwise, &yaw } };
 const WaypointType loiterTime = { "mavlink_loiter_time",
-                                  QT_TRANSLATE_NOOP("Route", "Loiter time"),
-                                  QT_TRANSLATE_NOOP("Route", "LTR TM"),
+                                  TR_ROUTE("Loiter time"),
+                                  TR_ROUTE("LTR TM"),
                                   { &relativeAlt, &radius, &clockwise, &time, &headingRequired,
                                     &xtrack } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",
-                                     QT_TRANSLATE_NOOP("Route", "Plain route (Mavlink)"),
+                                     TR_ROUTE("Plain route (Mavlink)"),
                                      { &waypoint, &takeoff, &landing, &loiterTurns, &loiterAlt,
                                        &loiterUnlim, &loiterTime } };
 } // namespace route

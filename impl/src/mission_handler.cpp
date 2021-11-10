@@ -311,7 +311,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
             route = mission->route();
         }
 
-        waypoint = new Waypoint(&route::waypoint, tr("WPT %1").arg(item.seq));
+        waypoint = new Waypoint(&route::waypoint);
         route->addWaypoint(waypoint);
     }
 

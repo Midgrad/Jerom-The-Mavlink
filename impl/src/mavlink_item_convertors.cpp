@@ -154,7 +154,7 @@ public:
         PositionedConvertor::toWaypoint(item, waypoint);
         waypoint->setAndCheckParameter(route::abortAltitude.id, item.param1);
         waypoint->setAndCheckParameter(route::yaw.id, item.param4);
-        // NOTE: Precision land mode
+        // TODO: Precision land mode
     }
 
     void fromWaypoint(const Waypoint* waypoint, mavlink_mission_item_t& item) override
