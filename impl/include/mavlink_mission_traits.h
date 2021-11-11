@@ -41,7 +41,7 @@ const WaypointType home = {
 const WaypointType waypoint = { "mavlink_waypoint",
                                 TR_ROUTE("Waypoint"),
                                 TR_ROUTE("WPT"),
-                                { &relativeAlt, &time, &radius, &passRadius, &yaw },
+                                { &relativeAlt, &time, &acceptRadius, &passRadius, &yaw },
                                 { &setTriggerDist, &setTriggerInt, &landStart } };
 const WaypointType takeoff = {
     "mavlink_takeoff", TR_ROUTE("Takeoff"), TR_ROUTE("TKFF"), { &relativeAlt, &pitch, &yaw }

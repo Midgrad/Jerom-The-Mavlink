@@ -82,12 +82,19 @@ public:
 class WaypointConvertor : public PositionedConvertor
 {
 public:
+    /* Navigate to waypoint.
+     * | Hold time. (ignored by fixed wing, time to stay at waypoint for rotary wing)
+     * | Acceptance radius (if the sphere with this radius is hit, the waypoint counts as reached)
+     * | 0 to pass through the WP, if > 0 radius to pass by WP. Positive value for clockwise orbit,
+     *   negative value for counter-clockwise orbit. Allows trajectory control.
+     * | Desired yaw angle at waypoint (rotary wing). NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.).
+     * | Latitude| Longitude| Altitude|  */
     void toWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) override
     {
         waypoint->setType(&route::waypoint);
         PositionedConvertor::toWaypoint(item, waypoint);
         waypoint->setAndCheckParameter(route::time.id, item.param1);
-        waypoint->setAndCheckParameter(route::radius.id, item.param2);
+        waypoint->setAndCheckParameter(route::acceptRadius.id, item.param2);
         waypoint->setAndCheckParameter(route::passRadius.id, item.param3);
         waypoint->setAndCheckParameter(route::yaw.id, item.param4);
     }
@@ -97,7 +104,7 @@ public:
         item.command = MAV_CMD_NAV_WAYPOINT;
         PositionedConvertor::fromWaypoint(waypoint, item);
         item.param1 = waypoint->parameter(route::time.id).toInt();
-        item.param2 = waypoint->parameter(route::radius.id).toReal();
+        item.param2 = waypoint->parameter(route::acceptRadius.id).toReal();
         item.param3 = waypoint->parameter(route::passRadius.id).toReal();
         item.param4 = waypoint->parameter(route::yaw.id).toReal();
     }
@@ -178,7 +185,7 @@ public:
         waypoint->setAndCheckParameter(route::turns.id, item.param1);
         waypoint->setAndCheckParameter(route::headingRequired.id, item.param2);
         waypoint->setAndCheckParameter(route::clockwise.id, item.param3 > 0);
-        waypoint->setAndCheckParameter(route::radius.id, item.param3);
+        waypoint->setAndCheckParameter(route::radius.id, qAbs(item.param3));
         waypoint->setAndCheckParameter(route::xtrack.id, item.param4);
     }
 
