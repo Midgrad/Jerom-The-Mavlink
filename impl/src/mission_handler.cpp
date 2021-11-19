@@ -222,7 +222,7 @@ void MissionHandler::processMissionAck(const mavlink_message_t& message)
     if (!mission)
         return;
 
-    if (m_missionStates.value(mission, Idle) == WaitingAck && mission->count())
+    if (m_missionStates.value(mission, Idle) == WaitingAck && mission->route()->count())
     {
         // TODO: confirm received item
         //        if (ack.type == MAV_MISSION_ACCEPTED)
@@ -260,7 +260,7 @@ void MissionHandler::processMissionRequest(const mavlink_message_t& message)
     //            previousItem->setConfirmed(true);
     //    }
 
-    WaypointItem* waypointItem = mission->item(request.seq);
+    WaypointItem* waypointItem = mission->route()->item(request.seq);
     if (!waypointItem)
         return;
 
@@ -268,7 +268,7 @@ void MissionHandler::processMissionRequest(const mavlink_message_t& message)
     mission->operation()->setProgress(request.seq + 1);
 
     // Waiting ack after last waypoint send
-    if (request.seq == mission->count() - 1)
+    if (request.seq == mission->route()->count() - 1)
         m_missionStates[mission] = WaitingAck;
 
     // Send reqested waypoint
@@ -295,7 +295,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     mavlink_mission_item_t item;
     mavlink_msg_mission_item_decode(&message, &item);
 
-    if (item.seq > 0 && item.seq < mission->count())
+    if (item.seq > 0 && item.seq < mission->route()->count())
     {
         qWarning() << "Route must be cleared before download";
         return;
@@ -310,18 +310,18 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
         // Special case for HOME
         if (item.seq == 0)
         {
-            wptItem = mission->homePoint();
+            wptItem = mission->route()->homePoint();
         }
         else
         {
             // Get or create route
-            Route* route = mission->route();
+            Route* route = mission->route()->route();
             if (!route) // TODO: create route while download started
             {
-                mission->assignRoute(
+                mission->route()->assignRoute(
                     new Route(&route::mavlinkRouteType, tr("%1 route").arg(mission->name())));
                 m_missionsRepository->saveMission(mission);
-                route = mission->route();
+                route = mission->route()->route();
             }
             if (convertor->isWaypointItem())
             {
@@ -388,7 +388,7 @@ void MissionHandler::processMissionCurrent(const mavlink_message_t& message)
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    mission->setCurrentItem(mission_current.seq);
+    mission->route()->setCurrentItem(mission_current.seq);
 }
 
 void MissionHandler::processMissionCount(const mavlink_message_t& message)
@@ -413,8 +413,7 @@ void MissionHandler::processMissionCount(const mavlink_message_t& message)
     qDebug() << "processMissionCount" << vehicleId << mission_count.count;
 
     // Clear route before downloading new
-    if (mission->route())
-        mission->route()->clear();
+    mission->route()->route()->clear();
 
     mission->operation()->startDownload(mission_count.count);
     m_missionStates[mission] = WaitingItem;
@@ -474,7 +473,7 @@ void MissionHandler::onMissionAdded(Mission* mission)
         this->cancel(mission);
     });
 
-    connect(mission, &Mission::switchCurrentItem, this, [this, mission](int index) {
+    connect(mission->route(), &MissionRoute::switchCurrentItem, this, [this, mission](int index) {
         this->sendMissionSetCurrent(mission->vehicleId(), index);
     });
 }
@@ -491,7 +490,8 @@ void MissionHandler::onMissionRemoved(Mission* mission)
 
 void MissionHandler::uploadItem(Mission* mission, int index)
 {
-    Waypoint* wpt = mission->route() ? mission->route()->waypoint(index) : nullptr;
+    Waypoint* wpt = mission->route()->route() ? mission->route()->route()->waypoint(index)
+                                              : nullptr;
     if (!wpt)
         return;
 
@@ -500,7 +500,7 @@ void MissionHandler::uploadItem(Mission* mission, int index)
 
 void MissionHandler::upload(Mission* mission)
 {
-    int count = mission->count();
+    int count = mission->route()->count();
 
     mission->operation()->startUpload(count);
     m_missionStates[mission] = WaitingRequest;
