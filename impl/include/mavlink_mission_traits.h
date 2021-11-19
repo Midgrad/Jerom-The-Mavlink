@@ -16,7 +16,7 @@ const Parameter passRadius = { "pass_radius", TR_ROUTE("Pass radius"), Parameter
 const Parameter turns = { "turns", TR_ROUTE("Turns"), Parameter::Int, 1, 1, 100 };
 const Parameter clockwise = { "clockwise", TR_ROUTE("Clockwise"), true };
 const Parameter headingRequired{ "heading_required", TR_ROUTE("Hdg req."), false };
-const Parameter xtrack{ "xtrack", TR_ROUTE("XTrack"), Parameter::Real, qQNaN(), 0, 360 };
+const Parameter xtrack{ "xtrack", TR_ROUTE("XTrack"), Parameter::Real, 0, 0, 360 };
 const Parameter shutter = { "shutter", TR_ROUTE("Shutter"), Parameter::Int, 0, 0, 1000 };
 const Parameter trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
 const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0, 0, 1000 };

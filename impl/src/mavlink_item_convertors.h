@@ -14,15 +14,8 @@ public:
 
     virtual void toItem(const mavlink_mission_item_t& item, WaypointItem* waypointItem) = 0;
     virtual void fromItem(const WaypointItem* waypointItem, mavlink_mission_item_t& item) = 0;
-};
 
-class IMavlinkWaypointConvertor
-{
-public:
-    virtual ~IMavlinkWaypointConvertor() = default;
-
-    virtual void toWaypoint(const mavlink_mission_item_t& item, Waypoint* waypoint) = 0;
-    virtual void fromWaypoint(const Waypoint* waypoint, mavlink_mission_item_t& item) = 0;
+    virtual bool isWaypointItem() const = 0;
 };
 
 class MavlinkItemConvertorsPool
@@ -31,12 +24,13 @@ public:
     MavlinkItemConvertorsPool();
     ~MavlinkItemConvertorsPool();
 
-    IMavlinkWaypointConvertor* convertor(const QString& typeId);
-    IMavlinkWaypointConvertor* convertor(uint16_t commandType);
+    IMavlinkItemConvertor* convertor(const QString& typeId) const;
+    IMavlinkItemConvertor* convertor(uint16_t commandType) const;
+    IMavlinkItemConvertor* homeConvertor() const;
 
 private:
     const QMap<QString, IMavlinkItemConvertor*> m_itemConvertors;
-    const QMap<QString, IMavlinkWaypointConvertor*> m_waypointConvertors;
+    IMavlinkItemConvertor* const m_homeConvertor;
 };
 
 } // namespace md::domain
