@@ -137,12 +137,12 @@ public:
 class LandStartConvertor : public IMavlinkItemConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
     {
         waypoint->setType(&route::landStart);
     }
 
-    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_LAND_START;
         item.param1 = 0;
@@ -279,38 +279,38 @@ public:
 class SetTriggerDistConvertor : public IMavlinkItemConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypointItem) override
     {
-        waypoint->setType(&route::setTriggerDist);
-        waypoint->setAndCheckParameter(route::distance.id, item.param1);
-        waypoint->setAndCheckParameter(route::shutter.id, item.param2);
-        waypoint->setAndCheckParameter(route::trgOnce.id, item.param3);
+        waypointItem->setType(&route::setTriggerDist);
+        waypointItem->setAndCheckParameter(route::distance.id, item.param1);
+        waypointItem->setAndCheckParameter(route::shutter.id, item.param2);
+        waypointItem->setAndCheckParameter(route::trgOnce.id, item.param3);
     }
 
-    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const WaypointItem* waypointItem, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_SET_CAM_TRIGG_DIST;
-        item.param1 = waypoint->parameter(route::distance.id).toReal();
-        item.param2 = waypoint->parameter(route::shutter.id).toInt();
-        item.param3 = waypoint->parameter(route::trgOnce.id).toBool();
+        item.param1 = waypointItem->parameter(route::distance.id).toReal();
+        item.param2 = waypointItem->parameter(route::shutter.id).toInt();
+        item.param3 = waypointItem->parameter(route::trgOnce.id).toBool();
         item.param4 = 0;
     }
 };
 class SetTriggerIntConvertor : public IMavlinkItemConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypointItem) override
     {
-        waypoint->setType(&route::setTriggerInt);
-        waypoint->setAndCheckParameter(route::interval.id, item.param1);
-        waypoint->setAndCheckParameter(route::shutter.id, item.param2);
+        waypointItem->setType(&route::setTriggerInt);
+        waypointItem->setAndCheckParameter(route::interval.id, item.param1);
+        waypointItem->setAndCheckParameter(route::shutter.id, item.param2);
     }
 
-    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const WaypointItem* waypointItem, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_SET_CAM_TRIGG_INTERVAL;
-        item.param1 = waypoint->parameter(route::interval.id).toInt();
-        item.param2 = waypoint->parameter(route::shutter.id).toInt();
+        item.param1 = waypointItem->parameter(route::interval.id).toInt();
+        item.param2 = waypointItem->parameter(route::shutter.id).toInt();
         item.param3 = 0;
         item.param4 = 0;
     }

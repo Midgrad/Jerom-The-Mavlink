@@ -12,8 +12,8 @@ class IMavlinkItemConvertor
 public:
     virtual ~IMavlinkItemConvertor() = default;
 
-    virtual void toItem(const mavlink_mission_item_t& item, RouteItem* routeItem) = 0;
-    virtual void fromItem(const RouteItem* routeItem, mavlink_mission_item_t& item) = 0;
+    virtual void toItem(const mavlink_mission_item_t& item, WaypointItem* waypointItem) = 0;
+    virtual void fromItem(const WaypointItem* waypointItem, mavlink_mission_item_t& item) = 0;
 };
 
 class IMavlinkWaypointConvertor

@@ -21,16 +21,16 @@ const Parameter shutter = { "shutter", TR_ROUTE("Shutter"), Parameter::Int, 0, 0
 const Parameter trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
 const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0, 0, 1000 };
 
-// RouteItems
-const RouteItemType setTriggerDist = { "mavlink_cam_tg_dist",
-                                       TR_ROUTE("Camera tg. dist."),
-                                       TR_ROUTE("CAM DST"),
-                                       { &distance, &shutter, &trgOnce } };
-const RouteItemType setTriggerInt = {
+// WaypointItems
+const WaypointItemType setTriggerDist = { "mavlink_cam_tg_dist",
+                                          TR_ROUTE("Camera tg. dist."),
+                                          TR_ROUTE("CAM DST"),
+                                          { &distance, &shutter, &trgOnce } };
+const WaypointItemType setTriggerInt = {
     "mavlink_cam_tg_int", TR_ROUTE("Camera tg. int"), TR_ROUTE("CAM INT"), { &interval, &shutter }
 };
 
-const RouteItemType landStart = {
+const WaypointItemType landStart = {
     "mavlink_landing_start", TR_ROUTE("Landing start"), TR_ROUTE("LND SRT"), {}
 };
 
@@ -54,20 +54,24 @@ const WaypointType loiterTurns = { "mavlink_loiter_turns",
                                    TR_ROUTE("Loiter turns"),
                                    TR_ROUTE("LTR TRN"),
                                    { &relativeAlt, &radius, &clockwise, &turns, &headingRequired,
-                                     &xtrack } };
+                                     &xtrack },
+                                   { &setTriggerDist, &setTriggerInt } };
 const WaypointType loiterAlt = { "mavlink_loiter_alt",
                                  TR_ROUTE("Loiter alt"),
                                  TR_ROUTE("LTR ALT"),
-                                 { &relativeAlt, &radius, &clockwise, &headingRequired, &xtrack } };
+                                 { &relativeAlt, &radius, &clockwise, &headingRequired, &xtrack },
+                                 { &setTriggerDist, &setTriggerInt } };
 const WaypointType loiterUnlim = { "mavlink_loiter_unlim",
                                    TR_ROUTE("Loiter unlim"),
                                    TR_ROUTE("LTR UNL"),
-                                   { &relativeAlt, &radius, &clockwise, &yaw } };
+                                   { &relativeAlt, &radius, &clockwise, &yaw },
+                                   { &setTriggerDist, &setTriggerInt } };
 const WaypointType loiterTime = { "mavlink_loiter_time",
                                   TR_ROUTE("Loiter time"),
                                   TR_ROUTE("LTR TM"),
                                   { &relativeAlt, &radius, &clockwise, &time, &headingRequired,
-                                    &xtrack } };
+                                    &xtrack },
+                                  { &setTriggerDist, &setTriggerInt } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",
