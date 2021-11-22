@@ -29,16 +29,15 @@ void ModuleJeromTheMavlink::init()
     auto missionService = Locator::get<domain::IMissionsRepository>();
     Q_ASSERT(missionService);
 
-    auto vehiclesRepository = Locator::get<domain::IVehiclesRepository>();
-    Q_ASSERT(vehiclesRepository);
+    auto vehiclesService = Locator::get<domain::IVehiclesService>();
+    Q_ASSERT(vehiclesService);
 
     auto commandsService = Locator::get<domain::ICommandsService>();
     Q_ASSERT(commandsService);
 
     missionService->registerMissionType(&domain::mission::mavlinkMissionType);
 
-    domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesRepository,
-                                          commandsService);
+    domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
 
     auto configuration = new data_source::LinkConfiguration(::linksFileName);
     m_transceiver =

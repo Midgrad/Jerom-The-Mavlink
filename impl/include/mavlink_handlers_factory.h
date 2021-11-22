@@ -5,7 +5,7 @@
 #include "i_mavlink_handlers_factory.h"
 #include "i_missions_repository.h"
 #include "i_property_tree.h"
-#include "i_vehicles_repository.h"
+#include "i_vehicles_service.h"
 
 namespace md::domain
 {
@@ -13,15 +13,14 @@ class MavlinkHandlerFactory : public IMavlinkHandlerFactory
 {
 public:
     MavlinkHandlerFactory(IPropertyTree* pTree, IMissionsRepository* missionsRepository,
-                          IVehiclesRepository* vehiclesRepository,
-                          ICommandsService* commandsService);
+                          IVehiclesService* vehiclesService, ICommandsService* commandsService);
 
     QVector<IMavlinkHandler*> create(MavlinkHandlerContext* context) override;
 
 private:
     IPropertyTree* const m_pTree;
     IMissionsRepository* const m_missionsRepository;
-    IVehiclesRepository* const m_vehiclesRepository;
+    IVehiclesService* const m_vehiclesService;
     ICommandsService* const m_commandsService;
 };
 
