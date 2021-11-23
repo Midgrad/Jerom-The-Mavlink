@@ -38,7 +38,7 @@ namespace md::domain
 class PositionedConvertor : public IMavlinkItemConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setAndCheckParameter(route::latitude.id, item.x);
         waypoint->setAndCheckParameter(route::longitude.id, item.y);
@@ -47,7 +47,7 @@ public:
                                        item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.frame = waypoint->parameter(route::relativeAlt.id).toBool()
                          ? MAV_FRAME_GLOBAL_RELATIVE_ALT
@@ -67,7 +67,7 @@ public:
 class HomeConvertor : public PositionedConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::home);
         PositionedConvertor::toItem(item, waypoint);
@@ -75,7 +75,7 @@ public:
         // NOTE: current/specified position
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_SET_HOME;
         PositionedConvertor::fromItem(waypoint, item);
@@ -96,7 +96,7 @@ public:
      *   negative value for counter-clockwise orbit. Allows trajectory control.
      * | Desired yaw angle at waypoint (rotary wing). NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.).
      * | Latitude| Longitude| Altitude|  */
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::waypoint);
         PositionedConvertor::toItem(item, waypoint);
@@ -106,7 +106,7 @@ public:
         waypoint->setAndCheckParameter(route::yaw.id, item.param4);
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_WAYPOINT;
         PositionedConvertor::fromItem(waypoint, item);
@@ -122,7 +122,7 @@ class TakeoffConvertor : public PositionedConvertor
 public:
     /* Takeoff from ground / hand. Vehicles that support multiple takeoff modes (e.g. VTOL quadplane) should take off using the currently configured mode.
      * Yaw angle (if magnetometer present), ignored without magnetometer. NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.).| Latitude| Longitude| Altitude|  */
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::takeoff);
         PositionedConvertor::toItem(item, waypoint);
@@ -130,7 +130,7 @@ public:
         waypoint->setAndCheckParameter(route::yaw.id, item.param4);
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_TAKEOFF;
         PositionedConvertor::fromItem(waypoint, item);
@@ -144,12 +144,12 @@ public:
 class LandStartConvertor : public IMavlinkItemConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::landStart);
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_LAND_START;
         item.param1 = 0;
@@ -167,7 +167,7 @@ public:
 class LandingConvertor : public PositionedConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::landing);
         PositionedConvertor::toItem(item, waypoint);
@@ -176,7 +176,7 @@ public:
         // TODO: Precision land mode
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_LAND;
         PositionedConvertor::fromItem(waypoint, item);
@@ -190,7 +190,7 @@ public:
 class LoiterTurnsConvertor : public PositionedConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::loiterTurns);
         PositionedConvertor::toItem(item, waypoint);
@@ -201,7 +201,7 @@ public:
         waypoint->setAndCheckParameter(route::xtrack.id, item.param4);
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_LOITER_TURNS;
         PositionedConvertor::fromItem(waypoint, item);
@@ -216,7 +216,7 @@ public:
 class LoiterAltConvertor : public PositionedConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::loiterAlt);
         PositionedConvertor::toItem(item, waypoint);
@@ -226,7 +226,7 @@ public:
         waypoint->setAndCheckParameter(route::xtrack.id, item.param4);
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_LOITER_TO_ALT;
         PositionedConvertor::fromItem(waypoint, item);
@@ -241,7 +241,7 @@ public:
 class LoiterUnlimConvertor : public PositionedConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::loiterUnlim);
         PositionedConvertor::toItem(item, waypoint);
@@ -250,7 +250,7 @@ public:
         waypoint->setAndCheckParameter(route::yaw.id, item.param4);
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_LOITER_UNLIM;
         PositionedConvertor::fromItem(waypoint, item);
@@ -265,7 +265,7 @@ public:
 class LoiterTimeConvertor : public PositionedConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::loiterTime);
         PositionedConvertor::toItem(item, waypoint);
@@ -276,7 +276,7 @@ public:
         waypoint->setAndCheckParameter(route::xtrack.id, item.param4);
     }
 
-    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_NAV_LOITER_TIME;
         PositionedConvertor::fromItem(waypoint, item);
@@ -291,7 +291,7 @@ public:
 class SetTriggerDistConvertor : public IMavlinkItemConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypointItem) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypointItem) override
     {
         waypointItem->setType(&route::setTriggerDist);
         waypointItem->setAndCheckParameter(route::distance.id, item.param1);
@@ -299,7 +299,7 @@ public:
         waypointItem->setAndCheckParameter(route::trgOnce.id, item.param3);
     }
 
-    void fromItem(const WaypointItem* waypointItem, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypointItem, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_SET_CAM_TRIGG_DIST;
         item.param1 = waypointItem->parameter(route::distance.id).toReal();
@@ -319,14 +319,14 @@ public:
 class SetTriggerIntConvertor : public IMavlinkItemConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypointItem) override
+    void toItem(const mavlink_mission_item_t& item, RouteItem* waypointItem) override
     {
         waypointItem->setType(&route::setTriggerInt);
         waypointItem->setAndCheckParameter(route::interval.id, item.param1);
         waypointItem->setAndCheckParameter(route::shutter.id, item.param2);
     }
 
-    void fromItem(const WaypointItem* waypointItem, mavlink_mission_item_t& item) override
+    void fromItem(const RouteItem* waypointItem, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_SET_CAM_TRIGG_INTERVAL;
         item.param1 = waypointItem->parameter(route::interval.id).toInt();

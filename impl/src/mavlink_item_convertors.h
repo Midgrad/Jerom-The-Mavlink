@@ -3,7 +3,7 @@
 
 #include <common/mavlink.h>
 
-#include "waypoint_item.h"
+#include "route_item.h"
 
 namespace md::domain
 {
@@ -12,8 +12,8 @@ class IMavlinkItemConvertor
 public:
     virtual ~IMavlinkItemConvertor() = default;
 
-    virtual void toItem(const mavlink_mission_item_t& item, WaypointItem* waypointItem) = 0;
-    virtual void fromItem(const WaypointItem* waypointItem, mavlink_mission_item_t& item) = 0;
+    virtual void toItem(const mavlink_mission_item_t& item, RouteItem* waypointItem) = 0;
+    virtual void fromItem(const RouteItem* waypointItem, mavlink_mission_item_t& item) = 0;
 
     virtual bool isWaypointItem() const = 0;
 };

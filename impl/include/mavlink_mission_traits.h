@@ -22,61 +22,61 @@ const Parameter trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
 const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0, 0, 1000 };
 
 // WaypointItems
-const WaypointItemType setTriggerDist = { "mavlink_cam_tg_dist",
+const RouteItemType setTriggerDist = { "mavlink_cam_tg_dist",
                                           TR_ROUTE("Camera tg. dist."),
                                           TR_ROUTE("CAM DST"),
                                           { &distance, &shutter, &trgOnce } };
-const WaypointItemType setTriggerInt = {
+const RouteItemType setTriggerInt = {
     "mavlink_cam_tg_int", TR_ROUTE("Camera tg. int"), TR_ROUTE("CAM INT"), { &interval, &shutter }
 };
 
-const WaypointItemType landStart = {
+const RouteItemType landStart = {
     "mavlink_landing_start", TR_ROUTE("Landing start"), TR_ROUTE("LND SRT"), {}
 };
 
 // Waypoints
-const WaypointItemType home = { "mavlink_home",
+const RouteItemType home = { "mavlink_home",
                                 TR_ROUTE("Home"),
                                 TR_ROUTE("HOME"),
                                 { &route::latitude, &route::longitude, &route::altitude,
                                   &relativeAlt, &yaw } };
-const WaypointItemType waypoint = { "mavlink_waypoint",
+const RouteItemType waypoint = { "mavlink_waypoint",
                                     TR_ROUTE("Waypoint"),
                                     TR_ROUTE("WPT"),
                                     { &route::latitude, &route::longitude, &route::altitude,
                                       &relativeAlt, &time, &acceptRadius, &passRadius, &yaw },
                                     { &setTriggerDist, &setTriggerInt, &landStart } };
-const WaypointItemType takeoff = { "mavlink_takeoff",
+const RouteItemType takeoff = { "mavlink_takeoff",
                                    TR_ROUTE("Takeoff"),
                                    TR_ROUTE("TKFF"),
                                    { &route::latitude, &route::longitude, &route::altitude,
                                      &relativeAlt, &pitch, &yaw } };
-const WaypointItemType landing = { "mavlink_landing",
+const RouteItemType landing = { "mavlink_landing",
                                    TR_ROUTE("Landing"),
                                    TR_ROUTE("LANDING"),
                                    { &route::latitude, &route::longitude, &route::altitude,
                                      &relativeAlt, &yaw, &abortAltitude } };
-const WaypointItemType loiterTurns = { "mavlink_loiter_turns",
+const RouteItemType loiterTurns = { "mavlink_loiter_turns",
                                        TR_ROUTE("Loiter turns"),
                                        TR_ROUTE("LTR TRN"),
                                        { &route::latitude, &route::longitude, &route::altitude,
                                          &relativeAlt, &radius, &clockwise, &turns,
                                          &headingRequired, &xtrack },
                                        { &setTriggerDist, &setTriggerInt } };
-const WaypointItemType loiterAlt = { "mavlink_loiter_alt",
+const RouteItemType loiterAlt = { "mavlink_loiter_alt",
                                      TR_ROUTE("Loiter alt"),
                                      TR_ROUTE("LTR ALT"),
                                      { &route::latitude, &route::longitude, &route::altitude,
                                        &relativeAlt, &radius, &clockwise, &headingRequired,
                                        &xtrack },
                                      { &setTriggerDist, &setTriggerInt } };
-const WaypointItemType loiterUnlim = { "mavlink_loiter_unlim",
+const RouteItemType loiterUnlim = { "mavlink_loiter_unlim",
                                        TR_ROUTE("Loiter unlim"),
                                        TR_ROUTE("LTR UNL"),
                                        { &route::latitude, &route::longitude, &route::altitude,
                                          &relativeAlt, &radius, &clockwise, &yaw },
                                        { &setTriggerDist, &setTriggerInt } };
-const WaypointItemType loiterTime = { "mavlink_loiter_time",
+const RouteItemType loiterTime = { "mavlink_loiter_time",
                                       TR_ROUTE("Loiter time"),
                                       TR_ROUTE("LTR TM"),
                                       { &route::latitude, &route::longitude, &route::altitude,

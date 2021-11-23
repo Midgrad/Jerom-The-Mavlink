@@ -168,7 +168,7 @@ void MissionHandler::sendMissionCount(const QVariant& vehicleId, int count)
     emit sendMessage(message);
 }
 
-void MissionHandler::sendMissionItem(const QVariant& vehicleId, WaypointItem* waypointItem,
+void MissionHandler::sendMissionItem(const QVariant& vehicleId, RouteItem* waypointItem,
                                      int index)
 {
     qDebug() << "sendMissionItem" << vehicleId << index;
@@ -260,7 +260,7 @@ void MissionHandler::processMissionRequest(const mavlink_message_t& message)
     //            previousItem->setConfirmed(true);
     //    }
 
-    WaypointItem* waypointItem = mission->route()->item(request.seq);
+    RouteItem* waypointItem = mission->route()->item(request.seq);
     if (!waypointItem)
         return;
 
@@ -306,7 +306,7 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
     auto convertor = item.seq ? m_convertors.convertor(item.command) : m_convertors.homeConvertor();
     if (convertor)
     {
-        WaypointItem* wptItem = nullptr;
+        RouteItem* wptItem = nullptr;
         // Special case for HOME
         if (item.seq == 0)
         {
@@ -326,13 +326,13 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
             if (convertor->isWaypointItem())
             {
                 // waypoint by default
-                WaypointItem* waypoint = new WaypointItem(&route::waypoint);
+                RouteItem* waypoint = new RouteItem(&route::waypoint);
                 wptItem = waypoint;
                 route->addWaypoint(waypoint);
             }
             else
             {
-                WaypointItem* waypoint = nullptr;
+                RouteItem* waypoint = nullptr;
                 if (route->waypointsCount())
                 {
                     // Add item to last waypoint
@@ -341,11 +341,11 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
                 else
                 {
                     // Or create new waypoint
-                    waypoint = new WaypointItem(&route::waypoint);
+                    waypoint = new RouteItem(&route::waypoint);
                     route->addWaypoint(waypoint);
                 }
 
-                wptItem = new WaypointItem(route::waypoint.childTypes.first());
+                wptItem = new RouteItem(route::waypoint.childTypes.first());
                 waypoint->addItem(wptItem);
             }
             wptItem->setName(wptItem->type()->shortName);
@@ -490,7 +490,7 @@ void MissionHandler::onMissionRemoved(Mission* mission)
 
 void MissionHandler::uploadItem(Mission* mission, int index)
 {
-    WaypointItem* wpt = mission->route()->route() ? mission->route()->route()->waypoint(index)
+    RouteItem* wpt = mission->route()->route() ? mission->route()->route()->waypoint(index)
                                                   : nullptr;
     if (!wpt)
         return;
