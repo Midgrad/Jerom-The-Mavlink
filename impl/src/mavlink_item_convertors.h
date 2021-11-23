@@ -3,7 +3,7 @@
 
 #include <common/mavlink.h>
 
-#include "waypoint.h"
+#include "waypoint_item.h"
 
 namespace md::domain
 {

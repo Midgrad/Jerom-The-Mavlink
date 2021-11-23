@@ -38,29 +38,24 @@ namespace md::domain
 class PositionedConvertor : public IMavlinkItemConvertor
 {
 public:
-    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypointItem) override
+    void toItem(const mavlink_mission_item_t& item, WaypointItem* waypoint) override
     {
-        Waypoint* waypoint = qobject_cast<Waypoint*>(waypointItem);
-        if (waypoint)
-            waypoint->setPosition(Geodetic(item.x, item.y, item.z));
-
-        waypointItem->setAndCheckParameter(route::relativeAlt.id,
-                                           item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
+        waypoint->setAndCheckParameter(route::latitude.id, item.x);
+        waypoint->setAndCheckParameter(route::longitude.id, item.y);
+        waypoint->setAndCheckParameter(route::altitude.id, item.z);
+        waypoint->setAndCheckParameter(route::relativeAlt.id,
+                                       item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
     }
 
-    void fromItem(const WaypointItem* waypointItem, mavlink_mission_item_t& item) override
+    void fromItem(const WaypointItem* waypoint, mavlink_mission_item_t& item) override
     {
-        item.frame = waypointItem->parameter(route::relativeAlt.id).toBool()
+        item.frame = waypoint->parameter(route::relativeAlt.id).toBool()
                          ? MAV_FRAME_GLOBAL_RELATIVE_ALT
                          : MAV_FRAME_GLOBAL;
 
-        const Waypoint* waypoint = qobject_cast<const Waypoint*>(waypointItem);
-        if (!waypoint)
-            return;
-
-        item.x = waypoint->position().latitude();
-        item.y = waypoint->position().longitude();
-        item.z = waypoint->position().altitude();
+        item.x = waypoint->parameter(route::latitude.id).toFloat();
+        item.y = waypoint->parameter(route::longitude.id).toFloat();
+        item.z = waypoint->parameter(route::altitude.id).toFloat();
     }
 
     bool isWaypointItem() const override

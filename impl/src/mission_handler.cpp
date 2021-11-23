@@ -326,13 +326,13 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
             if (convertor->isWaypointItem())
             {
                 // waypoint by default
-                Waypoint* waypoint = new Waypoint(&route::waypoint);
+                WaypointItem* waypoint = new WaypointItem(&route::waypoint);
                 wptItem = waypoint;
                 route->addWaypoint(waypoint);
             }
             else
             {
-                Waypoint* waypoint = nullptr;
+                WaypointItem* waypoint = nullptr;
                 if (route->waypointsCount())
                 {
                     // Add item to last waypoint
@@ -341,11 +341,11 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
                 else
                 {
                     // Or create new waypoint
-                    waypoint = new Waypoint(&route::waypoint);
+                    waypoint = new WaypointItem(&route::waypoint);
                     route->addWaypoint(waypoint);
                 }
 
-                wptItem = new WaypointItem(route::waypoint.itemTypes.first());
+                wptItem = new WaypointItem(route::waypoint.childTypes.first());
                 waypoint->addItem(wptItem);
             }
             wptItem->setName(wptItem->type()->shortName);
@@ -434,7 +434,7 @@ void MissionHandler::processMissionReached(const mavlink_message_t& message)
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
     // TODO: mark item as reached
-    //    Waypoint* waypoint = mission->waypoint(reached.seq);
+    //    WaypointItem* waypoint = mission->waypoint(reached.seq);
     //    if (waypoint)
     //        waypoint->setReached(true);
 }
@@ -490,8 +490,8 @@ void MissionHandler::onMissionRemoved(Mission* mission)
 
 void MissionHandler::uploadItem(Mission* mission, int index)
 {
-    Waypoint* wpt = mission->route()->route() ? mission->route()->route()->waypoint(index)
-                                              : nullptr;
+    WaypointItem* wpt = mission->route()->route() ? mission->route()->route()->waypoint(index)
+                                                  : nullptr;
     if (!wpt)
         return;
 
