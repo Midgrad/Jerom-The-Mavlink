@@ -29,6 +29,12 @@ void LinkTransceiver::start()
 
 void LinkTransceiver::stop()
 {
+    if (m_timerId)
+    {
+        this->killTimer(m_timerId);
+        m_timerId = 0;
+    }
+
     emit finished();
 }
 
