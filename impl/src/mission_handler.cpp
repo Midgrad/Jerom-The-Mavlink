@@ -328,21 +328,21 @@ void MissionHandler::processMissionItem(const mavlink_message_t& message)
                 // waypoint by default
                 RouteItem* waypoint = new RouteItem(&route::waypoint);
                 wptItem = waypoint;
-                route->addWaypoint(waypoint);
+                route->addItem(waypoint);
             }
             else
             {
                 RouteItem* waypoint = nullptr;
-                if (route->waypointsCount())
+                if (route->count())
                 {
                     // Add item to last waypoint
-                    waypoint = route->waypoints().last();
+                    waypoint = route->items().last();
                 }
                 else
                 {
                     // Or create new waypoint
                     waypoint = new RouteItem(&route::waypoint);
-                    route->addWaypoint(waypoint);
+                    route->addItem(waypoint);
                 }
 
                 wptItem = new RouteItem(route::waypoint.childTypes.first());
@@ -490,7 +490,7 @@ void MissionHandler::onMissionRemoved(Mission* mission)
 
 void MissionHandler::uploadItem(Mission* mission, int index)
 {
-    RouteItem* wpt = mission->route()->route() ? mission->route()->route()->waypoint(index)
+    RouteItem* wpt = mission->route()->route() ? mission->route()->route()->item(index)
                                                   : nullptr;
     if (!wpt)
         return;
