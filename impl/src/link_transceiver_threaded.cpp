@@ -7,7 +7,7 @@
 
 namespace
 {
-constexpr int timeout = 500;
+constexpr int timeout = 5000;
 constexpr char threadName[] = "link_transceiver";
 } // namespace
 
@@ -20,20 +20,24 @@ LinkTransceiverThreaded::LinkTransceiverThreaded(ILinkTransceiver* worker, QObje
 {
     Q_ASSERT(worker);
 
-    //    m_thread->setObjectName(::threadName);
+    m_thread->setObjectName(::threadName);
     worker->moveToThread(m_thread);
 
-    QObject::connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
     QObject::connect(m_worker, &ILinkTransceiver::finished, m_thread, &QThread::quit);
     QObject::connect(m_worker, &ILinkTransceiver::finished, m_worker, &QObject::deleteLater);
-    QObject::connect(m_worker, &ILinkTransceiver::finished, this, &ILinkTransceiver::finished);
+    QObject::connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
+
+    //    QObject::connect(m_worker, &ILinkTransceiver::finished, this, &ILinkTransceiver::finished);
 }
 
 LinkTransceiverThreaded::~LinkTransceiverThreaded()
 {
-    m_thread->terminate();
-    if (!m_thread->wait(::timeout))
-        qCritical() << "Thread" << m_thread->objectName() << "is blocked!";
+    qDebug() << "Destructing LinkTransceiverThreaded, wait to processes to be killed";
+    //    this->thread()->sleep(10);
+    //    qDebug() << "Forcing to terminate...";
+    //    m_thread->terminate();
+    //    if (!m_thread->wait(::timeout))
+    //        qCritical() << "Thread" << m_thread->objectName() << "is blocked!";
 }
 
 void LinkTransceiverThreaded::start()
@@ -45,5 +49,16 @@ void LinkTransceiverThreaded::start()
 
 void LinkTransceiverThreaded::stop()
 {
+    qDebug() << "Emitting stop to LT";
     QMetaObject::invokeMethod(m_worker, "stop", Qt::QueuedConnection);
+
+    //    while (m_thread->isRunning())
+    ////            {
+    ////                m_thread->quit();
+    ////                qDebug() << "Trying to stop LT thread";
+    ////            }
+
+    if (!m_thread->wait())
+        qCritical() << "Thread" << m_thread->objectName() << "is blocked!";
+    qDebug() << "Stopped emitting to LT";
 }

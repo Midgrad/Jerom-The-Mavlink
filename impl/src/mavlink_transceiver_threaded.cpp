@@ -4,7 +4,7 @@
 
 namespace
 {
-constexpr int timeout = 500;
+constexpr int timeout = 5000;
 constexpr char threadName[] = "mavlink_transceiver";
 } // namespace
 
@@ -24,14 +24,17 @@ MavlinkTranscieverThreaded::MavlinkTranscieverThreaded(IMavlinkTransceiver* work
     QObject::connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
     QObject::connect(m_worker, &IMavlinkTransceiver::finished, m_thread, &QThread::quit);
     QObject::connect(m_worker, &IMavlinkTransceiver::finished, m_worker, &QObject::deleteLater);
-    QObject::connect(m_worker, &IMavlinkTransceiver::finished, this, &IMavlinkTransceiver::finished);
+    //    QObject::connect(m_worker, &IMavlinkTransceiver::finished, this, &IMavlinkTransceiver::finished);
 }
 
 MavlinkTranscieverThreaded::~MavlinkTranscieverThreaded()
 {
-    m_thread->terminate();
-    if (!m_thread->wait(::timeout))
-        qCritical() << "Thread" << m_thread->objectName() << "is blocked!";
+    qDebug() << "Destructing MavlinkTranscieverThreaded, wait to processes to be killed";
+    //    this->thread()->sleep(10);
+    //    qDebug() << "Forcing to terminate...";
+    //    m_thread->terminate();
+    //    if (!m_thread->wait(::timeout))
+    //        qCritical() << "Thread" << m_thread->objectName() << "is blocked!";
 }
 
 void MavlinkTranscieverThreaded::start()
@@ -44,4 +47,6 @@ void MavlinkTranscieverThreaded::start()
 void MavlinkTranscieverThreaded::stop()
 {
     QMetaObject::invokeMethod(m_worker, "stop", Qt::QueuedConnection);
+    if (!m_thread->wait())
+        qCritical() << "Thread" << m_thread->objectName() << "is blocked!";
 }

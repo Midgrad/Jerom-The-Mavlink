@@ -24,11 +24,12 @@ void LinkTransceiver::start()
 {
     m_timerId = this->startTimer(::interval);
 
-    receiveData();
+    //    receiveData();
 }
 
 void LinkTransceiver::stop()
 {
+    qDebug() << "LT received stop";
     if (m_timerId)
     {
         this->killTimer(m_timerId);
@@ -40,8 +41,12 @@ void LinkTransceiver::stop()
 
 void LinkTransceiver::timerEvent(QTimerEvent* event)
 {
+    qDebug() << "LT timerEvent";
+
     if (event->timerId() != m_timerId)
         return QObject::timerEvent(event);
+
+    receiveData();
 
     m_factory->checkHandlers();
 }
@@ -50,7 +55,6 @@ void LinkTransceiver::receiveData()
 {
     m_link->asyncReceive([this](const std::string& received_data) {
         emit receivedData(QByteArray::fromStdString(received_data));
-        receiveData();
     });
 }
 
