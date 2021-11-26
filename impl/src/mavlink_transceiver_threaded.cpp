@@ -24,14 +24,19 @@ MavlinkTranscieverThreaded::MavlinkTranscieverThreaded(IMavlinkTransceiver* work
     QObject::connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
     QObject::connect(m_worker, &IMavlinkTransceiver::finished, m_thread, &QThread::quit);
     QObject::connect(m_worker, &IMavlinkTransceiver::finished, m_worker, &QObject::deleteLater);
-    QObject::connect(m_worker, &IMavlinkTransceiver::finished, this, &IMavlinkTransceiver::finished);
+    //    QObject::connect(m_worker, &IMavlinkTransceiver::finished, this, &IMavlinkTransceiver::finished);
 }
 
 MavlinkTranscieverThreaded::~MavlinkTranscieverThreaded()
 {
-    m_thread->terminate();
+    m_thread->quit();
+
     if (!m_thread->wait(::timeout))
+    {
         qCritical() << "Thread" << m_thread->objectName() << "is blocked!";
+        qCritical() << "Forcing to terminate...";
+        m_thread->terminate();
+    }
 }
 
 void MavlinkTranscieverThreaded::start()

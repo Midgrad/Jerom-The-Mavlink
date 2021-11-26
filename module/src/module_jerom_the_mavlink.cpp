@@ -21,6 +21,11 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 {
 }
 
+ModuleJeromTheMavlink::~ModuleJeromTheMavlink()
+{
+    delete m_transceiver;
+}
+
 void ModuleJeromTheMavlink::init()
 {
     auto pTree = Locator::get<domain::IPropertyTree>();
@@ -59,6 +64,4 @@ void ModuleJeromTheMavlink::done()
     missionService->unregisterMissionType(&domain::mission::mavlinkMissionType);
 
     m_transceiver->stop();
-
-    delete m_transceiver;
 }

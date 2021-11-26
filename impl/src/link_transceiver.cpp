@@ -29,6 +29,12 @@ void LinkTransceiver::start()
 
 void LinkTransceiver::stop()
 {
+    if (m_timerId)
+    {
+        this->killTimer(m_timerId);
+        m_timerId = 0;
+    }
+
     emit finished();
 }
 
@@ -50,7 +56,5 @@ void LinkTransceiver::receiveData()
 
 void LinkTransceiver::send(const QByteArray& data)
 {
-    m_link->asyncSend(data.toStdString(), [](std::size_t size) {
-        //        qDebug() << "Sent bytes: " << size;
-    });
+    m_link->asyncSend(data.toStdString(), [](std::size_t size) {});
 }

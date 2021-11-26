@@ -20,20 +20,26 @@ LinkTransceiverThreaded::LinkTransceiverThreaded(ILinkTransceiver* worker, QObje
 {
     Q_ASSERT(worker);
 
-    //    m_thread->setObjectName(::threadName);
+    m_thread->setObjectName(::threadName);
     worker->moveToThread(m_thread);
 
-    QObject::connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
     QObject::connect(m_worker, &ILinkTransceiver::finished, m_thread, &QThread::quit);
     QObject::connect(m_worker, &ILinkTransceiver::finished, m_worker, &QObject::deleteLater);
-    QObject::connect(m_worker, &ILinkTransceiver::finished, this, &ILinkTransceiver::finished);
+    QObject::connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
+
+    //    QObject::connect(m_worker, &ILinkTransceiver::finished, this, &ILinkTransceiver::finished);
 }
 
 LinkTransceiverThreaded::~LinkTransceiverThreaded()
 {
-    m_thread->terminate();
+    m_thread->quit();
+
     if (!m_thread->wait(::timeout))
+    {
         qCritical() << "Thread" << m_thread->objectName() << "is blocked!";
+        qCritical() << "Forcing to terminate...";
+        m_thread->terminate();
+    }
 }
 
 void LinkTransceiverThreaded::start()

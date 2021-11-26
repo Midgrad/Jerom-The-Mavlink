@@ -54,6 +54,11 @@ void MavlinkTransceiver::stop()
         m_timerId = 0;
     }
 
+    for (auto thread : m_linkTransceiverThreaded)
+    {
+        thread->stop();
+    }
+
     emit finished();
 }
 
