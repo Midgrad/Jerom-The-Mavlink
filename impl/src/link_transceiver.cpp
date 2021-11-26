@@ -44,14 +44,13 @@ void LinkTransceiver::timerEvent(QTimerEvent* event)
         return QObject::timerEvent(event);
 
     m_factory->checkHandlers();
-
-    receiveData();
 }
 
 void LinkTransceiver::receiveData()
 {
     m_link->asyncReceive([this](const std::string& received_data) {
         emit receivedData(QByteArray::fromStdString(received_data));
+        receiveData();
     });
 }
 
