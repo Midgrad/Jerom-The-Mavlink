@@ -26,7 +26,7 @@ void ModuleJeromTheMavlink::init()
     auto pTree = Locator::get<domain::IPropertyTree>();
     Q_ASSERT(pTree);
 
-    auto missionService = Locator::get<domain::IMissionsRepository>();
+    auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
 
     auto vehiclesService = Locator::get<domain::IVehiclesService>();
@@ -53,7 +53,7 @@ void ModuleJeromTheMavlink::start()
 
 void ModuleJeromTheMavlink::done()
 {
-    auto missionService = Locator::get<domain::IMissionsRepository>();
+    auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
 
     missionService->unregisterMissionType(&domain::mission::mavlinkMissionType);

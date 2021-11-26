@@ -2,7 +2,7 @@
 #define MISSION_HANDLER_H
 
 #include "i_mavlink_handler.h"
-#include "i_missions_repository.h"
+#include "i_missions_service.h"
 #include "i_vehicles_repository.h"
 #include "mavlink_item_convertors.h"
 
@@ -22,7 +22,7 @@ public:
         WaitingAck
     };
 
-    MissionHandler(MavlinkHandlerContext* context, IMissionsRepository* missionsRepository,
+    MissionHandler(MavlinkHandlerContext* context, IMissionsService* missionsService,
                    QObject* parent = nullptr);
     ~MissionHandler() override;
 
@@ -56,7 +56,7 @@ private slots:
     void cancel(Mission* mission);
 
 private:
-    IMissionsRepository* const m_missionsRepository;
+    IMissionsService* const m_missionsService;
     MavlinkItemConvertorsPool m_convertors;
     QMap<QVariant, Mission*> m_vehicleMissions;
     QMap<Mission*, State> m_missionStates;

@@ -8,11 +8,11 @@
 using namespace md::domain;
 
 MavlinkHandlerFactory::MavlinkHandlerFactory(IPropertyTree* pTree,
-                                             IMissionsRepository* missionsRepository,
+                                             IMissionsService* missionsService,
                                              IVehiclesService* vehiclesService,
                                              ICommandsService* commandsService) :
     m_pTree(pTree),
-    m_missionsRepository(missionsRepository),
+    m_missionsService(missionsService),
     m_vehiclesService(vehiclesService),
     m_commandsService(commandsService)
 {
@@ -23,7 +23,7 @@ QVector<IMavlinkHandler*> MavlinkHandlerFactory::create(MavlinkHandlerContext* c
     context->pTree = m_pTree;
 
     auto heartbeat = new HeartbeatHandler(context, m_vehiclesService, m_commandsService);
-    auto mission = new MissionHandler(context, m_missionsRepository);
+    auto mission = new MissionHandler(context, m_missionsService);
     // Load mission for new MAVLINK vehicles
     QObject::connect(heartbeat, &HeartbeatHandler::vehicleObtained, mission,
                      &MissionHandler::onVehicleObtained);
