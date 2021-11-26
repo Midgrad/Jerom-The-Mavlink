@@ -29,9 +29,7 @@ MavlinkTranscieverThreaded::MavlinkTranscieverThreaded(IMavlinkTransceiver* work
 
 MavlinkTranscieverThreaded::~MavlinkTranscieverThreaded()
 {
-    //    qDebug() << "Destructing MavlinkTranscieverThreaded, waiting for processes to be killed";
     m_thread->quit();
-    //    qDebug() << "Exiting MT thread...";
 
     if (!m_thread->wait(::timeout))
     {
@@ -39,7 +37,6 @@ MavlinkTranscieverThreaded::~MavlinkTranscieverThreaded()
         qCritical() << "Forcing to terminate...";
         m_thread->terminate();
     }
-    //    qDebug() << "Bye, MavlinkTranscieverThreaded!";
 }
 
 void MavlinkTranscieverThreaded::start()
@@ -51,6 +48,5 @@ void MavlinkTranscieverThreaded::start()
 
 void MavlinkTranscieverThreaded::stop()
 {
-    //    qDebug() << "Emitting stop to MT";
     QMetaObject::invokeMethod(m_worker, "stop", Qt::QueuedConnection);
 }

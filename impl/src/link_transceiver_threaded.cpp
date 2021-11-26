@@ -32,10 +32,7 @@ LinkTransceiverThreaded::LinkTransceiverThreaded(ILinkTransceiver* worker, QObje
 
 LinkTransceiverThreaded::~LinkTransceiverThreaded()
 {
-    //    qDebug() << "Destructing LinkTransceiverThreaded, waiting for processes to be killed";
-
     m_thread->quit();
-    //    qDebug() << "Exiting LT thread...";
 
     if (!m_thread->wait(::timeout))
     {
@@ -43,7 +40,6 @@ LinkTransceiverThreaded::~LinkTransceiverThreaded()
         qCritical() << "Forcing to terminate...";
         m_thread->terminate();
     }
-    //    qDebug() << "Bye, LinkTransceiverThreaded!";
 }
 
 void LinkTransceiverThreaded::start()
@@ -55,6 +51,5 @@ void LinkTransceiverThreaded::start()
 
 void LinkTransceiverThreaded::stop()
 {
-    //    qDebug() << "Emitting stop to LT";
     QMetaObject::invokeMethod(m_worker, "stop", Qt::QueuedConnection);
 }
