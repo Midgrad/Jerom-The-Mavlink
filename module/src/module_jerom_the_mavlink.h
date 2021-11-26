@@ -16,6 +16,7 @@ class ModuleJeromTheMavlink
 
 public:
     Q_INVOKABLE ModuleJeromTheMavlink();
+    ~ModuleJeromTheMavlink();
 
     void init() override;
     void start() override;
