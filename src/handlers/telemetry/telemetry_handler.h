@@ -13,8 +13,7 @@ public:
     TelemetryHandler(MavlinkHandlerContext* context, QObject* parent = nullptr);
     ~TelemetryHandler() override;
 
-    bool canParse(quint32 msgId) override;
-    void parseMessage(const mavlink_message_t& message) override;
+    void parse(const mavlink_message_t& message) override;
 
     void processAttitude(const mavlink_message_t& message);
     void processAltitude(const mavlink_message_t& message);

@@ -80,10 +80,7 @@ void MavlinkTransceiver::parseMessage(const QByteArray& data)
 
     for (IMavlinkHandler* handler : m_handlers)
     {
-        if (handler->canParse(message.msgid))
-        {
-            handler->parseMessage(message);
-        }
+        handler->parse(message);
     }
 }
 

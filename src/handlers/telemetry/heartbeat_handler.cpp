@@ -112,14 +112,10 @@ HeartbeatHandler::~HeartbeatHandler()
     }
 }
 
-bool HeartbeatHandler::canParse(quint32 msgId)
+void HeartbeatHandler::parse(const mavlink_message_t& message)
 {
-    return (msgId == MAVLINK_MSG_ID_HEARTBEAT);
-}
-
-void HeartbeatHandler::parseMessage(const mavlink_message_t& message)
-{
-    this->processHeartbeat(message);
+    if (message.msgid == MAVLINK_MSG_ID_HEARTBEAT)
+        this->processHeartbeat(message);
 }
 
 void HeartbeatHandler::sendMode(const QVariant& vehicleId, const QString& mode)

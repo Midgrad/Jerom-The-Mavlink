@@ -20,8 +20,7 @@ public:
                      ICommandsService* commandsService, QObject* parent = nullptr);
     ~HeartbeatHandler() override;
 
-    bool canParse(quint32 msgId) override;
-    void parseMessage(const mavlink_message_t& message) override;
+    void parse(const mavlink_message_t& message) override;
 
     void sendMode(const QVariant& vehicleId, const QString& mode);
     void sendArm(const QVariant& vehicleId, bool arm);

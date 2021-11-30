@@ -1,9 +1,13 @@
 #include "mavlink_handlers_factory.h"
 
 #include "heartbeat_handler.h"
-#include "mission_handler.h"
 #include "system_status_handler.h"
 #include "telemetry_handler.h"
+
+#include "mavlink_mission_clear.h"
+#include "mavlink_mission_common.h"
+#include "mavlink_mission_download.h"
+#include "mavlink_mission_upload.h"
 
 using namespace md::domain;
 
@@ -23,15 +27,21 @@ QVector<IMavlinkHandler*> MavlinkHandlerFactory::create(MavlinkHandlerContext* c
     context->pTree = m_pTree;
 
     auto heartbeat = new HeartbeatHandler(context, m_vehiclesService, m_commandsService);
-    auto mission = new MissionHandler(context, m_missionsService);
+    auto mission = new MavlinkMissionCommon(context, m_missionsService);
+
     // Load mission for new MAVLINK vehicles
     QObject::connect(heartbeat, &HeartbeatHandler::vehicleObtained, mission,
-                     &MissionHandler::onVehicleObtained);
+                     &MavlinkMissionCommon::onVehicleObtained);
 
     QVector<IMavlinkHandler*> handlers;
     handlers.append(heartbeat);
-    handlers.append(mission);
     handlers.append(new TelemetryHandler(context));
     handlers.append(new SystemStatusHandler(context));
+
+    handlers.append(mission);
+    handlers.append(new MavlinkMissionUpload(context, m_missionsService));
+    handlers.append(new MavlinkMissionDownload(context, m_missionsService));
+    handlers.append(new MavlinkMissionClear(context, m_missionsService));
+
     return handlers;
 }

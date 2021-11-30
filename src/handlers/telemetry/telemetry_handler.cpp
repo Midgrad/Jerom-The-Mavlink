@@ -17,16 +17,7 @@ TelemetryHandler::~TelemetryHandler()
 {
 }
 
-bool TelemetryHandler::canParse(quint32 msgId)
-{
-    return (msgId == MAVLINK_MSG_ID_ATTITUDE) || (msgId == MAVLINK_MSG_ID_ALTITUDE) ||
-           (msgId == MAVLINK_MSG_ID_GLOBAL_POSITION_INT) || (msgId == MAVLINK_MSG_ID_VFR_HUD) ||
-           (msgId == MAVLINK_MSG_ID_GPS_RAW_INT) ||
-           (msgId == MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT) ||
-           (msgId == MAVLINK_MSG_ID_HOME_POSITION);
-}
-
-void TelemetryHandler::parseMessage(const mavlink_message_t& message)
+void TelemetryHandler::parse(const mavlink_message_t& message)
 {
     // TODO: replace with chain
     if (message.msgid == MAVLINK_MSG_ID_ATTITUDE)

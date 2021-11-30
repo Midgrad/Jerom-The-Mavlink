@@ -16,17 +16,10 @@ SystemStatusHandler::~SystemStatusHandler()
 {
 }
 
-bool SystemStatusHandler::canParse(quint32 msgId)
-{
-    return msgId == MAVLINK_MSG_ID_SYS_STATUS;
-}
-
-void SystemStatusHandler::parseMessage(const mavlink_message_t& message)
+void SystemStatusHandler::parse(const mavlink_message_t& message)
 {
     if (message.msgid == MAVLINK_MSG_ID_SYS_STATUS)
-    {
         this->processSystemStatus(message);
-    }
 }
 
 void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
@@ -124,5 +117,5 @@ void SystemStatusHandler::processSystemStatus(const mavlink_message_t& message)
 
     // TODO: load, drop rate, errors
 
-    m_context->pTree->appendProperties(vehicleId, status);
+    m_context->pTree->appendProperties(vehicleId, status); // TODO: remove props pTree from context
 }

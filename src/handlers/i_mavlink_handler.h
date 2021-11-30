@@ -8,7 +8,7 @@
 #include "i_property_tree.h"
 #include "vehicle.h"
 
-namespace md::domain
+namespace md::domain // FIXME: data_source
 {
 struct MavlinkHandlerContext
 {
@@ -19,7 +19,7 @@ struct MavlinkHandlerContext
     QMap<quint8, QVariant> vehicleIds;
 };
 
-class IMavlinkHandler : public QObject
+class IMavlinkHandler : public QObject // TODO: IMavlinkMessage
 {
     Q_OBJECT
 
@@ -31,8 +31,7 @@ public:
     }
     virtual ~IMavlinkHandler() = default;
 
-    virtual bool canParse(quint32 msgId) = 0;
-    virtual void parseMessage(const mavlink_message_t& message) = 0;
+    virtual void parse(const mavlink_message_t& message) = 0;
 
 signals:
     void sendMessage(mavlink_message_t message);
