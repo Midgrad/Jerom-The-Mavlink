@@ -11,6 +11,6 @@ endif (MAVLINK_V2_ENABLE)
 add_subdirectory(3rdparty)
 
 # Mavlink module
-add_subdirectory(impl)
-add_subdirectory(module)
+add_subdirectory(src)
+
 

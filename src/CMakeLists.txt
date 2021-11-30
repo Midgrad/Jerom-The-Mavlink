@@ -14,12 +14,17 @@ add_definitions(-DQT_PLUGIN)
 add_library(${PROJECT_NAME} MODULE "")
 
 # Include
-target_include_directories(${PROJECT_NAME} PUBLIC "src")
+HEADER_DIRECTORIES(INCLUDES "./")
+target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDES})
 
 # Sources
-file(GLOB SOURCES "src/*")
+file(GLOB_RECURSE SOURCES "*.h" "*.cpp")
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
 
 # Libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC jerom_mavlink_impl Qt5::Core)
+target_link_libraries(${PROJECT_NAME} PUBLIC kjarni loodsman mavlink Qt5::Core)
 
+# Tests
+if(TESTS_ENABLED)
+#    add_subdirectory(tests)
+endif(TESTS_ENABLED)

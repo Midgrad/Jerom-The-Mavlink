@@ -3,8 +3,8 @@
 
 #include "i_link_transceiver.h"
 
-#include "jerom_traits.h"
 #include "link_factory.h"
+#include "link_traits.h"
 
 namespace md::data_source
 {

@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "i_mavlink_handlers_factory.h"
-#include "jerom_traits.h"
+#include "link_traits.h"
 #include "link_configuration.h"
 #include "link_transceiver_threaded.h"
 
