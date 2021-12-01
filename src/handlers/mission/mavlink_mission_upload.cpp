@@ -49,12 +49,12 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
 
     if (request.seq > 0)
     {
-        MissionRouteItem* previousItem = mission->item(request.seq - 1);
+        MissionRouteItem* previousItem = mission->route()->item(request.seq - 1);
         if (previousItem)
             previousItem->setConfirmed(true);
     }
 
-    MissionRouteItem* missionItem = mission->item(request.seq);
+    MissionRouteItem* missionItem = mission->route()->item(request.seq);
     if (!missionItem)
         return;
 
@@ -62,11 +62,11 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     operation->setProgress(request.seq + 1);
 
     // Waiting ack after last waypoint send
-    if (request.seq == mission->count() - 1)
+    if (request.seq == mission->route()->count() - 1)
         m_operationStates[operation] = WaitingAck;
 
     // Send reqested waypoint
-    this->sendMissionItem(vehicleId, missionItem->underlyingItem(), request.seq);
+    this->sendMissionItem(vehicleId, missionItem, request.seq);
 }
 
 void MavlinkMissionUpload::processMissionAck(const mavlink_message_t& message,
@@ -166,7 +166,8 @@ void MavlinkMissionUpload::onOperationStarted(MissionOperation* operation)
     QVariant vehicleId = operation->mission()->vehicleId();
     m_vehicleOperations.insert(vehicleId, operation);
     m_operationStates[operation] = WaitingRequest;
-    operation->setTotal(operation->mission()->count());
+    int count = operation->mission()->route()->count();
+    operation->setTotal(count);
 
-    this->sendMissionCount(vehicleId, operation->mission()->count());
+    this->sendMissionCount(vehicleId, count);
 }

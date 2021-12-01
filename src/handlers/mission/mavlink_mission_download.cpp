@@ -80,16 +80,15 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
     auto convertor = item.seq ? m_convertors.convertor(item.command) : m_convertors.homeConvertor();
     if (convertor)
     {
-        MissionRouteItem* missionItem = mission->item(item.seq);
+        MissionRouteItem* missionItem = mission->route()->item(item.seq);
 
         if (!missionItem)
         {
-            missionItem = new MissionRouteItem(
-                new RouteItem(&route::waypoint)); // TODO: type by convertor
-            mission->route()->addNewItem(missionItem);
+            missionItem = new MissionRouteItem(&route::waypoint); // TODO: type by convertor
+            mission->route()->addItem(missionItem);
         }
 
-        convertor->toItem(item, missionItem->underlyingItem());
+        convertor->toItem(item, missionItem);
         missionItem->setConfirmed(true);
     }
     else
