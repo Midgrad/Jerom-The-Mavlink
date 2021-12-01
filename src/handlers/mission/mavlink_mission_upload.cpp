@@ -36,7 +36,7 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     if (!operation)
         return;
 
-    if (m_operationStates.value(operation, Idle) != WaitingAck)
+    if (m_operationStates.value(operation, Idle) != WaitingRequest)
     {
         qDebug() << "Got unexpexcted mission request";
         return;
@@ -164,8 +164,9 @@ void MavlinkMissionUpload::onOperationStarted(MissionOperation* operation)
         return;
 
     QVariant vehicleId = operation->mission()->vehicleId();
-    m_vehicleOperations[vehicleId] = operation;
+    m_vehicleOperations.insert(vehicleId, operation);
     m_operationStates[operation] = WaitingRequest;
+    operation->setTotal(operation->mission()->count());
 
     this->sendMissionCount(vehicleId, operation->mission()->count());
 }

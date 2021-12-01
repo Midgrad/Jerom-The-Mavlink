@@ -46,9 +46,6 @@ void MavlinkMissionDownload::processMissionCount(const mavlink_message_t& messag
 
     qDebug() << "processMissionCount" << vehicleId << mission_count.count;
 
-    // Clear route before downloading new
-    operation->mission()->clear();
-
     operation->setTotal(mission_count.count);
     m_operationStates[operation] = WaitingItem;
 
@@ -71,56 +68,25 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
 
     Mission* mission = operation->mission();
     MissionRoute* route = mission->route();
-
-    if (item.seq > 0 && route && item.seq < route->count())
+    if (!route)
     {
-        qWarning() << "Route must be cleared before download";
+        qWarning() << "No route for mission" << mission;
         return;
     }
 
     qDebug() << "processMissionItem" << vehicleId << item.seq;
 
+    // FIXME: flat mission route
     auto convertor = item.seq ? m_convertors.convertor(item.command) : m_convertors.homeConvertor();
     if (convertor)
     {
-        MissionRouteItem* missionItem = nullptr;
-        // Special case for HOME
-        if (item.seq == 0)
-        {
-            missionItem = mission->homePoint();
-        }
-        else
-        {
-            // Get or create route
-            if (!route) // TODO: create route while download started
-            {
-                mission->assignRoute(
-                    new Route(&route::mavlinkRouteType, tr("%1 route").arg(mission->name())));
-                m_missionsService->saveMission(mission);
-                route = mission->route();
-            }
-            if (convertor->isWaypointItem())
-            {
-                route->addNewItem(new RouteItem(&route::waypoint)); // TODO: type by convertor
-            }
-            else
-            {
-                RouteItem* waypoint = nullptr;
-                if (route->count())
-                {
-                    // Add item to last waypoint
-                    waypoint = route->items().last()->underlyingItem();
-                }
-                else
-                {
-                    // Or create new waypoint
-                    waypoint = new RouteItem(&route::waypoint);
-                    route->addNewItem(waypoint);
-                }
+        MissionRouteItem* missionItem = mission->item(item.seq);
 
-                waypoint->addItem(new RouteItem(route::waypoint.childTypes.first()));
-            }
-            missionItem = route->items().last();
+        if (!missionItem)
+        {
+            missionItem = new MissionRouteItem(
+                new RouteItem(&route::waypoint)); // TODO: type by convertor
+            mission->route()->addNewItem(missionItem);
         }
 
         convertor->toItem(item, missionItem->underlyingItem());
@@ -201,8 +167,8 @@ void MavlinkMissionDownload::onOperationStarted(MissionOperation* operation)
         return;
 
     QVariant vehicleId = operation->mission()->vehicleId();
-    m_vehicleOperations[vehicleId] = operation;
-    m_operationStates[operation] = WaitingAck;
+    m_vehicleOperations.insert(vehicleId, operation);
+    m_operationStates[operation] = WaitingCount;
 
     this->sendMissionRequest(vehicleId);
 }

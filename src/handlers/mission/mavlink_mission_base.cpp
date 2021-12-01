@@ -13,7 +13,7 @@ MavlinkMissionBase::MavlinkMissionBase(MavlinkHandlerContext* context,
 
     connect(m_missionsService, &IMissionsService::operationStarted, this,
             &MavlinkMissionBase::onOperationStarted);
-    connect(m_missionsService, &IMissionsService::operationStarted, this,
+    connect(m_missionsService, &IMissionsService::operationEnded, this,
             &MavlinkMissionBase::onOperationEnded);
 }
 

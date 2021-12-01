@@ -78,7 +78,7 @@ void MavlinkMissionClear::onOperationStarted(MissionOperation* operation)
         return;
 
     QVariant vehicleId = operation->mission()->vehicleId();
-    m_vehicleOperations[vehicleId] = operation;
+    m_vehicleOperations.insert(vehicleId, operation);
     m_operationStates[operation] = WaitingAck;
 
     this->sendMissionClear(vehicleId);
