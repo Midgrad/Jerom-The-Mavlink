@@ -82,8 +82,7 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
 
         if (convertor)
         {
-            RouteItem* routeItem = mission->route()->itemByFlatIndex(item.seq);
-
+            RouteItem* routeItem = mission->route()->itemByFlatIndex(item.seq - 1);
             if (!routeItem)
             {
                 routeItem = new RouteItem(&route::waypoint); // TODO: type by convertor

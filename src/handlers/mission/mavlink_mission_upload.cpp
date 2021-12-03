@@ -38,7 +38,7 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
 
     if (m_operationStates.value(operation, Idle) != WaitingRequest)
     {
-        qDebug() << "Got unexpexcted mission request";
+        qDebug() << "Got unexpexcted mission item request";
         return;
     }
 
@@ -46,17 +46,25 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     mavlink_msg_mission_request_decode(&message, &request);
 
     Mission* mission = operation->mission();
-
-    if (!mission->route())
+    RouteItem* item = nullptr;
+    if (request.seq == 0) // Home
     {
-        qDebug() << "Mission request for mission without route";
-        return;
+        item = mission->home();
+    }
+    else
+    {
+        if (!mission->route())
+        {
+            qDebug() << "Mission item request for mission without route";
+            return;
+        }
+
+        item = mission->route()->item(request.seq - 1);
     }
 
-    RouteItem* item = mission->route()->item(request.seq);
     if (!item)
     {
-        qDebug() << "Mission request for mission item " << request.seq << "missing in route";
+        qDebug() << "Invalid mission item request";
         return;
     }
 
@@ -164,7 +172,7 @@ void MavlinkMissionUpload::onOperationStarted(MissionOperation* operation)
     QVariant vehicleId = operation->mission()->vehicleId();
     m_vehicleOperations.insert(vehicleId, operation);
     m_operationStates[operation] = WaitingRequest;
-    int count = operation->mission()->route()->count();
+    int count = operation->mission()->route()->count() + 1;
     operation->setTotal(count);
 
     this->sendMissionCount(vehicleId, count);
