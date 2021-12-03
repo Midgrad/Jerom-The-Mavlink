@@ -66,34 +66,36 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
     if (m_operationStates.value(operation, Idle) != WaitingItem)
         return;
 
-    Mission* mission = operation->mission();
-    MissionRoute* route = mission->route();
-    if (!route)
-    {
-        qWarning() << "No route for mission" << mission;
-        return;
-    }
-
     qDebug() << "processMissionItem" << vehicleId << item.seq;
 
-    // FIXME: flat mission route
-    auto convertor = item.seq ? m_convertors.convertor(item.command) : m_convertors.homeConvertor();
-    if (convertor)
+    Mission* mission = operation->mission();
+
+    // Home point
+    if (item.seq == 0)
     {
-        MissionRouteItem* missionItem = mission->route()->item(item.seq);
-
-        if (!missionItem)
-        {
-            missionItem = new MissionRouteItem(&route::waypoint); // TODO: type by convertor
-            mission->route()->addItem(missionItem);
-        }
-
-        convertor->toItem(item, missionItem);
-        missionItem->setConfirmed(true);
+        auto convertor = m_convertors.homeConvertor();
+        convertor->toItem(item, mission->home());
     }
     else
     {
-        qWarning() << "Unhandled mission item type" << item.command;
+        auto convertor = m_convertors.convertor(item.command);
+
+        if (convertor)
+        {
+            RouteItem* routeItem = mission->route()->itemByFlatIndex(item.seq);
+
+            if (!routeItem)
+            {
+                routeItem = new RouteItem(&route::waypoint); // TODO: type by convertor
+                mission->route()->addItem(routeItem);
+            }
+
+            convertor->toItem(item, routeItem);
+        }
+        else
+        {
+            qWarning() << "Unhandled mission item type" << item.command;
+        }
     }
 
     // Update mission progress

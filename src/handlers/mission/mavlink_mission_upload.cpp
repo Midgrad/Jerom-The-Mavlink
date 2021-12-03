@@ -47,16 +47,18 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
 
     Mission* mission = operation->mission();
 
-    if (request.seq > 0)
+    if (!mission->route())
     {
-        MissionRouteItem* previousItem = mission->route()->item(request.seq - 1);
-        if (previousItem)
-            previousItem->setConfirmed(true);
+        qDebug() << "Mission request for mission without route";
+        return;
     }
 
-    MissionRouteItem* missionItem = mission->route()->item(request.seq);
-    if (!missionItem)
+    RouteItem* item = mission->route()->item(request.seq);
+    if (!item)
+    {
+        qDebug() << "Mission request for mission item " << request.seq << "missing in route";
         return;
+    }
 
     // Update mission progress
     operation->setProgress(request.seq + 1);
@@ -66,7 +68,7 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
         m_operationStates[operation] = WaitingAck;
 
     // Send reqested waypoint
-    this->sendMissionItem(vehicleId, missionItem, request.seq);
+    this->sendMissionItem(vehicleId, item, request.seq);
 }
 
 void MavlinkMissionUpload::processMissionAck(const mavlink_message_t& message,
@@ -84,10 +86,6 @@ void MavlinkMissionUpload::processMissionAck(const mavlink_message_t& message,
 
     if (ack.type == MAV_MISSION_ACCEPTED)
     {
-        MissionRoute* route = operation->mission()->route();
-        if (route && ack.type == MAV_MISSION_ACCEPTED)
-            route->item(route->count() - 1)->setConfirmed(true);
-
         operation->setState(MissionOperation::Succeeded);
     }
     else

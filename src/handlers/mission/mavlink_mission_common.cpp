@@ -46,7 +46,8 @@ void MavlinkMissionCommon::onVehicleObtained(Vehicle* vehicle)
     // Autocrete mission for new vehicle
     mission = new Mission(&mission::mavlinkMissionType, tr("%1 mission").arg(vehicle->name()),
                           vehicle->id());
-    //mission->assignRoute(new Route(&route::mavlinkRouteType, tr("%1 route").arg(mission->name())));
+    mission->assignRoute(
+        new Route(mission::mavlinkMissionType.routeType, tr("%1 route").arg(vehicle->name())));
     m_missionsService->saveMission(mission);
 
     // Automaticaly download mission TODO: to settings
@@ -63,7 +64,7 @@ void MavlinkMissionCommon::processMissionCurrent(const mavlink_message_t& messag
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    mission->route()->setCurrentItem(mission_current.seq);
+    mission->setCurrentItem(mission_current.seq);
 }
 
 void MavlinkMissionCommon::processMissionReached(const mavlink_message_t& message,
@@ -76,9 +77,7 @@ void MavlinkMissionCommon::processMissionReached(const mavlink_message_t& messag
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    MissionRouteItem* missionItem = mission->route()->item(reached.seq);
-    if (missionItem)
-        missionItem->setReached(true);
+    // TODO: set reached
 }
 
 void MavlinkMissionCommon::sendMissionSetCurrent(const QVariant& vehicleId, int index)
@@ -104,7 +103,7 @@ void MavlinkMissionCommon::onMissionAdded(Mission* mission)
 {
     m_vehicleMissions.insert(mission->vehicleId(), mission);
 
-    connect(mission->route(), &MissionRoute::switchCurrentItem, this, [this, mission](int index) {
+    connect(mission, &Mission::switchCurrentItem, this, [this, mission](int index) {
         this->sendMissionSetCurrent(mission->vehicleId(), index);
     });
 }
@@ -113,5 +112,5 @@ void MavlinkMissionCommon::onMissionRemoved(Mission* mission)
 {
     m_vehicleMissions.remove(mission->vehicleId());
 
-    disconnect(mission->route(), nullptr, this, nullptr);
+    disconnect(mission, nullptr, this, nullptr);
 }
