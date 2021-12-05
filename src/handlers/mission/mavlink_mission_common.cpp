@@ -39,15 +39,15 @@ void MavlinkMissionCommon::parse(const mavlink_message_t& message)
 void MavlinkMissionCommon::onVehicleObtained(Vehicle* vehicle)
 {
     // Check we already have mission
-    Mission* mission = m_missionsService->missionForVehicle(vehicle->id());
+    Mission* mission = m_missionsService->missionForVehicle(vehicle->id);
     if (mission)
         return;
 
     // Autocrete mission for new vehicle
-    mission = new Mission(&mission::mavlinkMissionType, tr("%1 mission").arg(vehicle->name()),
-                          vehicle->id());
-    mission->assignRoute(
-        new Route(mission::mavlinkMissionType.routeType, tr("%1 route").arg(vehicle->name())));
+    mission = new Mission(&mission::mavlinkMissionType, tr("%1 mission").arg(vehicle->name),
+                          vehicle->id);
+    mission->route = new Route(mission::mavlinkMissionType.routeType,
+                               tr("%1 route").arg(vehicle->name));
     m_missionsService->saveMission(mission);
 
     // Automaticaly download mission TODO: to settings
@@ -101,16 +101,16 @@ void MavlinkMissionCommon::sendMissionSetCurrent(const QVariant& vehicleId, int 
 
 void MavlinkMissionCommon::onMissionAdded(Mission* mission)
 {
-    m_vehicleMissions.insert(mission->vehicleId(), mission);
+    m_vehicleMissions.insert(mission->vehicleId, mission);
 
     connect(mission, &Mission::switchCurrentItem, this, [this, mission](int index) {
-        this->sendMissionSetCurrent(mission->vehicleId(), index);
+        this->sendMissionSetCurrent(mission->vehicleId, index);
     });
 }
 
 void MavlinkMissionCommon::onMissionRemoved(Mission* mission)
 {
-    m_vehicleMissions.remove(mission->vehicleId());
+    m_vehicleMissions.remove(mission->vehicleId);
 
     disconnect(mission, nullptr, this, nullptr);
 }

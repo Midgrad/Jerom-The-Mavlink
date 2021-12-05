@@ -46,7 +46,7 @@ void MavlinkMissionDownload::processMissionCount(const mavlink_message_t& messag
 
     qDebug() << "processMissionCount" << vehicleId << mission_count.count;
 
-    operation->setTotal(mission_count.count);
+    operation->total = mission_count.count;
     m_operationStates[operation] = WaitingItem;
 
     this->sendMissionItemRequest(vehicleId, operation->progress());
@@ -98,14 +98,14 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
     }
 
     // Update mission progress
-    operation->setProgress(item.seq + 1);
+    operation->progress = item.seq + 1;
 
     if (operation->isComplete())
     {
         this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);
         m_missionsService->saveMission(mission);
 
-        operation->setState(MissionOperation::Succeeded);
+        operation->state = MissionOperation::Succeeded;
         m_missionsService->endOperation(operation);
     }
     else

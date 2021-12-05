@@ -49,11 +49,11 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     RouteItem* item = nullptr;
     if (request.seq == 0) // Home
     {
-        item = mission->home();
+        item = mission->home;
     }
     else
     {
-        if (!mission->route())
+        if (!mission->route)
         {
             qDebug() << "Mission item request for mission without route";
             return;
@@ -69,7 +69,7 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     }
 
     // Update mission progress
-    operation->setProgress(request.seq + 1);
+    operation->progress = request.seq + 1;
 
     // Waiting ack after last waypoint send
     if (request.seq == mission->route()->count() - 1)
@@ -94,12 +94,12 @@ void MavlinkMissionUpload::processMissionAck(const mavlink_message_t& message,
 
     if (ack.type == MAV_MISSION_ACCEPTED)
     {
-        operation->setState(MissionOperation::Succeeded);
+        operation->state = MissionOperation::Succeeded;
     }
     else
     {
         qWarning() << "Vehicle" << vehicleId << " denied upload mission with ack" << ack.type;
-        operation->setState(MissionOperation::Failed);
+        operation->state = MissionOperation::Failed;
     }
 
     m_missionsService->endOperation(operation);
@@ -169,11 +169,11 @@ void MavlinkMissionUpload::onOperationStarted(MissionOperation* operation)
     if (operation->type() != MissionOperation::Upload)
         return;
 
-    QVariant vehicleId = operation->mission()->vehicleId();
+    QVariant vehicleId = operation->mission()->vehicleId;
     m_vehicleOperations.insert(vehicleId, operation);
     m_operationStates[operation] = WaitingRequest;
     int count = operation->mission()->route()->count() + 1;
-    operation->setTotal(count);
+    operation->total = count;
 
     this->sendMissionCount(vehicleId, count);
 }
