@@ -77,7 +77,7 @@ void MavlinkMissionCommon::processMissionReached(const mavlink_message_t& messag
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    // TODO: set reached
+    mission->setReached(reached.seq);
 }
 
 void MavlinkMissionCommon::sendMissionSetCurrent(const QVariant& vehicleId, int index)
