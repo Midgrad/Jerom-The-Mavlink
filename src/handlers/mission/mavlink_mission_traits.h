@@ -23,9 +23,9 @@ const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0
 
 // WaypointItems
 const RouteItemType setTriggerDist = { "mavlink_cam_tg_dist",
-                                          TR_ROUTE("Camera tg. dist."),
-                                          TR_ROUTE("CAM DST"),
-                                          { &distance, &shutter, &trgOnce } };
+                                       TR_ROUTE("Camera tg. dist."),
+                                       TR_ROUTE("CAM DST"),
+                                       { &distance, &shutter, &trgOnce } };
 const RouteItemType setTriggerInt = {
     "mavlink_cam_tg_int", TR_ROUTE("Camera tg. int"), TR_ROUTE("CAM INT"), { &interval, &shutter }
 };
@@ -35,54 +35,43 @@ const RouteItemType landStart = {
 };
 
 // Waypoints
-const RouteItemType home = { "mavlink_home",
-                                TR_ROUTE("Home"),
-                                TR_ROUTE("HOME"),
-                                { &route::latitude, &route::longitude, &route::altitude,
-                                  &relativeAlt, &yaw } };
+const RouteItemType home = {
+    "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), { &relativeAlt, &yaw }
+};
 const RouteItemType waypoint = { "mavlink_waypoint",
-                                    TR_ROUTE("Waypoint"),
-                                    TR_ROUTE("WPT"),
-                                    { &route::latitude, &route::longitude, &route::altitude,
-                                      &relativeAlt, &time, &acceptRadius, &passRadius, &yaw },
-                                    { &setTriggerDist, &setTriggerInt, &landStart } };
-const RouteItemType takeoff = { "mavlink_takeoff",
-                                   TR_ROUTE("Takeoff"),
-                                   TR_ROUTE("TKFF"),
-                                   { &route::latitude, &route::longitude, &route::altitude,
-                                     &relativeAlt, &pitch, &yaw } };
+                                 TR_ROUTE("Waypoint"),
+                                 TR_ROUTE("WPT"),
+                                 { &relativeAlt, &time, &acceptRadius, &passRadius, &yaw },
+                                 { &setTriggerDist, &setTriggerInt, &landStart } };
+const RouteItemType takeoff = {
+    "mavlink_takeoff", TR_ROUTE("Takeoff"), TR_ROUTE("TKFF"), { &relativeAlt, &pitch, &yaw }
+};
 const RouteItemType landing = { "mavlink_landing",
-                                   TR_ROUTE("Landing"),
-                                   TR_ROUTE("LANDING"),
-                                   { &route::latitude, &route::longitude, &route::altitude,
-                                     &relativeAlt, &yaw, &abortAltitude } };
+                                TR_ROUTE("Landing"),
+                                TR_ROUTE("LANDING"),
+                                { &relativeAlt, &yaw, &abortAltitude } };
 const RouteItemType loiterTurns = { "mavlink_loiter_turns",
-                                       TR_ROUTE("Loiter turns"),
-                                       TR_ROUTE("LTR TRN"),
-                                       { &route::latitude, &route::longitude, &route::altitude,
-                                         &relativeAlt, &radius, &clockwise, &turns,
-                                         &headingRequired, &xtrack },
-                                       { &setTriggerDist, &setTriggerInt } };
+                                    TR_ROUTE("Loiter turns"),
+                                    TR_ROUTE("LTR TRN"),
+                                    { &relativeAlt, &radius, &clockwise, &turns, &headingRequired,
+                                      &xtrack },
+                                    { &setTriggerDist, &setTriggerInt } };
 const RouteItemType loiterAlt = { "mavlink_loiter_alt",
-                                     TR_ROUTE("Loiter alt"),
-                                     TR_ROUTE("LTR ALT"),
-                                     { &route::latitude, &route::longitude, &route::altitude,
-                                       &relativeAlt, &radius, &clockwise, &headingRequired,
-                                       &xtrack },
-                                     { &setTriggerDist, &setTriggerInt } };
+                                  TR_ROUTE("Loiter alt"),
+                                  TR_ROUTE("LTR ALT"),
+                                  { &relativeAlt, &radius, &clockwise, &headingRequired, &xtrack },
+                                  { &setTriggerDist, &setTriggerInt } };
 const RouteItemType loiterUnlim = { "mavlink_loiter_unlim",
-                                       TR_ROUTE("Loiter unlim"),
-                                       TR_ROUTE("LTR UNL"),
-                                       { &route::latitude, &route::longitude, &route::altitude,
-                                         &relativeAlt, &radius, &clockwise, &yaw },
-                                       { &setTriggerDist, &setTriggerInt } };
+                                    TR_ROUTE("Loiter unlim"),
+                                    TR_ROUTE("LTR UNL"),
+                                    { &relativeAlt, &radius, &clockwise, &yaw },
+                                    { &setTriggerDist, &setTriggerInt } };
 const RouteItemType loiterTime = { "mavlink_loiter_time",
-                                      TR_ROUTE("Loiter time"),
-                                      TR_ROUTE("LTR TM"),
-                                      { &route::latitude, &route::longitude, &route::altitude,
-                                        &relativeAlt, &radius, &clockwise, &time, &headingRequired,
-                                        &xtrack },
-                                      { &setTriggerDist, &setTriggerInt } };
+                                   TR_ROUTE("Loiter time"),
+                                   TR_ROUTE("LTR TM"),
+                                   { &relativeAlt, &radius, &clockwise, &time, &headingRequired,
+                                     &xtrack },
+                                   { &setTriggerDist, &setTriggerInt } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",

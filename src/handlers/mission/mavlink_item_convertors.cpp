@@ -40,9 +40,8 @@ class PositionedConvertor : public IMavlinkItemConvertor
 public:
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
-        waypoint->setAndCheckParameter(route::latitude.id, item.x);
-        waypoint->setAndCheckParameter(route::longitude.id, item.y);
-        waypoint->setAndCheckParameter(route::altitude.id, item.z);
+        waypoint->position.set(Geodetic(item.x, item.y, item.z));
+
         waypoint->setAndCheckParameter(route::relativeAlt.id,
                                        item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
     }
@@ -53,9 +52,9 @@ public:
                          ? MAV_FRAME_GLOBAL_RELATIVE_ALT
                          : MAV_FRAME_GLOBAL;
 
-        item.x = waypoint->parameter(route::latitude.id).toFloat();
-        item.y = waypoint->parameter(route::longitude.id).toFloat();
-        item.z = waypoint->parameter(route::altitude.id).toFloat();
+        item.x = waypoint->position.get().latitude();
+        item.y = waypoint->position.get().longitude();
+        item.z = waypoint->position.get().altitude();
     }
 
     bool isWaypointItem() const override
