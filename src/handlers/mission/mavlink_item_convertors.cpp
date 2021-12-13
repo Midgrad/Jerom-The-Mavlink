@@ -52,9 +52,9 @@ public:
                          ? MAV_FRAME_GLOBAL_RELATIVE_ALT
                          : MAV_FRAME_GLOBAL;
 
-        item.x = waypoint->position.get().latitude();
-        item.y = waypoint->position.get().longitude();
-        item.z = waypoint->position.get().altitude();
+        item.x = waypoint->position().latitude();
+        item.y = waypoint->position().longitude();
+        item.z = waypoint->position().altitude();
     }
 
     bool isWaypointItem() const override
