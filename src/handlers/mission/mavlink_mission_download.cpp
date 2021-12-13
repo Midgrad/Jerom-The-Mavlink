@@ -80,9 +80,9 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
     {
         auto convertor = m_convertors.convertor(item.command);
 
-        if (convertor)
+        if (convertor && mission->route())
         {
-            RouteItem* routeItem = mission->route()->itemByFlatIndex(item.seq - 1);
+            RouteItem* routeItem = mission->route()->item(item.seq - 1);
             if (!routeItem)
             {
                 routeItem = new RouteItem(&route::waypoint); // TODO: type by convertor
