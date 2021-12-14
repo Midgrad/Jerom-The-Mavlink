@@ -75,6 +75,8 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
     {
         auto convertor = m_convertors.homeConvertor();
         convertor->toItem(item, mission->home());
+
+        m_convertors.setHomeAltitude(mission->home()->position().altitude);
     }
     else
     {

@@ -34,38 +34,33 @@ const RouteItemType landStart = {
     "mavlink_landing_start", TR_ROUTE("Landing start"), TR_ROUTE("LND SRT"), {}
 };
 
-const RouteItemType home = {
-    "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), { &relativeAlt, &yaw }
-};
+const RouteItemType home = { "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), { &yaw } };
 const RouteItemType waypoint = { "mavlink_waypoint",
                                  TR_ROUTE("Waypoint"),
                                  TR_ROUTE("WPT"),
-                                 { &relativeAlt, &time, &acceptRadius, &passRadius, &yaw } };
+                                 { &time, &acceptRadius, &passRadius, &yaw } };
 const RouteItemType takeoff = {
-    "mavlink_takeoff", TR_ROUTE("Takeoff"), TR_ROUTE("TKFF"), { &relativeAlt, &pitch, &yaw }
+    "mavlink_takeoff", TR_ROUTE("Takeoff"), TR_ROUTE("TKFF"), { &pitch, &yaw }
 };
-const RouteItemType landing = { "mavlink_landing",
-                                TR_ROUTE("Landing"),
-                                TR_ROUTE("LANDING"),
-                                { &relativeAlt, &yaw, &abortAltitude } };
+const RouteItemType landing = {
+    "mavlink_landing", TR_ROUTE("Landing"), TR_ROUTE("LANDING"), { &yaw, &abortAltitude }
+};
 const RouteItemType loiterTurns = { "mavlink_loiter_turns",
                                     TR_ROUTE("Loiter turns"),
                                     TR_ROUTE("LTR TRN"),
-                                    { &relativeAlt, &radius, &clockwise, &turns, &headingRequired,
-                                      &xtrack } };
+                                    { &radius, &clockwise, &turns, &headingRequired, &xtrack } };
 const RouteItemType loiterAlt = { "mavlink_loiter_alt",
                                   TR_ROUTE("Loiter alt"),
                                   TR_ROUTE("LTR ALT"),
-                                  { &relativeAlt, &radius, &clockwise, &headingRequired, &xtrack } };
+                                  { &radius, &clockwise, &headingRequired, &xtrack } };
 const RouteItemType loiterUnlim = { "mavlink_loiter_unlim",
                                     TR_ROUTE("Loiter unlim"),
                                     TR_ROUTE("LTR UNL"),
-                                    { &relativeAlt, &radius, &clockwise, &yaw } };
+                                    { &radius, &clockwise, &yaw } };
 const RouteItemType loiterTime = { "mavlink_loiter_time",
                                    TR_ROUTE("Loiter time"),
                                    TR_ROUTE("LTR TM"),
-                                   { &relativeAlt, &radius, &clockwise, &time, &headingRequired,
-                                     &xtrack } };
+                                   { &radius, &clockwise, &time, &headingRequired, &xtrack } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",

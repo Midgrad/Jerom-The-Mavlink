@@ -40,17 +40,16 @@ class PositionedConvertor : public IMavlinkItemConvertor
 public:
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
-        waypoint->position.set(Geodetic(item.x, item.y, item.z));
+        float altitude = item.z;
+        if (item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT)
+            altitude += homeAltitude;
 
-        waypoint->setAndCheckParameter(route::relativeAlt.id,
-                                       item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT);
+        waypoint->position.set(Geodetic(item.x, item.y, altitude));
     }
 
     void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
-        item.frame = waypoint->parameter(route::relativeAlt.id).toBool()
-                         ? MAV_FRAME_GLOBAL_RELATIVE_ALT
-                         : MAV_FRAME_GLOBAL;
+        item.frame = MAV_FRAME_GLOBAL;
 
         item.x = waypoint->position().latitude();
         item.y = waypoint->position().longitude();
@@ -381,4 +380,12 @@ IMavlinkItemConvertor* MavlinkItemConvertorsPool::convertor(uint16_t commandType
 IMavlinkItemConvertor* MavlinkItemConvertorsPool::homeConvertor() const
 {
     return m_homeConvertor;
+}
+
+void MavlinkItemConvertorsPool::setHomeAltitude(float homeAltitude)
+{
+    for (IMavlinkItemConvertor* convertor : m_itemConvertors)
+    {
+        convertor->homeAltitude = homeAltitude;
+    }
 }

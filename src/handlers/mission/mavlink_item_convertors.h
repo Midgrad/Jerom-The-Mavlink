@@ -16,6 +16,8 @@ public:
     virtual void fromItem(const RouteItem* waypointItem, mavlink_mission_item_t& item) = 0;
 
     virtual bool isWaypointItem() const = 0;
+
+    float homeAltitude = 0;
 };
 
 class MavlinkItemConvertorsPool
@@ -27,6 +29,8 @@ public:
     IMavlinkItemConvertor* convertor(const QString& typeId) const;
     IMavlinkItemConvertor* convertor(uint16_t commandType) const;
     IMavlinkItemConvertor* homeConvertor() const;
+
+    void setHomeAltitude(float homeAltitude);
 
 private:
     const QMap<QString, IMavlinkItemConvertor*> m_itemConvertors;
