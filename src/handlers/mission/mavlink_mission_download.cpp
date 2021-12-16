@@ -168,6 +168,9 @@ void MavlinkMissionDownload::onOperationStarted(MissionOperation* operation)
     if (operation->type() != MissionOperation::Download)
         return;
 
+    if (!operation->mission()->route())
+        return;
+
     QVariant vehicleId = operation->mission()->vehicleId();
     m_vehicleOperations.insert(vehicleId, operation);
     m_operationStates[operation] = WaitingCount;
