@@ -46,8 +46,8 @@ void MavlinkMissionCommon::onVehicleObtained(Vehicle* vehicle)
     // Autocrete mission for new vehicle
     mission = new Mission(&mission::mavlinkMissionType, tr("%1 mission").arg(vehicle->name),
                           vehicle->id);
-    mission->route = new Route(mission::mavlinkMissionType.routeType,
-                               tr("%1 route").arg(vehicle->name));
+    mission->assignRoute(
+        new Route(mission::mavlinkMissionType.routeType, tr("%1 route").arg(vehicle->name)));
     m_missionsService->saveMission(mission);
 
     // Automaticaly download mission TODO: to settings

@@ -53,7 +53,7 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     }
     else
     {
-        if (!mission->route)
+        if (!mission->route())
         {
             qDebug() << "Mission item request for mission without route";
             return;
