@@ -44,10 +44,6 @@ void TelemetryHandler::parse(const mavlink_message_t& message)
     {
         this->processNavControllerOutput(message);
     }
-    if (message.msgid == MAVLINK_MSG_ID_HOME_POSITION)
-    {
-        this->processHomePosition(message);
-    }
 }
 
 void TelemetryHandler::processAttitude(const mavlink_message_t& message)
@@ -107,25 +103,6 @@ void TelemetryHandler::processGlobalPosition(const mavlink_message_t& message)
     }
 
     m_context->pTree->appendProperties(vehicleId, properties);
-}
-
-void TelemetryHandler::processHomePosition(const mavlink_message_t& message)
-{
-    QString vehicleId = m_context->vehicleIds.value(message.sysid).toString();
-    if (vehicleId.isEmpty())
-        return;
-
-    mavlink_home_position_t home_position;
-    mavlink_msg_home_position_decode(&message, &home_position);
-
-    m_context->pTree
-        ->appendProperties(vehicleId,
-                           {
-                               { tmi::homeLatitude, utils::decodeLatLon(home_position.latitude) },
-                               { tmi::homeLongitude, utils::decodeLatLon(home_position.longitude) },
-                               { tmi::homeAltitude, utils::decodeAltitude(home_position.altitude) },
-                               // TODO: distance
-                           });
 }
 
 void TelemetryHandler::processNavControllerOutput(const mavlink_message_t& message)

@@ -22,6 +22,8 @@ public slots:
 protected:
     void processMissionCurrent(const mavlink_message_t& message, const QVariant& vehicleId);
     void processMissionReached(const mavlink_message_t& message, const QVariant& vehicleId);
+    void processHomePosition(const mavlink_message_t& message, const QVariant& vehicleId);
+    void processTargetPosition(const mavlink_message_t& message, const QVariant& vehicleId);
 
     void sendMissionSetCurrent(const QVariant& vehicleId, int index);
 

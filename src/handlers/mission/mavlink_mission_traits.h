@@ -75,7 +75,7 @@ namespace mission
 {
 const MissionType mavlinkMissionType = { "mavlink_mission",
                                          QT_TRANSLATE_NOOP("Mission", "Mavlink Mission"),
-                                         &route::mavlinkRouteType, &route::home };
+                                         &route::mavlinkRouteType, &route::home, &route::waypoint };
 }
 } // namespace md::domain
 

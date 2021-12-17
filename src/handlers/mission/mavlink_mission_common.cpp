@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include "mavlink_mission_traits.h"
+#include "mavlink_protocol_helpers.h"
 
 using namespace md::domain;
 
@@ -31,6 +32,10 @@ void MavlinkMissionCommon::parse(const mavlink_message_t& message)
         return this->processMissionCurrent(message, vehicleId);
     case MAVLINK_MSG_ID_MISSION_ITEM_REACHED:
         return this->processMissionReached(message, vehicleId);
+    case MAVLINK_MSG_ID_HOME_POSITION:
+        return this->processHomePosition(message, vehicleId);
+    case MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT:
+        return this->processTargetPosition(message, vehicleId);
     default:
         break;
     }
@@ -78,6 +83,36 @@ void MavlinkMissionCommon::processMissionReached(const mavlink_message_t& messag
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
     mission->setReached(reached.seq);
+}
+
+void MavlinkMissionCommon::processHomePosition(const mavlink_message_t& message,
+                                               const QVariant& vehicleId)
+{
+    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
+    if (!mission)
+        return;
+
+    mavlink_home_position_t homePosition;
+    mavlink_msg_home_position_decode(&message, &homePosition);
+
+    mission->home()->position.set(Geodetic(utils::decodeLatLon(homePosition.latitude),
+                                           utils::decodeLatLon(homePosition.longitude),
+                                           utils::decodeAltitude(homePosition.altitude)));
+}
+
+void MavlinkMissionCommon::processTargetPosition(const mavlink_message_t& message,
+                                                 const QVariant& vehicleId)
+{
+    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
+    if (!mission)
+        return;
+
+    mavlink_position_target_global_int_t position;
+    mavlink_msg_position_target_global_int_decode(&message, &position);
+
+    mission->target()->position.set(Geodetic(utils::decodeLatLon(position.lat_int),
+                                             utils::decodeLatLon(position.lon_int), position.alt));
+    mission->target()->current.set(true);
 }
 
 void MavlinkMissionCommon::sendMissionSetCurrent(const QVariant& vehicleId, int index)
