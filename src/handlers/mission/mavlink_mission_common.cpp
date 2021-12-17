@@ -103,7 +103,7 @@ void MavlinkMissionCommon::onMissionAdded(Mission* mission)
 {
     m_vehicleMissions.insert(mission->vehicleId, mission);
 
-    connect(mission, &Mission::switchCurrentItem, this, [this, mission](int index) {
+    connect(mission, &Mission::goTo, this, [this, mission](int index) {
         this->sendMissionSetCurrent(mission->vehicleId, index);
     });
 }
