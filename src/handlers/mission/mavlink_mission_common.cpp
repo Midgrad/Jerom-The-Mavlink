@@ -134,6 +134,38 @@ void MavlinkMissionCommon::sendMissionSetCurrent(const QVariant& vehicleId, int 
     emit sendMessage(message);
 }
 
+void MavlinkMissionCommon::sendNavTo(const QVariant& vehicleId, double latitude, double longitude,
+                                     float altitude)
+{
+    qDebug() << "sendNavTo" << vehicleId << latitude << longitude << altitude;
+    auto mavId = m_context->vehicleIds.key(vehicleId, 0);
+    if (!mavId)
+        return;
+
+    mavlink_message_t message;
+    mavlink_mission_item_t item;
+
+    item.param1 = 0;
+    item.param2 = 0;
+    item.param3 = 0;
+    item.param4 = 0;
+    item.target_system = mavId;
+    item.target_component = MAV_COMP_ID_MISSIONPLANNER;
+    item.frame = MAV_FRAME_GLOBAL_INT;
+    item.command = MAV_CMD_NAV_WAYPOINT;
+    item.current = 2; // guided
+    item.seq = 0;
+    item.autocontinue = false;
+    item.x = static_cast<float>(latitude);
+    item.y = static_cast<float>(longitude);
+    item.z = altitude;
+
+    mavlink_msg_mission_item_encode_chan(m_context->systemId, m_context->compId, 0, &message,
+                                         &item); // TODO: link channel
+
+    emit sendMessage(message);
+}
+
 void MavlinkMissionCommon::onMissionAdded(Mission* mission)
 {
     m_vehicleMissions.insert(mission->vehicleId, mission);
@@ -141,6 +173,10 @@ void MavlinkMissionCommon::onMissionAdded(Mission* mission)
     connect(mission, &Mission::goTo, this, [this, mission](int index) {
         this->sendMissionSetCurrent(mission->vehicleId, index);
     });
+    connect(mission, &Mission::navTo, this,
+            [this, mission](double latitude, double longitude, float altitude) {
+                this->sendNavTo(mission->vehicleId, latitude, longitude, altitude);
+            });
 }
 
 void MavlinkMissionCommon::onMissionRemoved(Mission* mission)

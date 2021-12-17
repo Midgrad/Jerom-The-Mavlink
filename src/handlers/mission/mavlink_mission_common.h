@@ -26,6 +26,7 @@ protected:
     void processTargetPosition(const mavlink_message_t& message, const QVariant& vehicleId);
 
     void sendMissionSetCurrent(const QVariant& vehicleId, int index);
+    void sendNavTo(const QVariant& vehicleId, double latitude, double longitude, float altitude);
 
 private slots:
     void onMissionAdded(Mission* mission);
