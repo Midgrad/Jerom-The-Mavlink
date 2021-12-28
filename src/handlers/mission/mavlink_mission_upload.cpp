@@ -46,21 +46,9 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     mavlink_msg_mission_request_decode(&message, &request);
 
     Mission* mission = operation->mission();
-    RouteItem* item = nullptr;
-    if (request.seq == 0) // Home
-    {
-        item = mission->home;
-    }
-    else
-    {
-        if (!mission->route())
-        {
-            qDebug() << "Mission item request for mission without route";
-            return;
-        }
+    RouteItem* item = mission->item(request.seq);
 
-        item = mission->route()->item(request.seq - 1);
-    }
+    qDebug() << request.seq << item << mission->count();
 
     if (!item)
     {
@@ -72,7 +60,7 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     operation->progress = request.seq + 1;
 
     // Waiting ack after last waypoint send
-    if (request.seq == mission->route()->count() - 1)
+    if (request.seq == mission->count() - 1)
         m_operationStates[operation] = WaitingAck;
 
     // Send reqested waypoint

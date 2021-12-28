@@ -64,7 +64,7 @@ void MavlinkMissionClear::sendMissionClear(const QVariant& vehicleId)
     clearAll.target_component = MAV_COMP_ID_MISSIONPLANNER;
 
 #ifdef MAVLINK_V2
-    clearAll.mission_type = MAV_MISSION_TYPE_ALL;
+    clearAll.mission_type = MAV_MISSION_TYPE_MISSION;
 #endif
 
     mavlink_msg_mission_clear_all_encode_chan(m_context->systemId, m_context->compId, 0, &message,
