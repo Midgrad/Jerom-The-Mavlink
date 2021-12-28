@@ -104,6 +104,16 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
 
     if (operation->isComplete())
     {
+        // Clear extra items in route
+        if (mission->route())
+        {
+            Route* route = mission->route();
+            while (route->count() > operation->total - 1)
+            {
+                route->removeItem(route->item(route->count() - 1));
+            }
+        }
+
         this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);
         m_missionsService->saveMission(mission);
 

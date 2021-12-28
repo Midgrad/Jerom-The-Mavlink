@@ -157,13 +157,10 @@ void MavlinkMissionUpload::onOperationStarted(MissionOperation* operation)
     if (operation->type() != MissionOperation::Upload)
         return;
 
-    if (!operation->mission()->route())
-        return;
-
     QVariant vehicleId = operation->mission()->vehicleId;
     m_vehicleOperations.insert(vehicleId, operation);
     m_operationStates[operation] = WaitingRequest;
-    int count = operation->mission()->route()->count() + 1;
+    int count = operation->mission()->count();
     operation->total = count;
 
     this->sendMissionCount(vehicleId, count);
