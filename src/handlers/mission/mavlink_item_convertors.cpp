@@ -54,11 +54,15 @@ public:
         {
             x = m_params->lastX;
             y = m_params->lastY;
+
+            if (qFuzzyIsNull(item.z))
+                altitude = m_params->lastAltitude;
         }
         else
         {
             m_params->lastX = x;
             m_params->lastY = y;
+            m_params->lastAltitude = altitude;
         }
 
         waypoint->position.set(Geodetic(x, y, altitude));

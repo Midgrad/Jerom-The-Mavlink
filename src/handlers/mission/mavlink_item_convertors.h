@@ -12,6 +12,7 @@ struct MavlinkConvertorParams
     float homeAltitude = 0;
     double lastX = 0;
     double lastY = 0;
+    double lastAltitude = 0;
 };
 
 class IMavlinkItemConvertor
