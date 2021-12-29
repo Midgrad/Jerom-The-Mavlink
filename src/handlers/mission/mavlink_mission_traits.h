@@ -22,17 +22,6 @@ const Parameter trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
 const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0, 0, 1000 };
 
 // Route Items
-const RouteItemType setTriggerDist = { "mavlink_cam_tg_dist",
-                                       TR_ROUTE("Camera tg. dist."),
-                                       TR_ROUTE("CAM DST"),
-                                       { &distance, &shutter, &trgOnce } };
-const RouteItemType setTriggerInt = {
-    "mavlink_cam_tg_int", TR_ROUTE("Camera tg. int"), TR_ROUTE("CAM INT"), { &interval, &shutter }
-};
-
-const RouteItemType landStart = {
-    "mavlink_landing_start", TR_ROUTE("Landing start"), TR_ROUTE("LND SRT"), {}
-};
 
 const RouteItemType home = { "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), { &yaw } };
 const RouteItemType waypoint = { "mavlink_waypoint",
@@ -61,6 +50,18 @@ const RouteItemType loiterTime = { "mavlink_loiter_time",
                                    TR_ROUTE("Loiter time"),
                                    TR_ROUTE("LTR TM"),
                                    { &radius, &clockwise, &time, &headingRequired, &xtrack } };
+
+const RouteItemType setTriggerDist = { "mavlink_cam_tg_dist",
+                                       TR_ROUTE("Camera tg. dist."),
+                                       TR_ROUTE("CAM DST"),
+                                       { &distance, &shutter, &trgOnce } };
+const RouteItemType setTriggerInt = {
+    "mavlink_cam_tg_int", TR_ROUTE("Camera tg. int"), TR_ROUTE("CAM INT"), { &interval, &shutter }
+};
+
+const RouteItemType landStart = {
+    "mavlink_landing_start", TR_ROUTE("Landing start"), TR_ROUTE("LND SRT"), {}
+};
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",

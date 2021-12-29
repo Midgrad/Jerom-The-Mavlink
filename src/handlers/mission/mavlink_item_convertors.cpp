@@ -38,13 +38,30 @@ namespace md::domain
 class PositionedConvertor : public IMavlinkItemConvertor
 {
 public:
+    explicit PositionedConvertor(MavlinkConvertorParams* params) : IMavlinkItemConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         float altitude = item.z;
         if (item.frame == MAV_FRAME_GLOBAL_RELATIVE_ALT)
-            altitude += homeAltitude;
+            altitude += m_params->homeAltitude;
 
-        waypoint->position.set(Geodetic(item.x, item.y, altitude));
+        double x = item.x;
+        double y = item.y;
+        if (qFuzzyIsNull(x) && qFuzzyIsNull(y))
+        {
+            x = m_params->lastX;
+            y = m_params->lastY;
+        }
+        else
+        {
+            m_params->lastX = x;
+            m_params->lastY = y;
+        }
+
+        waypoint->position.set(Geodetic(x, y, altitude));
     }
 
     void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
@@ -65,6 +82,10 @@ public:
 class HomeConvertor : public PositionedConvertor
 {
 public:
+    explicit HomeConvertor(MavlinkConvertorParams* params) : PositionedConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::home);
@@ -87,6 +108,10 @@ public:
 class WaypointConvertor : public PositionedConvertor
 {
 public:
+    explicit WaypointConvertor(MavlinkConvertorParams* params) : PositionedConvertor(params)
+    {
+    }
+
     /* Navigate to waypoint.
      * | Hold time. (ignored by fixed wing, time to stay at waypoint for rotary wing)
      * | Acceptance radius (if the sphere with this radius is hit, the waypoint counts as reached)
@@ -111,13 +136,17 @@ public:
         item.param1 = waypoint->parameter(route::time.id).toInt();
         item.param2 = waypoint->parameter(route::acceptRadius.id).toReal();
         item.param3 = waypoint->parameter(route::passRadius.id).toReal();
-        item.param4 = waypoint->parameter(route::yaw.id).toReal();
+        item.param4 = utils::guardNaN(waypoint->parameter(route::yaw.id));
     }
 };
 
 class TakeoffConvertor : public PositionedConvertor
 {
 public:
+    explicit TakeoffConvertor(MavlinkConvertorParams* params) : PositionedConvertor(params)
+    {
+    }
+
     /* Takeoff from ground / hand. Vehicles that support multiple takeoff modes (e.g. VTOL quadplane) should take off using the currently configured mode.
      * Yaw angle (if magnetometer present), ignored without magnetometer. NaN to use the current system yaw heading mode (e.g. yaw towards next waypoint, yaw to home, etc.).| Latitude| Longitude| Altitude|  */
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
@@ -139,17 +168,23 @@ public:
     }
 };
 
-class LandStartConvertor : public IMavlinkItemConvertor
+class LandStartConvertor : public PositionedConvertor
 {
 public:
+    explicit LandStartConvertor(MavlinkConvertorParams* params) : PositionedConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::landStart);
+        PositionedConvertor::toItem(item, waypoint);
     }
 
     void fromItem(const RouteItem* waypoint, mavlink_mission_item_t& item) override
     {
         item.command = MAV_CMD_DO_LAND_START;
+        PositionedConvertor::fromItem(waypoint, item);
         item.param1 = 0;
         item.param2 = 0;
         item.param3 = 0;
@@ -165,6 +200,10 @@ public:
 class LandingConvertor : public PositionedConvertor
 {
 public:
+    explicit LandingConvertor(MavlinkConvertorParams* params) : PositionedConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::landing);
@@ -188,6 +227,10 @@ public:
 class LoiterTurnsConvertor : public PositionedConvertor
 {
 public:
+    explicit LoiterTurnsConvertor(MavlinkConvertorParams* params) : PositionedConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::loiterTurns);
@@ -214,6 +257,10 @@ public:
 class LoiterAltConvertor : public PositionedConvertor
 {
 public:
+    explicit LoiterAltConvertor(MavlinkConvertorParams* params) : PositionedConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::loiterAlt);
@@ -239,6 +286,10 @@ public:
 class LoiterUnlimConvertor : public PositionedConvertor
 {
 public:
+    explicit LoiterUnlimConvertor(MavlinkConvertorParams* params) : PositionedConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::loiterUnlim);
@@ -263,6 +314,10 @@ public:
 class LoiterTimeConvertor : public PositionedConvertor
 {
 public:
+    explicit LoiterTimeConvertor(MavlinkConvertorParams* params) : PositionedConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypoint) override
     {
         waypoint->setType(&route::loiterTime);
@@ -289,6 +344,10 @@ public:
 class SetTriggerDistConvertor : public IMavlinkItemConvertor
 {
 public:
+    explicit SetTriggerDistConvertor(MavlinkConvertorParams* params) : IMavlinkItemConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypointItem) override
     {
         waypointItem->setType(&route::setTriggerDist);
@@ -317,6 +376,10 @@ public:
 class SetTriggerIntConvertor : public IMavlinkItemConvertor
 {
 public:
+    explicit SetTriggerIntConvertor(MavlinkConvertorParams* params) : IMavlinkItemConvertor(params)
+    {
+    }
+
     void toItem(const mavlink_mission_item_t& item, RouteItem* waypointItem) override
     {
         waypointItem->setType(&route::setTriggerInt);
@@ -346,18 +409,18 @@ public:
 
 MavlinkItemConvertorsPool::MavlinkItemConvertorsPool() :
     m_itemConvertors({
-        { route::waypoint.id, new WaypointConvertor() },
-        { route::takeoff.id, new TakeoffConvertor() },
-        { route::landStart.id, new LandStartConvertor() },
-        { route::landing.id, new LandingConvertor() },
-        { route::loiterTurns.id, new LoiterTurnsConvertor() },
-        { route::loiterAlt.id, new LoiterAltConvertor() },
-        { route::loiterUnlim.id, new LoiterUnlimConvertor() },
-        { route::loiterTime.id, new LoiterTimeConvertor() },
-        { route::setTriggerDist.id, new SetTriggerDistConvertor() },
-        { route::setTriggerInt.id, new SetTriggerIntConvertor() },
+        { route::waypoint.id, new WaypointConvertor(&m_params) },
+        { route::takeoff.id, new TakeoffConvertor(&m_params) },
+        { route::landStart.id, new LandStartConvertor(&m_params) },
+        { route::landing.id, new LandingConvertor(&m_params) },
+        { route::loiterTurns.id, new LoiterTurnsConvertor(&m_params) },
+        { route::loiterAlt.id, new LoiterAltConvertor(&m_params) },
+        { route::loiterUnlim.id, new LoiterUnlimConvertor(&m_params) },
+        { route::loiterTime.id, new LoiterTimeConvertor(&m_params) },
+        { route::setTriggerDist.id, new SetTriggerDistConvertor(&m_params) },
+        { route::setTriggerInt.id, new SetTriggerIntConvertor(&m_params) },
     }),
-    m_homeConvertor(new HomeConvertor())
+    m_homeConvertor(new HomeConvertor(&m_params))
 {
 }
 
@@ -384,8 +447,5 @@ IMavlinkItemConvertor* MavlinkItemConvertorsPool::homeConvertor() const
 
 void MavlinkItemConvertorsPool::setHomeAltitude(float homeAltitude)
 {
-    for (IMavlinkItemConvertor* convertor : m_itemConvertors)
-    {
-        convertor->homeAltitude = homeAltitude;
-    }
+    m_params.homeAltitude = homeAltitude;
 }

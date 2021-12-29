@@ -7,9 +7,19 @@
 
 namespace md::domain
 {
+struct MavlinkConvertorParams
+{
+    float homeAltitude = 0;
+    double lastX = 0;
+    double lastY = 0;
+};
+
 class IMavlinkItemConvertor
 {
 public:
+    IMavlinkItemConvertor(MavlinkConvertorParams* params) : m_params(params)
+    {
+    }
     virtual ~IMavlinkItemConvertor() = default;
 
     virtual void toItem(const mavlink_mission_item_t& item, RouteItem* waypointItem) = 0;
@@ -17,7 +27,8 @@ public:
 
     virtual bool isWaypointItem() const = 0;
 
-    float homeAltitude = 0;
+protected:
+    MavlinkConvertorParams* m_params;
 };
 
 class MavlinkItemConvertorsPool
@@ -33,6 +44,7 @@ public:
     void setHomeAltitude(float homeAltitude);
 
 private:
+    MavlinkConvertorParams m_params;
     const QMap<QString, IMavlinkItemConvertor*> m_itemConvertors;
     IMavlinkItemConvertor* const m_homeConvertor;
 };

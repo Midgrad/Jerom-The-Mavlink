@@ -130,6 +130,7 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
 void MavlinkMissionDownload::sendMissionRequest(const QVariant& vehicleId)
 {
     qDebug() << "sendMissionRequest" << vehicleId;
+
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
@@ -153,6 +154,7 @@ void MavlinkMissionDownload::sendMissionRequest(const QVariant& vehicleId)
 void MavlinkMissionDownload::sendMissionItemRequest(const QVariant& vehicleId, int index)
 {
     qDebug() << "sendMissionItemRequest" << vehicleId << index;
+
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;

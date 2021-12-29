@@ -48,8 +48,6 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     Mission* mission = operation->mission();
     RouteItem* item = mission->item(request.seq);
 
-    qDebug() << request.seq << item << mission->count();
-
     if (!item)
     {
         qDebug() << "Invalid mission item request";
@@ -96,6 +94,7 @@ void MavlinkMissionUpload::processMissionAck(const mavlink_message_t& message,
 void MavlinkMissionUpload::sendMissionCount(const QVariant& vehicleId, int count)
 {
     qDebug() << "sendMissionCount" << vehicleId << count;
+
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
@@ -120,6 +119,7 @@ void MavlinkMissionUpload::sendMissionItem(const QVariant& vehicleId, RouteItem*
                                            int index)
 {
     qDebug() << "sendMissionItem" << vehicleId << index;
+
     auto mavId = m_context->vehicleIds.key(vehicleId, 0);
     if (!mavId)
         return;
