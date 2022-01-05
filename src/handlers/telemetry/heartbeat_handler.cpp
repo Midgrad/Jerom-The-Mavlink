@@ -202,11 +202,13 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     m_vehicleTimers[vehicle]->start(::onlineTimout, this); // TODO: to settings
     m_baseModes[message.sysid] = heartbeat.base_mode;
 
+    // Set vehbicle online
+    vehicle->online.set(true);
+
     // Telemetry values
     QVariantMap properties(
         { { tmi::state, QString::fromStdString(::decodeState(heartbeat.system_status)) },
-          { tmi::armed, (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) },
-          { tmi::online, true } });
+          { tmi::armed, (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) } });
 
     // Obtain specific mode with mode helper
     if (!m_modeHelpers.contains(message.sysid))
@@ -232,8 +234,7 @@ void HeartbeatHandler::timerEvent(QTimerEvent* event)
             continue;
 
         Vehicle* vehicle = m_vehicleTimers.key(timer);
-        if (vehicle)
-            m_context->pTree->appendProperties(vehicle->id().toString(), { { tmi::online, false } });
+        vehicle->online.set(false);
 
         timer->stop();
     }
