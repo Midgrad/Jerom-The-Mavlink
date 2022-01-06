@@ -5,6 +5,7 @@
 #include <QTimerEvent>
 
 #include "mavlink_protocol_helpers.h"
+#include "mavlink_vehicle_traits.h"
 #include "mode_helper_factory.h"
 #include "vehicle_tmi.h"
 
@@ -16,22 +17,22 @@ constexpr int onlineTimout = 2000;
 
 constexpr char mavId[] = "mavId";
 
-Vehicle::Type decodeMavType(uint8_t type)
+QString decodeMavType(uint8_t type)
 {
     switch (type)
     {
     case MAV_TYPE_FIXED_WING:
     case MAV_TYPE_KITE:
     case MAV_TYPE_FLAPPING_WING:
-        return Vehicle::FixedWing;
+        return vehicle::mavlinkFixedWing;
     case MAV_TYPE_TRICOPTER:
     case MAV_TYPE_QUADROTOR:
     case MAV_TYPE_HEXAROTOR:
     case MAV_TYPE_OCTOROTOR:
-        return Vehicle::Copter;
+        return vehicle::mavlinkCopter;
     case MAV_TYPE_COAXIAL:
     case MAV_TYPE_HELICOPTER:
-        return Vehicle::RotaryWing;
+        return vehicle::mavlinkRotaryWing;
     case MAV_TYPE_VTOL_DUOROTOR:
     case MAV_TYPE_VTOL_QUADROTOR:
     case MAV_TYPE_VTOL_TILTROTOR:
@@ -39,13 +40,13 @@ Vehicle::Type decodeMavType(uint8_t type)
     case MAV_TYPE_VTOL_RESERVED3:
     case MAV_TYPE_VTOL_RESERVED4:
     case MAV_TYPE_VTOL_RESERVED5:
-        return Vehicle::Vtol;
+        return vehicle::mavlinkVtol;
     case MAV_TYPE_AIRSHIP:
     case MAV_TYPE_FREE_BALLOON:
-        return Vehicle::Airship;
+        return vehicle::mavlinkAirship;
     case MAV_TYPE_GENERIC:
     default:
-        return Vehicle::Generic;
+        return vehicle::generic;
     }
 }
 
@@ -167,7 +168,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
 
     // Ignore generic heartbeat
     auto type = ::decodeMavType(heartbeat.type);
-    if (type == Vehicle::Generic)
+    if (type == vehicle::generic)
         return;
 
     // Get or create vehicle
