@@ -4,16 +4,20 @@
 
 #include "locator.h"
 
+#include "i_vehicles_features.h"
 #include "link_configuration.h"
 #include "mavlink_handlers_factory.h"
 #include "mavlink_mission_traits.h"
 #include "mavlink_transceiver.h"
 #include "mavlink_transceiver_threaded.h"
+#include "mavlink_vehicle_traits.h"
 
 namespace
 {
 constexpr char linksFileName[] = "./link_config.json";
-}
+
+constexpr char mavlinkDashboard[] = "MavlinkDashboard.qml";
+} // namespace
 
 using namespace md::app;
 
@@ -31,11 +35,19 @@ void ModuleJeromTheMavlink::init()
     auto pTree = Locator::get<domain::IPropertyTree>();
     Q_ASSERT(pTree);
 
-    auto missionService = Locator::get<domain::IMissionsService>();
-    Q_ASSERT(missionService);
-
     auto vehiclesService = Locator::get<domain::IVehiclesService>();
     Q_ASSERT(vehiclesService);
+
+    auto vehiclesFeatures = Locator::get<domain::IVehiclesFeatures>();
+    Q_ASSERT(vehiclesFeatures);
+
+    for (const QString& typeId : domain::vehicleType::allMavlinkTypes)
+    {
+        vehiclesFeatures->addFeature(typeId, domain::features::dashboard, ::mavlinkDashboard);
+    }
+
+    auto missionService = Locator::get<domain::IMissionsService>();
+    Q_ASSERT(missionService);
 
     auto commandsService = Locator::get<domain::ICommandsService>();
     Q_ASSERT(commandsService);
@@ -58,6 +70,14 @@ void ModuleJeromTheMavlink::start()
 
 void ModuleJeromTheMavlink::done()
 {
+    auto vehiclesFeatures = Locator::get<domain::IVehiclesFeatures>();
+    Q_ASSERT(vehiclesFeatures);
+
+    for (const QString& typeId : domain::vehicleType::allMavlinkTypes)
+    {
+        vehiclesFeatures->removeFeatures(typeId);
+    }
+
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
 

@@ -5,14 +5,18 @@
 
 namespace md::domain
 {
-namespace vehicle
+namespace vehicleType
 {
 constexpr char mavlinkFixedWing[] = "Mavlink Fixed Wing";
 constexpr char mavlinkCopter[] = "Mavlink Copter";
 constexpr char mavlinkRotaryWing[] = "Mavlink Rotary Wing";
 constexpr char mavlinkVtol[] = "Mavlink VTOL";
 constexpr char mavlinkAirship[] = "Mavlink Airship";
-} // namespace vehicle
+
+const std::array<const char*, 5> allMavlinkTypes = { mavlinkFixedWing, mavlinkCopter,
+                                                     mavlinkRotaryWing, mavlinkVtol,
+                                                     mavlinkAirship };
+} // namespace vehicleType
 } // namespace md::domain
 
 #endif // MAVLINK_VEHICLE_TRAITS_H

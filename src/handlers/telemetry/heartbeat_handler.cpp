@@ -24,15 +24,15 @@ QString decodeMavType(uint8_t type)
     case MAV_TYPE_FIXED_WING:
     case MAV_TYPE_KITE:
     case MAV_TYPE_FLAPPING_WING:
-        return vehicle::mavlinkFixedWing;
+        return vehicleType::mavlinkFixedWing;
     case MAV_TYPE_TRICOPTER:
     case MAV_TYPE_QUADROTOR:
     case MAV_TYPE_HEXAROTOR:
     case MAV_TYPE_OCTOROTOR:
-        return vehicle::mavlinkCopter;
+        return vehicleType::mavlinkCopter;
     case MAV_TYPE_COAXIAL:
     case MAV_TYPE_HELICOPTER:
-        return vehicle::mavlinkRotaryWing;
+        return vehicleType::mavlinkRotaryWing;
     case MAV_TYPE_VTOL_DUOROTOR:
     case MAV_TYPE_VTOL_QUADROTOR:
     case MAV_TYPE_VTOL_TILTROTOR:
@@ -40,13 +40,13 @@ QString decodeMavType(uint8_t type)
     case MAV_TYPE_VTOL_RESERVED3:
     case MAV_TYPE_VTOL_RESERVED4:
     case MAV_TYPE_VTOL_RESERVED5:
-        return vehicle::mavlinkVtol;
+        return vehicleType::mavlinkVtol;
     case MAV_TYPE_AIRSHIP:
     case MAV_TYPE_FREE_BALLOON:
-        return vehicle::mavlinkAirship;
+        return vehicleType::mavlinkAirship;
     case MAV_TYPE_GENERIC:
     default:
-        return vehicle::generic;
+        return vehicleType::generic;
     }
 }
 
@@ -168,7 +168,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
 
     // Ignore generic heartbeat
     auto type = ::decodeMavType(heartbeat.type);
-    if (type == vehicle::generic)
+    if (type == vehicleType::generic)
         return;
 
     // Get or create vehicle
