@@ -43,6 +43,7 @@ void ModuleJeromTheMavlink::init()
 
     for (const QString& typeId : domain::vehicleType::allMavlinkTypes)
     {
+        vehiclesService->addVehicleType(typeId);
         vehiclesFeatures->addFeature(typeId, domain::features::dashboard, ::mavlinkDashboard);
     }
 

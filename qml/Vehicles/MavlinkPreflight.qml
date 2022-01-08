@@ -9,7 +9,7 @@ Preflight {
     Controls.DelayButton {
         width: parent.width
         flat: true
-        enabled: online
+        enabled: selectedVehicle && selectedVehicle.online
         fillColor: Controls.Theme.colors.negative
         borderColor: Controls.Theme.colors.border
         text: params.armed ? qsTr("Disarm throttle"): qsTr("Arm throttle")
