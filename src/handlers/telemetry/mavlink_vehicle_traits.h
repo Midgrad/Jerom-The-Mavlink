@@ -5,18 +5,21 @@
 
 namespace md::domain
 {
-namespace vehicleType
+namespace vehicle
 {
-constexpr char mavlinkFixedWing[] = "Mavlink Fixed Wing";
-constexpr char mavlinkCopter[] = "Mavlink Copter";
-constexpr char mavlinkRotaryWing[] = "Mavlink Rotary Wing";
-constexpr char mavlinkVtol[] = "Mavlink VTOL";
-constexpr char mavlinkAirship[] = "Mavlink Airship";
+const VehicleType mavlinkFixedWing = { "mavlink_fixed_wing", "Mavlink Fixed Wing", "fixed_wing.svg",
+                                       "fixed_wing.glb" };
+const VehicleType mavlinkCopter = { "mavlink_copter", "Mavlink Copter", "copter.svg", "copter.glb" };
+const VehicleType mavlinkRotaryWing = { "mavlink_rotary_wing", "Mavlink Rotary Wing",
+                                        "rotary_wing.svg", "rotary_wing.glb" };
+const VehicleType mavlinkVtol = { "mavlink_vtol", "Mavlink VTOL", "vtol.svg", "vtol.glb" };
+const VehicleType mavlinkAirship = { "mavlink_airship", "Mavlink Airship", "airship.svg",
+                                     "airship.glb" };
 
-const std::array<const char*, 5> allMavlinkTypes = { mavlinkFixedWing, mavlinkCopter,
-                                                     mavlinkRotaryWing, mavlinkVtol,
-                                                     mavlinkAirship };
-} // namespace vehicleType
+const QList<const VehicleType*> allMavlinkTypes = { &mavlinkFixedWing, &mavlinkCopter,
+                                                    &mavlinkRotaryWing, &mavlinkVtol,
+                                                    &mavlinkAirship };
+} // namespace vehicle
 } // namespace md::domain
 
 #endif // MAVLINK_VEHICLE_TRAITS_H

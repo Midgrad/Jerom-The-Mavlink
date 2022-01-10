@@ -17,22 +17,22 @@ constexpr int onlineTimout = 2000;
 
 constexpr char mavId[] = "mavId";
 
-QString decodeMavType(uint8_t type)
+const VehicleType* decodeMavType(uint8_t type)
 {
     switch (type)
     {
     case MAV_TYPE_FIXED_WING:
     case MAV_TYPE_KITE:
     case MAV_TYPE_FLAPPING_WING:
-        return vehicleType::mavlinkFixedWing;
+        return &vehicle::mavlinkFixedWing;
     case MAV_TYPE_TRICOPTER:
     case MAV_TYPE_QUADROTOR:
     case MAV_TYPE_HEXAROTOR:
     case MAV_TYPE_OCTOROTOR:
-        return vehicleType::mavlinkCopter;
+        return &vehicle::mavlinkCopter;
     case MAV_TYPE_COAXIAL:
     case MAV_TYPE_HELICOPTER:
-        return vehicleType::mavlinkRotaryWing;
+        return &vehicle::mavlinkRotaryWing;
     case MAV_TYPE_VTOL_DUOROTOR:
     case MAV_TYPE_VTOL_QUADROTOR:
     case MAV_TYPE_VTOL_TILTROTOR:
@@ -40,17 +40,17 @@ QString decodeMavType(uint8_t type)
     case MAV_TYPE_VTOL_RESERVED3:
     case MAV_TYPE_VTOL_RESERVED4:
     case MAV_TYPE_VTOL_RESERVED5:
-        return vehicleType::mavlinkVtol;
+        return &vehicle::mavlinkVtol;
     case MAV_TYPE_AIRSHIP:
     case MAV_TYPE_FREE_BALLOON:
-        return vehicleType::mavlinkAirship;
+        return &vehicle::mavlinkAirship;
     case MAV_TYPE_GENERIC:
     default:
-        return vehicleType::generic;
+        return &vehicle::generic;
     }
 }
 
-std::string decodeState(uint8_t state)
+QString decodeState(uint8_t state)
 {
     switch (state)
     {
@@ -168,7 +168,7 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
 
     // Ignore generic heartbeat
     auto type = ::decodeMavType(heartbeat.type);
-    if (type == vehicleType::generic)
+    if (type == &vehicle::generic)
         return;
 
     // Get or create vehicle
@@ -207,9 +207,8 @@ void HeartbeatHandler::processHeartbeat(const mavlink_message_t& message)
     vehicle->online.set(true);
 
     // Telemetry values
-    QVariantMap properties(
-        { { tmi::state, QString::fromStdString(::decodeState(heartbeat.system_status)) },
-          { tmi::armed, (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) } });
+    QVariantMap properties({ { tmi::state, ::decodeState(heartbeat.system_status) },
+                             { tmi::armed, (heartbeat.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) } });
 
     // Obtain specific mode with mode helper
     if (!m_modeHelpers.contains(message.sysid))

@@ -41,10 +41,10 @@ void ModuleJeromTheMavlink::init()
     auto vehiclesFeatures = Locator::get<domain::IVehiclesFeatures>();
     Q_ASSERT(vehiclesFeatures);
 
-    for (const QString& typeId : domain::vehicleType::allMavlinkTypes)
+    for (const domain::VehicleType* type : domain::vehicle::allMavlinkTypes)
     {
-        vehiclesService->addVehicleType(typeId);
-        vehiclesFeatures->addFeature(typeId, domain::features::dashboard, ::mavlinkDashboard);
+        vehiclesService->addVehicleType(type);
+        vehiclesFeatures->addFeature(type->id, domain::features::dashboard, ::mavlinkDashboard);
     }
 
     auto missionService = Locator::get<domain::IMissionsService>();
@@ -73,15 +73,13 @@ void ModuleJeromTheMavlink::done()
 {
     auto vehiclesFeatures = Locator::get<domain::IVehiclesFeatures>();
     Q_ASSERT(vehiclesFeatures);
-
-    for (const QString& typeId : domain::vehicleType::allMavlinkTypes)
+    for (const domain::VehicleType* type : domain::vehicle::allMavlinkTypes)
     {
-        vehiclesFeatures->removeFeatures(typeId);
+        vehiclesFeatures->removeFeatures(type->id);
     }
 
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
-
     missionService->unregisterMissionType(&domain::mission::mavlinkMissionType);
 
     m_transceiver->stop();
