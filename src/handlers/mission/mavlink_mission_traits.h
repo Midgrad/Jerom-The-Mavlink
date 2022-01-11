@@ -63,12 +63,18 @@ const RouteItemType landStart = {
     "mavlink_landing_start", TR_ROUTE("Landing start"), TR_ROUTE("LND SRT"), {}
 };
 
+// Route pattens
+const RoutePattern takeoffToAltitude = { "mavlink_takeoff_to_altitude",
+                                         TR_ROUTE("Takeoff to alt."),
+                                         {} };
+
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",
                                      TR_ROUTE("Plain route (Mavlink)"),
                                      { &waypoint, &takeoff, &landing, &loiterTurns, &loiterAlt,
                                        &loiterUnlim, &loiterTime, &setTriggerDist, &setTriggerInt,
-                                       &landStart } };
+                                       &landStart },
+                                     { &takeoffToAltitude } };
 } // namespace route
 
 // Mission

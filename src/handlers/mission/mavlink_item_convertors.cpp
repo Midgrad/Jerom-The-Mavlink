@@ -15,6 +15,7 @@ using namespace md::domain;
 //MAV_CMD_DO_REPEAT_RELAY
 //MAV_CMD_DO_SET_SERVO
 //MAV_CMD_DO_REPEAT_SERVO
+//MAV_CMD_NAV_VTOL_TAKEOFF
 
 namespace
 {
