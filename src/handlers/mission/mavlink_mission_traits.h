@@ -64,9 +64,7 @@ const RouteItemType landStart = {
 };
 
 // Route pattens
-const RoutePattern takeoffToAltitude = { "mavlink_takeoff_to_altitude",
-                                         TR_ROUTE("Takeoff to alt."),
-                                         {} };
+const RoutePattern takeoffToAltitude = { "mavlink_survey_area", TR_ROUTE("Survey area"), {} };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",
