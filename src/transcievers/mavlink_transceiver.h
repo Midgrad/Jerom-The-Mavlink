@@ -10,7 +10,7 @@
 
 #include "i_mavlink_handlers_factory.h"
 #include "link_traits.h"
-#include "link_configuration.h"
+#include "communication/service/link_service.h"
 #include "link_transceiver_threaded.h"
 
 namespace md::domain
@@ -19,7 +19,7 @@ class MavlinkTransceiver : public IMavlinkTransceiver
 {
     Q_OBJECT
 public:
-    MavlinkTransceiver(data_source::LinkConfiguration* configuration,
+    MavlinkTransceiver(data_source::LinkService* configuration,
                        IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
 
 public slots:
@@ -38,7 +38,7 @@ private:
 
     int m_timerId = 0;
     MavlinkHandlerContext m_context;
-    data_source::LinkConfiguration* m_configuration;
+    data_source::LinkService* m_configuration;
     QVector<data_source::ILinkTransceiver*> m_linkTransceiverThreaded;
     QVector<IMavlinkHandler*> const m_handlers;
 };

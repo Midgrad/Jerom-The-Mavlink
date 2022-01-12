@@ -13,7 +13,7 @@ namespace
 constexpr int interval = 100;
 } // namespace
 
-MavlinkTransceiver::MavlinkTransceiver(data_source::LinkConfiguration* configuration,
+MavlinkTransceiver::MavlinkTransceiver(data_source::LinkService* configuration,
                                        IMavlinkHandlerFactory* factory, QObject* parent) :
     IMavlinkTransceiver(parent),
     m_configuration(configuration),

@@ -5,7 +5,7 @@
 #include "locator.h"
 
 #include "i_vehicles_features.h"
-#include "link_configuration.h"
+#include "communication/service/link_service.h"
 #include "mavlink_handlers_factory.h"
 #include "mavlink_mission_traits.h"
 #include "mavlink_transceiver.h"
@@ -57,7 +57,7 @@ void ModuleJeromTheMavlink::init()
 
     domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
 
-    auto configuration = new data_source::LinkConfiguration(::linksFileName);
+    auto configuration = new data_source::LinkService(::linksFileName);
     m_transceiver =
         new domain::MavlinkTranscieverThreaded(new domain::MavlinkTransceiver(configuration,
                                                                               &factory, nullptr),
