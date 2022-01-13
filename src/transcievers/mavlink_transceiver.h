@@ -1,36 +1,36 @@
 #ifndef MAVLINK_TRANSCEIVER_H
 #define MAVLINK_TRANSCEIVER_H
 
-#include "i_mavlink_transceiver.h"
+#include "i_communication_protocol.h"
 
 #include <QMap>
 #include <QVector>
 
 #include <memory>
 
+#include "communication/service/link_service.h"
 #include "i_mavlink_handlers_factory.h"
 #include "link_traits.h"
-#include "communication/service/link_service.h"
 #include "link_transceiver_threaded.h"
 
 namespace md::domain
 {
-class MavlinkTransceiver : public IMavlinkTransceiver
+class MavlinkTransceiver : public ICommunicationProtocol
 {
     Q_OBJECT
 public:
-    MavlinkTransceiver(data_source::LinkService* configuration,
-                       IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
+    MavlinkTransceiver(data_source::LinkService* configuration, IMavlinkHandlerFactory* factory,
+                       QObject* parent = nullptr);
 
 public slots:
     void start() override;
     void stop() override;
 
 signals:
-    void sendData(QByteArray data);
+    void sendData(QByteArray data) override;
 
 private slots:
-    void receiveData(const QByteArray& data);
+    void receiveData(const QByteArray& data) override;
     void sendMessage(const mavlink_message_t& message);
 
 private:

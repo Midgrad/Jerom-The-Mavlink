@@ -15,7 +15,7 @@ constexpr int interval = 100;
 
 MavlinkTransceiver::MavlinkTransceiver(data_source::LinkService* configuration,
                                        IMavlinkHandlerFactory* factory, QObject* parent) :
-    IMavlinkTransceiver(parent),
+    ICommunicationProtocol(parent),
     m_configuration(configuration),
     m_handlers(factory->create(&m_context))
 {
