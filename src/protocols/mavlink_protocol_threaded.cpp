@@ -1,4 +1,4 @@
-#include "mavlink_transceiver_threaded.h"
+#include "mavlink_protocol_threaded.h"
 
 #include <QDebug>
 
@@ -10,9 +10,8 @@ constexpr char threadName[] = "mavlink_transceiver";
 
 using namespace md::domain;
 
-MavlinkTranscieverThreaded::MavlinkTranscieverThreaded(IMavlinkTransceiver* worker,
-                                                       QObject* parent) :
-    IMavlinkTransceiver(parent),
+MavlinkProtocolThreaded::MavlinkProtocolThreaded(ICommunicationProtocol* worker, QObject* parent) :
+    ICommunicationProtocol(parent),
     m_worker(worker),
     m_thread(new QThread(this))
 {
@@ -22,12 +21,12 @@ MavlinkTranscieverThreaded::MavlinkTranscieverThreaded(IMavlinkTransceiver* work
     worker->moveToThread(m_thread);
 
     QObject::connect(m_thread, &QThread::finished, m_thread, &QThread::deleteLater);
-    QObject::connect(m_worker, &IMavlinkTransceiver::finished, m_thread, &QThread::quit);
-    QObject::connect(m_worker, &IMavlinkTransceiver::finished, m_worker, &QObject::deleteLater);
+    QObject::connect(m_worker, &ICommunicationProtocol::finished, m_thread, &QThread::quit);
+    QObject::connect(m_worker, &ICommunicationProtocol::finished, m_worker, &QObject::deleteLater);
     //    QObject::connect(m_worker, &IMavlinkTransceiver::finished, this, &IMavlinkTransceiver::finished);
 }
 
-MavlinkTranscieverThreaded::~MavlinkTranscieverThreaded()
+MavlinkProtocolThreaded::~MavlinkProtocolThreaded()
 {
     m_thread->quit();
 
@@ -39,14 +38,14 @@ MavlinkTranscieverThreaded::~MavlinkTranscieverThreaded()
     }
 }
 
-void MavlinkTranscieverThreaded::start()
+void MavlinkProtocolThreaded::start()
 {
     m_thread->start();
 
     QMetaObject::invokeMethod(m_worker, "start", Qt::QueuedConnection);
 }
 
-void MavlinkTranscieverThreaded::stop()
+void MavlinkProtocolThreaded::stop()
 {
     QMetaObject::invokeMethod(m_worker, "stop", Qt::QueuedConnection);
 }

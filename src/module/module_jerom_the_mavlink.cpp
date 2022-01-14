@@ -4,17 +4,17 @@
 
 #include "locator.h"
 
+#include "communication/service/communication_service.h"
 #include "i_vehicles_features.h"
-#include "communication/service/link_service.h"
 #include "mavlink_handlers_factory.h"
 #include "mavlink_mission_traits.h"
-#include "mavlink_transceiver.h"
-#include "mavlink_transceiver_threaded.h"
+#include "mavlink_protocol.h"
+#include "mavlink_protocol_threaded.h"
 #include "mavlink_vehicle_traits.h"
 
 namespace
 {
-constexpr char linksFileName[] = "./link_config.json";
+//constexpr char linksFileName[] = "./link_config.json";
 
 constexpr char mavlinkDashboard[] = "MavlinkDashboard.qml";
 } // namespace
@@ -57,11 +57,10 @@ void ModuleJeromTheMavlink::init()
 
     domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
 
-    auto configuration = new data_source::LinkService(::linksFileName);
-    m_transceiver =
-        new domain::MavlinkTranscieverThreaded(new domain::MavlinkTransceiver(configuration,
-                                                                              &factory, nullptr),
-                                               this);
+    m_transceiver = new domain::MavlinkProtocolThreaded(new domain::MavlinkProtocol(configuration,
+                                                                                    &factory,
+                                                                                    nullptr),
+                                                        this);
 }
 
 void ModuleJeromTheMavlink::start()

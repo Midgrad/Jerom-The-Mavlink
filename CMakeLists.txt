@@ -17,7 +17,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MODULE_OUTPUT_DIRECTORY})
 find_package(Qt5 ${QT_REQUIRED_VERSION} COMPONENTS Core REQUIRED)
 
 # Copy resources
-copy_post_cmake("link_config.json" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+copy_post_cmake("../../app/link_config.json" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 # Qt plugin definition
 add_definitions(-DQT_PLUGIN)
@@ -44,8 +44,8 @@ target_sources(${PROJECT_NAME} PRIVATE ${QRC_SOURCES})
 target_link_libraries(${PROJECT_NAME} PUBLIC kjarni loodsman mavlink Qt5::Core)
 
 # Tests
-if(TESTS_ENABLED)
-#    add_subdirectory(tests)
-endif(TESTS_ENABLED)
+if (TESTS_ENABLED)
+    #    add_subdirectory(tests)
+endif (TESTS_ENABLED)
 
 

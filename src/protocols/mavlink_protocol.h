@@ -1,5 +1,5 @@
-#ifndef MAVLINK_TRANSCEIVER_H
-#define MAVLINK_TRANSCEIVER_H
+#ifndef MAVLINK_PROTOCOL_H
+#define MAVLINK_PROTOCOL_H
 
 #include "i_communication_protocol.h"
 
@@ -8,19 +8,18 @@
 
 #include <memory>
 
-#include "communication/service/link_service.h"
+#include "communication/service/communication_service.h"
 #include "i_mavlink_handlers_factory.h"
 #include "link_traits.h"
 #include "link_transceiver_threaded.h"
 
 namespace md::domain
 {
-class MavlinkTransceiver : public ICommunicationProtocol
+class MavlinkProtocol : public ICommunicationProtocol
 {
     Q_OBJECT
 public:
-    MavlinkTransceiver(data_source::LinkService* configuration, IMavlinkHandlerFactory* factory,
-                       QObject* parent = nullptr);
+    explicit MavlinkProtocol(IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
 
 public slots:
     void start() override;
@@ -38,10 +37,8 @@ private:
 
     int m_timerId = 0;
     MavlinkHandlerContext m_context;
-    data_source::LinkService* m_configuration;
-    QVector<data_source::ILinkTransceiver*> m_linkTransceiverThreaded;
     QVector<IMavlinkHandler*> const m_handlers;
 };
 } // namespace md::domain
 
-#endif // MAVLINK_TRANSCEIVER_H
+#endif // MAVLINK_PROTOCOL_H
