@@ -4,6 +4,7 @@
 
 #include "locator.h"
 
+#include "i_routes_service.h"
 #include "i_vehicles_features.h"
 #include "link_configuration.h"
 #include "mavlink_handlers_factory.h"
@@ -47,6 +48,11 @@ void ModuleJeromTheMavlink::init()
         vehiclesFeatures->addFeature(type->id, domain::features::dashboard, ::mavlinkDashboard);
     }
 
+    auto routeService = Locator::get<domain::IRoutesService>();
+    Q_ASSERT(routeService);
+    routeService->registerRouteType(&domain::route::mavlinkRouteType);
+    routeService->registerRoutePatternFactory(domain::route::surveyPattern.id, &m_patternFactory);
+
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
 
@@ -77,6 +83,11 @@ void ModuleJeromTheMavlink::done()
     {
         vehiclesFeatures->removeFeatures(type->id);
     }
+
+    auto routeService = Locator::get<domain::IRoutesService>();
+    Q_ASSERT(routeService);
+    routeService->unregisterRouteType(&domain::route::mavlinkRouteType);
+    routeService->unregisterRoutePatternFactory(domain::route::surveyPattern.id);
 
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);

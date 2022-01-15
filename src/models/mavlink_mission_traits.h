@@ -64,7 +64,9 @@ const RouteItemType landStart = {
 };
 
 // Route pattens
-const RoutePattern takeoffToAltitude = { "mavlink_survey_area", TR_ROUTE("Survey area"), {} };
+const RoutePatternType surveyPattern = { "mavlink_survey_area",
+                              TR_ROUTE("Survey area"),
+                              { &yaw, &distance, &altitude } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",
@@ -72,7 +74,7 @@ const RouteType mavlinkRouteType = { "mavlink_route",
                                      { &waypoint, &takeoff, &landing, &loiterTurns, &loiterAlt,
                                        &loiterUnlim, &loiterTime, &setTriggerDist, &setTriggerInt,
                                        &landStart },
-                                     { &takeoffToAltitude } };
+                                     { &surveyPattern } };
 } // namespace route
 
 // Mission
