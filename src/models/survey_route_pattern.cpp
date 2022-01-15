@@ -16,7 +16,9 @@ void SurveyRoutePattern::calculate()
     if (m_areaPositions.isEmpty())
         return;
 
-    const int distance = 150;
+    const int spacing = this->parameter(route::spacing.id).toInt();
+    const float altitude = this->parameter(route::altitude.id).toFloat();
+    const float heading = this->parameter(route::heading.id).toFloat();
 
     const Geodetic& ref = m_areaPositions.first();
 
@@ -39,19 +41,20 @@ void SurveyRoutePattern::calculate()
     }
 
     m_pathPositions.clear();
-    double dx = minX;
+    double x = minX;
     for (int i = 0;; ++i)
     {
         bool reverse = i % 2;
-        m_pathPositions.append(ref.offsetted(Cartesian(dx, reverse ? minY : maxY, 0)));
-        m_pathPositions.append(ref.offsetted(Cartesian(dx, reverse ? maxY : minY, 0)));
 
-        dx += distance;
-        if (dx >= maxX)
+        m_pathPositions.append(
+            ref.offsetted(Cartesian(x, reverse ? minY : maxY, -altitude).rotated(heading)));
+        m_pathPositions.append(
+            ref.offsetted(Cartesian(x, reverse ? maxY : minY, -altitude).rotated(heading)));
+
+        x += spacing;
+        if (x >= maxX)
             break;
     }
-
-    qDebug() << "TOTAL POINTS:" << m_pathPositions.length();
 
     emit pathPositionsChanged();
 }
