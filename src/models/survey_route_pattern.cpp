@@ -20,36 +20,59 @@ void SurveyRoutePattern::calculate()
     const float altitude = this->parameter(route::altitude.id).toFloat();
     const float heading = this->parameter(route::heading.id).toFloat();
 
-    Geodetic ref = m_area.positions().first();
+    const Geodetic ref = m_area.positions().first();
+    const CartesianPath areaNed = m_area.nedPath(ref); // TODO .rotated(heading, center)
+    const CartesianRect boundingRect = areaNed.boundingRect();
+    const Cartesian center = boundingRect.center();
 
-    CartesianPath area = m_area.nedPath(ref);
-    double minX = area.positions().first().x;
-    double maxX = area.positions().first().x;
-    double minY = area.positions().first().y;
-    double maxY = area.positions().first().y;
-    for (const Cartesian& pos : area.positions())
-    {
-        minX = qMin(minX, pos.x());
-        maxX = qMax(maxX, pos.x());
-        minY = qMin(minY, pos.y());
-        maxY = qMax(maxY, pos.y());
-    }
+    // Take the rect guaranteed covered survey area
+    const double minX = center.x() - boundingRect.diagonal() / 2;
+    const double maxX = center.x() + boundingRect.diagonal() / 2;
+    const double maxY = center.y() + boundingRect.diagonal() / 2;
+    double y = center.y() - boundingRect.diagonal() / 2;
 
     QVector<Geodetic> pathPositions;
-    double x = minX;
+
     for (int i = 0;; ++i)
     {
-        bool reverse = i % 2;
+        Cartesian castPoint(minX, y, -altitude);
+        CartesianLine cast(castPoint, Cartesian(maxX, y, -altitude));
 
-        pathPositions.append(
-            ref.offsetted(Cartesian(x, reverse ? minY : maxY, -altitude).rotated(heading)));
-        pathPositions.append(
-            ref.offsetted(Cartesian(x, reverse ? maxY : minY, -altitude).rotated(heading)));
-
-        x += spacing;
-        if (x >= maxX)
+        auto intersections = areaNed.intersections2D(cast, true);
+        if (intersections.count() >= 2)
+        {
+            if (i % 2)
+                std::reverse(intersections.begin(), intersections.end());
+            for (const Cartesian& point : intersections)
+            {
+                pathPositions.append(ref.offsetted(point));
+            }
+        }
+        y += spacing;
+        if (y >= maxY)
             break;
     }
+    // WHOLE
+    //    for (int i = 0;; ++i)
+    //    {
+    //        bool reverse = i % 2;
+
+    //        pathPositions.append(
+    //            ref.offsetted(Cartesian(reverse ? minX : maxX, y, -altitude).rotated(heading, center)));
+    //        pathPositions.append(
+    //            ref.offsetted(Cartesian(reverse ? maxX : minX, y, -altitude).rotated(heading, center)));
+
+    //        y += spacing;
+    //        if (y >= maxY)
+    //            break;
+    //    }
+
+    // RECT
+    //    pathPositions.append(ref.offsetted(boundingRect.topLeft().rotated(heading, center)));
+    //    pathPositions.append(ref.offsetted(boundingRect.topRight().rotated(heading, center)));
+    //    pathPositions.append(ref.offsetted(boundingRect.bottomRight().rotated(heading, center)));
+    //    pathPositions.append(ref.offsetted(boundingRect.bottomLeft().rotated(heading, center)));
+    //    pathPositions.append(ref.offsetted(boundingRect.topLeft().rotated(heading, center)));
 
     m_path = pathPositions;
     emit pathPositionsChanged();
