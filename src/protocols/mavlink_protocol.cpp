@@ -3,46 +3,22 @@
 #include <QDebug>
 #include <QTimerEvent>
 
-using namespace md::domain;
+using namespace md::data_source;
 
 namespace
 {
 constexpr int interval = 100;
 } // namespace
 
-MavlinkProtocol::MavlinkProtocol(IMavlinkHandlerFactory* factory, QObject* parent) :
+MavlinkProtocol::MavlinkProtocol(domain::IMavlinkHandlerFactory* factory, QObject* parent) :
     ICommunicationProtocol(parent),
     m_handlers(factory->create(&m_context))
 {
-    for (IMavlinkHandler* handler : qAsConst(m_handlers))
+    for (domain::IMavlinkHandler* handler : qAsConst(m_handlers))
     {
         handler->setParent(this);
-        connect(handler, &IMavlinkHandler::sendMessage, this, &MavlinkProtocol::sendMessage);
+        connect(handler, &domain::IMavlinkHandler::sendMessage, this, &MavlinkProtocol::sendMessage);
     }
-}
-
-void MavlinkProtocol::start()
-{
-    for (auto thread : m_linkTransceiverThreaded)
-    {
-        thread->start();
-    }
-}
-
-void MavlinkProtocol::stop()
-{
-    if (m_timerId)
-    {
-        this->killTimer(m_timerId);
-        m_timerId = 0;
-    }
-
-    for (auto thread : m_linkTransceiverThreaded)
-    {
-        thread->stop();
-    }
-
-    emit finished();
 }
 
 void MavlinkProtocol::receiveData(const QByteArray& data)
@@ -61,7 +37,7 @@ void MavlinkProtocol::parseMessage(const QByteArray& data)
             continue;
     }
 
-    for (IMavlinkHandler* handler : m_handlers)
+    for (domain::IMavlinkHandler* handler : m_handlers)
     {
         handler->parse(message);
     }

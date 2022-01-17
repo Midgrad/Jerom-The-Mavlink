@@ -13,20 +13,20 @@
 #include "link_traits.h"
 #include "link_transceiver_threaded.h"
 
-namespace md::domain
+namespace md::data_source
 {
-class MavlinkProtocol : public ICommunicationProtocol
+class MavlinkProtocol : public domain::ICommunicationProtocol
 {
     Q_OBJECT
 public:
-    explicit MavlinkProtocol(IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
+    explicit MavlinkProtocol(domain::IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
 
 public slots:
     void start() override;
     void stop() override;
 
 signals:
-    void sendData(QByteArray data) override;
+    void sendData(QByteArray data);
 
 private slots:
     void receiveData(const QByteArray& data) override;
@@ -36,9 +36,9 @@ private:
     void parseMessage(const QByteArray& data);
 
     int m_timerId = 0;
-    MavlinkHandlerContext m_context;
-    QVector<IMavlinkHandler*> const m_handlers;
+    domain::MavlinkHandlerContext m_context;
+    QVector<domain::IMavlinkHandler*> const m_handlers;
 };
-} // namespace md::domain
+} // namespace md::data_source
 
 #endif // MAVLINK_PROTOCOL_H

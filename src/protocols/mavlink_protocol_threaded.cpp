@@ -8,7 +8,7 @@ constexpr int timeout = 500;
 constexpr char threadName[] = "mavlink_transceiver";
 } // namespace
 
-using namespace md::domain;
+using namespace md::data_source;
 
 MavlinkProtocolThreaded::MavlinkProtocolThreaded(ICommunicationProtocol* worker, QObject* parent) :
     ICommunicationProtocol(parent),

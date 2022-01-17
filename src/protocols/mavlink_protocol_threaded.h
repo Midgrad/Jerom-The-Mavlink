@@ -5,9 +5,9 @@
 
 #include <QThread>
 
-namespace md::domain
+namespace md::data_source
 {
-class MavlinkProtocolThreaded : public ICommunicationProtocol
+class MavlinkProtocolThreaded : public domain::ICommunicationProtocol
 {
     Q_OBJECT
 
@@ -23,6 +23,6 @@ private:
     ICommunicationProtocol* const m_worker;
     QThread* const m_thread;
 };
-} // namespace md::domain
+} // namespace md::data_source
 
 #endif // MAVLINK_PROTOCOL_THREADED_H

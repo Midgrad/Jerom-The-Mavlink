@@ -13,7 +13,7 @@ else (MAVLINK_V2_ENABLE)
     message("Mavlink version 2 disabled")
 endif (MAVLINK_V2_ENABLE)
 
-target_include_directories(${PROJECT_NAME} INTERFACE "${MAVLINK_DIR}")
+target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE "${MAVLINK_DIR}")
 
 # Internal sources and headers
 file(GLOB SOURCES "${MAVLINK_DIR}/*.h")

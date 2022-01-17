@@ -27,7 +27,7 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 
 ModuleJeromTheMavlink::~ModuleJeromTheMavlink()
 {
-    delete m_transceiver;
+    delete m_protocol;
 }
 
 void ModuleJeromTheMavlink::init()
@@ -57,15 +57,14 @@ void ModuleJeromTheMavlink::init()
 
     domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
 
-    m_transceiver = new domain::MavlinkProtocolThreaded(new domain::MavlinkProtocol(configuration,
-                                                                                    &factory,
-                                                                                    nullptr),
-                                                        this);
+    m_protocol = new data_source::MavlinkProtocolThreaded(new data_source::MavlinkProtocol(&factory,
+                                                                                           nullptr),
+                                                          this);
 }
 
 void ModuleJeromTheMavlink::start()
 {
-    m_transceiver->start();
+    m_protocol->start();
 }
 
 void ModuleJeromTheMavlink::done()
@@ -81,5 +80,5 @@ void ModuleJeromTheMavlink::done()
     Q_ASSERT(missionService);
     missionService->unregisterMissionType(&domain::mission::mavlinkMissionType);
 
-    m_transceiver->stop();
+    m_protocol->stop();
 }
