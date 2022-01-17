@@ -24,6 +24,14 @@ MavlinkProtocolThreaded::MavlinkProtocolThreaded(ICommunicationProtocol* worker,
     QObject::connect(m_worker, &ICommunicationProtocol::finished, m_thread, &QThread::quit);
     QObject::connect(m_worker, &ICommunicationProtocol::finished, m_worker, &QObject::deleteLater);
     //    QObject::connect(m_worker, &IMavlinkTransceiver::finished, this, &IMavlinkTransceiver::finished);
+
+    QObject::connect(this, &MavlinkProtocolThreaded::resendData, m_worker,
+                     &ICommunicationProtocol::receiveData);
+
+    QObject::connect(m_worker, &ICommunicationProtocol::sendData, this,
+                     &ICommunicationProtocol::sendData);
+
+    m_thread->start();
 }
 
 MavlinkProtocolThreaded::~MavlinkProtocolThreaded()
@@ -40,6 +48,8 @@ MavlinkProtocolThreaded::~MavlinkProtocolThreaded()
 
 void MavlinkProtocolThreaded::receiveData(const QByteArray& data)
 {
+    //    qDebug() << "receiveData";
+    emit resendData(data);
 }
 
 //void MavlinkProtocolThreaded::start()

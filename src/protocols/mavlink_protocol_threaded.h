@@ -20,6 +20,12 @@ public slots:
     //    void start() override;
     //    void stop() override;
 
+signals:
+    void resendData(QByteArray data);
+
+signals:
+
+
 private:
     ICommunicationProtocol* const m_worker;
     QThread* const m_thread;

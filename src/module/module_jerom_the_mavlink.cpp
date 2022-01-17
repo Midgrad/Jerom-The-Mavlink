@@ -69,7 +69,7 @@ void ModuleJeromTheMavlink::init()
 
 void ModuleJeromTheMavlink::start()
 {
-    //    m_protocol->start();
+    //        m_protocol->start();
 }
 
 void ModuleJeromTheMavlink::done()

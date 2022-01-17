@@ -25,9 +25,6 @@ public:
     //        void start() override;
     //        void stop() override;
 
-signals:
-    void sendData(QByteArray data);
-
 private slots:
     void receiveData(const QByteArray& data) override;
     void sendMessage(const mavlink_message_t& message);
