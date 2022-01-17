@@ -4,7 +4,7 @@
 
 #include "locator.h"
 
-#include "communication/service/communication_service.h"
+#include "communication_service.h"
 #include "i_vehicles_features.h"
 #include "mavlink_handlers_factory.h"
 #include "mavlink_mission_traits.h"
@@ -14,7 +14,7 @@
 
 namespace
 {
-//constexpr char linksFileName[] = "./link_config.json";
+constexpr char protocolName[] = "Mavlink";
 
 constexpr char mavlinkDashboard[] = "MavlinkDashboard.qml";
 } // namespace
@@ -53,6 +53,9 @@ void ModuleJeromTheMavlink::init()
     auto commandsService = Locator::get<domain::ICommandsService>();
     Q_ASSERT(commandsService);
 
+    auto communicationService = Locator::get<CommunicationService>();
+    Q_ASSERT(communicationService);
+
     missionService->registerMissionType(&domain::mission::mavlinkMissionType);
 
     domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
@@ -60,11 +63,13 @@ void ModuleJeromTheMavlink::init()
     m_protocol = new data_source::MavlinkProtocolThreaded(new data_source::MavlinkProtocol(&factory,
                                                                                            nullptr),
                                                           this);
+
+    communicationService->registerProtocol(protocolName, m_protocol);
 }
 
 void ModuleJeromTheMavlink::start()
 {
-    m_protocol->start();
+    //    m_protocol->start();
 }
 
 void ModuleJeromTheMavlink::done()
@@ -80,5 +85,5 @@ void ModuleJeromTheMavlink::done()
     Q_ASSERT(missionService);
     missionService->unregisterMissionType(&domain::mission::mavlinkMissionType);
 
-    m_protocol->stop();
+    //    m_protocol->stop();
 }

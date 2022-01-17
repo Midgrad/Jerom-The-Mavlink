@@ -5,11 +5,6 @@
 
 using namespace md::data_source;
 
-namespace
-{
-constexpr int interval = 100;
-} // namespace
-
 MavlinkProtocol::MavlinkProtocol(domain::IMavlinkHandlerFactory* factory, QObject* parent) :
     ICommunicationProtocol(parent),
     m_handlers(factory->create(&m_context))

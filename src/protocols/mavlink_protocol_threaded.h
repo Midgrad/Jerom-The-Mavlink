@@ -16,8 +16,9 @@ public:
     ~MavlinkProtocolThreaded() override;
 
 public slots:
-    void start() override;
-    void stop() override;
+    void receiveData(const QByteArray& data) override;
+    //    void start() override;
+    //    void stop() override;
 
 private:
     ICommunicationProtocol* const m_worker;

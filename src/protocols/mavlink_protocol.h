@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "communication/service/communication_service.h"
 #include "i_mavlink_handlers_factory.h"
 #include "link_traits.h"
 #include "link_transceiver_threaded.h"
@@ -21,9 +20,10 @@ class MavlinkProtocol : public domain::ICommunicationProtocol
 public:
     explicit MavlinkProtocol(domain::IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
 
-public slots:
-    void start() override;
-    void stop() override;
+    //public slots:
+    //    void receiveData(const QByteArray& data);
+    //        void start() override;
+    //        void stop() override;
 
 signals:
     void sendData(QByteArray data);
@@ -35,7 +35,7 @@ private slots:
 private:
     void parseMessage(const QByteArray& data);
 
-    int m_timerId = 0;
+    //    int m_timerId = 0;
     domain::MavlinkHandlerContext m_context;
     QVector<domain::IMavlinkHandler*> const m_handlers;
 };

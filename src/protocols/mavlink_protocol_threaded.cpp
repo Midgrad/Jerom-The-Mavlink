@@ -38,14 +38,18 @@ MavlinkProtocolThreaded::~MavlinkProtocolThreaded()
     }
 }
 
-void MavlinkProtocolThreaded::start()
+void MavlinkProtocolThreaded::receiveData(const QByteArray& data)
 {
-    m_thread->start();
-
-    QMetaObject::invokeMethod(m_worker, "start", Qt::QueuedConnection);
 }
 
-void MavlinkProtocolThreaded::stop()
-{
-    QMetaObject::invokeMethod(m_worker, "stop", Qt::QueuedConnection);
-}
+//void MavlinkProtocolThreaded::start()
+//{
+//    m_thread->start();
+//
+//    //    QMetaObject::invokeMethod(m_worker, "start", Qt::QueuedConnection);
+//}
+//
+//void MavlinkProtocolThreaded::stop()
+//{
+//    //    QMetaObject::invokeMethod(m_worker, "stop", Qt::QueuedConnection);
+//}
