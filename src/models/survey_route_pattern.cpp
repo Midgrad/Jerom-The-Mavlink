@@ -13,26 +13,21 @@ SurveyRoutePattern::SurveyRoutePattern(QObject* parent) :
 
 void SurveyRoutePattern::calculate()
 {
-    if (m_areaPositions.isEmpty())
+    if (m_area.isEmpty())
         return;
 
     const int spacing = this->parameter(route::spacing.id).toInt();
     const float altitude = this->parameter(route::altitude.id).toFloat();
     const float heading = this->parameter(route::heading.id).toFloat();
 
-    const Geodetic& ref = m_areaPositions.first();
+    Geodetic ref = m_area.positions().first();
 
-    QVector<Cartesian> area;
-    for (const Geodetic& pos : qAsConst(m_areaPositions))
-    {
-        area.append(pos.nedPoint(ref));
-    }
-
-    double minX = area.first().x;
-    double maxX = area.first().x;
-    double minY = area.first().y;
-    double maxY = area.first().y;
-    for (const Cartesian& pos : area)
+    CartesianPath area = m_area.nedPath(ref);
+    double minX = area.positions().first().x;
+    double maxX = area.positions().first().x;
+    double minY = area.positions().first().y;
+    double maxY = area.positions().first().y;
+    for (const Cartesian& pos : area.positions())
     {
         minX = qMin(minX, pos.x());
         maxX = qMax(maxX, pos.x());
@@ -40,15 +35,15 @@ void SurveyRoutePattern::calculate()
         maxY = qMax(maxY, pos.y());
     }
 
-    m_pathPositions.clear();
+    QVector<Geodetic> pathPositions;
     double x = minX;
     for (int i = 0;; ++i)
     {
         bool reverse = i % 2;
 
-        m_pathPositions.append(
+        pathPositions.append(
             ref.offsetted(Cartesian(x, reverse ? minY : maxY, -altitude).rotated(heading)));
-        m_pathPositions.append(
+        pathPositions.append(
             ref.offsetted(Cartesian(x, reverse ? maxY : minY, -altitude).rotated(heading)));
 
         x += spacing;
@@ -56,5 +51,6 @@ void SurveyRoutePattern::calculate()
             break;
     }
 
+    m_path = pathPositions;
     emit pathPositionsChanged();
 }
