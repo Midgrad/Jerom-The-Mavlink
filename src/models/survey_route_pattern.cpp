@@ -21,7 +21,7 @@ void SurveyRoutePattern::calculate()
     const float heading = this->parameter(route::heading.id).toFloat();
 
     const Geodetic ref = m_area.positions().first();
-    const CartesianPath areaNed = m_area.nedPath(ref); // TODO .rotated(heading, center)
+    const CartesianPath areaNed = m_area.nedPath(ref);
     const CartesianRect boundingRect = areaNed.boundingRect();
     const Cartesian center = boundingRect.center();
 
@@ -35,10 +35,11 @@ void SurveyRoutePattern::calculate()
 
     for (int i = 0;; ++i)
     {
-        Cartesian castPoint(minX, y, -altitude);
-        CartesianLine cast(castPoint, Cartesian(maxX, y, -altitude));
+        Cartesian castPoint = Cartesian(minX, y, -altitude).rotated(heading, center);
+        CartesianLine cast(castPoint, Cartesian(maxX, y, -altitude).rotated(heading, center));
 
         auto intersections = areaNed.intersections2D(cast, true);
+
         if (intersections.count() >= 2)
         {
             if (i % 2)
@@ -52,27 +53,6 @@ void SurveyRoutePattern::calculate()
         if (y >= maxY)
             break;
     }
-    // WHOLE
-    //    for (int i = 0;; ++i)
-    //    {
-    //        bool reverse = i % 2;
-
-    //        pathPositions.append(
-    //            ref.offsetted(Cartesian(reverse ? minX : maxX, y, -altitude).rotated(heading, center)));
-    //        pathPositions.append(
-    //            ref.offsetted(Cartesian(reverse ? maxX : minX, y, -altitude).rotated(heading, center)));
-
-    //        y += spacing;
-    //        if (y >= maxY)
-    //            break;
-    //    }
-
-    // RECT
-    //    pathPositions.append(ref.offsetted(boundingRect.topLeft().rotated(heading, center)));
-    //    pathPositions.append(ref.offsetted(boundingRect.topRight().rotated(heading, center)));
-    //    pathPositions.append(ref.offsetted(boundingRect.bottomRight().rotated(heading, center)));
-    //    pathPositions.append(ref.offsetted(boundingRect.bottomLeft().rotated(heading, center)));
-    //    pathPositions.append(ref.offsetted(boundingRect.topLeft().rotated(heading, center)));
 
     m_path = pathPositions;
     emit pathPositionsChanged();
