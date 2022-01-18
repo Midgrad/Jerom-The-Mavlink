@@ -65,7 +65,7 @@ const RouteItemType landStart = {
 // Route pattens
 const RoutePatternType surveyPattern = { "mavlink_survey_area",
                                          TR_ROUTE("Survey area"),
-                                         { &altitude, &heading, &spacing, &doubled } };
+                                         { &altitude, &surveyType, &heading, &spacing, &doubled } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",
