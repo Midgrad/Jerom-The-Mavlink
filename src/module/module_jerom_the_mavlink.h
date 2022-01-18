@@ -4,6 +4,8 @@
 #include "i_communication_protocol.h"
 #include "i_module.h"
 
+#include "mavlink_route_pattern_factory.h"
+
 namespace md::app
 {
 class ModuleJeromTheMavlink
@@ -24,6 +26,7 @@ public:
 
 private:
     domain::ICommunicationProtocol* m_protocol = nullptr;
+    domain::MavlinkRoutePatternFactory m_patternFactory;
 };
 } // namespace md::app
 

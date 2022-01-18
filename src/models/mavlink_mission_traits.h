@@ -21,6 +21,9 @@ const Parameter shutter = { "shutter", TR_ROUTE("Shutter"), Parameter::Int, 0, 0
 const Parameter trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
 const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0, 0, 1000 };
 
+const Parameter heading = { "heading", TR_ROUTE("Heading"), Parameter::Int, 0, 0, 359 };
+const Parameter spacing = { "spacing", TR_ROUTE("Spacing"), Parameter::Int, 50, 10, 10000 };
+
 // Route Items
 
 const RouteItemType home = { "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), { &yaw } };
@@ -64,9 +67,9 @@ const RouteItemType landStart = {
 };
 
 // Route pattens
-const RoutePattern takeoffToAltitude = { "mavlink_takeoff_to_altitude",
-                                         TR_ROUTE("Takeoff to alt."),
-                                         {} };
+const RoutePatternType surveyPattern = { "mavlink_survey_area",
+                                         TR_ROUTE("Survey area"),
+                                         { &heading, &spacing, &altitude } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",
@@ -74,7 +77,7 @@ const RouteType mavlinkRouteType = { "mavlink_route",
                                      { &waypoint, &takeoff, &landing, &loiterTurns, &loiterAlt,
                                        &loiterUnlim, &loiterTime, &setTriggerDist, &setTriggerInt,
                                        &landStart },
-                                     { &takeoffToAltitude } };
+                                     { &surveyPattern } };
 } // namespace route
 
 // Mission
