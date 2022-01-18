@@ -21,12 +21,7 @@ const Parameter shutter = { "shutter", TR_ROUTE("Shutter"), Parameter::Int, 0, 0
 const Parameter trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
 const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0, 0, 1000 };
 
-const Parameter heading = { "heading", TR_ROUTE("Heading"), Parameter::Int, 0, 0, 359 };
-const Parameter spacing = { "spacing", TR_ROUTE("Spacing"), Parameter::Int, 50, 10, 10000 };
-const Parameter doubled = { "doubled", TR_ROUTE("Doubled"), false };
-
 // Route Items
-
 const RouteItemType home = { "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), { &yaw } };
 const RouteItemType waypoint = { "mavlink_waypoint",
                                  TR_ROUTE("Waypoint"),
