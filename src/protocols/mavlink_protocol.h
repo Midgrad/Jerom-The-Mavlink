@@ -8,9 +8,9 @@
 
 #include <memory>
 
+#include "communication/tranceivers/link_transceiver_threaded.h"
 #include "i_mavlink_handlers_factory.h"
 #include "link_traits.h"
-#include "link_transceiver_threaded.h"
 
 namespace md::data_source
 {
