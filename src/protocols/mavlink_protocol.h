@@ -19,20 +19,16 @@ class MavlinkProtocol : public domain::ICommunicationProtocol
     Q_OBJECT
 public:
     explicit MavlinkProtocol(domain::IMavlinkHandlerFactory* factory, QObject* parent = nullptr);
+    ~MavlinkProtocol();
 
-    //public slots:
-    //    void receiveData(const QByteArray& data);
-    //        void start() override;
-    //        void stop() override;
+public slots:
+    void receiveData(const QByteArray& data) override;
 
 private slots:
-    void receiveData(const QByteArray& data) override;
     void sendMessage(const mavlink_message_t& message);
 
 private:
     void parseMessage(const QByteArray& data);
-
-    //    int m_timerId = 0;
     domain::MavlinkHandlerContext m_context;
     QVector<domain::IMavlinkHandler*> const m_handlers;
 };

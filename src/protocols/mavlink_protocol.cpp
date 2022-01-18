@@ -16,6 +16,16 @@ MavlinkProtocol::MavlinkProtocol(domain::IMavlinkHandlerFactory* factory, QObjec
     }
 }
 
+MavlinkProtocol::~MavlinkProtocol()
+{
+    for (domain::IMavlinkHandler* handler : qAsConst(m_handlers))
+    {
+        delete handler;
+    }
+
+    emit finished();
+}
+
 void MavlinkProtocol::receiveData(const QByteArray& data)
 {
     this->parseMessage(data);

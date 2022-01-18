@@ -17,14 +17,9 @@ public:
 
 public slots:
     void receiveData(const QByteArray& data) override;
-    //    void start() override;
-    //    void stop() override;
 
 signals:
     void resendData(QByteArray data);
-
-signals:
-
 
 private:
     ICommunicationProtocol* const m_worker;
