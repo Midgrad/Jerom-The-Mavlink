@@ -23,6 +23,7 @@ const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0
 
 const Parameter heading = { "heading", TR_ROUTE("Heading"), Parameter::Int, 0, 0, 359 };
 const Parameter spacing = { "spacing", TR_ROUTE("Spacing"), Parameter::Int, 50, 10, 10000 };
+const Parameter doubled = { "doubled", TR_ROUTE("Doubled"), false };
 
 // Route Items
 
@@ -69,7 +70,7 @@ const RouteItemType landStart = {
 // Route pattens
 const RoutePatternType surveyPattern = { "mavlink_survey_area",
                                          TR_ROUTE("Survey area"),
-                                         { &heading, &spacing, &altitude } };
+                                         { &altitude, &heading, &spacing, &doubled } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",

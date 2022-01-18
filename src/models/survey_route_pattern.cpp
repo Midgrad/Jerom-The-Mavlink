@@ -19,6 +19,7 @@ void SurveyRoutePattern::calculate()
     const int spacing = this->parameter(route::spacing.id).toInt();
     const float altitude = this->parameter(route::altitude.id).toFloat();
     const float heading = this->parameter(route::heading.id).toFloat();
+    const bool doubled = this->parameter(route::doubled.id).toBool();
 
     const Geodetic ref = m_area.positions().first();
     const CartesianPath areaNed = m_area.nedPath(ref);
@@ -31,6 +32,9 @@ void SurveyRoutePattern::calculate()
     const double maxY = center.y() + boundingRect.diagonal() / 2;
     double y = center.y() - boundingRect.diagonal() / 2;
 
+    // In: CartesianPath area, spacing, heading
+    // Out: CartesianPath path
+
     QVector<Geodetic> pathPositions;
 
     for (int i = 0;; ++i)
@@ -38,7 +42,8 @@ void SurveyRoutePattern::calculate()
         Cartesian castPoint = Cartesian(minX, y, -altitude).rotated(heading, center);
         CartesianLine cast(castPoint, Cartesian(maxX, y, -altitude).rotated(heading, center));
 
-        auto intersections = areaNed.intersections2D(cast, true);
+        QVector<Cartesian> intersections = CartesianPath(areaNed.intersections2D(cast, true))
+                                               .sortedByDistance(castPoint);
 
         if (intersections.count() >= 2)
         {
