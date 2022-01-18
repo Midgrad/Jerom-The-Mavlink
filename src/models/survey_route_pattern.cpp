@@ -3,13 +3,16 @@
 #include <QDebug>
 
 #include "mavlink_mission_traits.h"
-#include "route_pattern_algorithm_grid.h"
-#include "route_pattern_algorithm_snail.h"
 
 using namespace md::domain;
 
-SurveyRoutePattern::SurveyRoutePattern(QObject* parent) :
-    RoutePattern(&route::surveyPattern, parent)
+SurveyRoutePattern::SurveyRoutePattern(IRoutePatternAlgorithm* algorithm, QObject* parent) :
+    RoutePattern(&route::surveyPatternGrid, parent),
+    m_algorithm(algorithm)
+{
+}
+
+SurveyRoutePattern::~SurveyRoutePattern()
 {
 }
 
@@ -18,24 +21,12 @@ void SurveyRoutePattern::calculate()
     if (m_area.isEmpty())
         return;
 
-    QString type = this->parameter(route::surveyType.id).toString();
-
     const Geodetic ref = m_area.positions().first();
 
-    QScopedPointer<IRoutePatternAlgorithm> algorithm;
-    if (type == route::grid)
-        algorithm.reset(
-            new RoutePatternAlgorithmGrid(m_area.nedPath(ref).positions, this->parameters()));
-    else if (type == route::snail)
-        algorithm.reset(
-            new RoutePatternAlgorithmSnail(m_area.nedPath(ref).positions, this->parameters()));
-    else
-        return;
-
-    algorithm->calculate();
+    auto cartesians = m_algorithm->calculate(m_area.nedPath(ref).positions, this->parameters());
 
     QVector<Geodetic> pathPositions;
-    for (const Cartesian& cartesian : algorithm->path())
+    for (const Cartesian& cartesian : cartesians)
     {
         pathPositions.append(ref.offsetted(cartesian));
     }

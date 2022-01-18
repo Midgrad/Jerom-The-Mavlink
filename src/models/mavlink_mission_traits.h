@@ -63,9 +63,14 @@ const RouteItemType landStart = {
 };
 
 // Route pattens
-const RoutePatternType surveyPattern = { "mavlink_survey_area",
-                                         TR_ROUTE("Survey area"),
-                                         { &altitude, &surveyType, &heading, &spacing, &doubled } };
+const RoutePatternType surveyPatternGrid = { "mavlink_survey_grid",
+                                             TR_ROUTE("Survey grid"),
+                                             "qrc:/icons/grid_pattern.svg",
+                                             { &altitude, &heading, &spacing, &doubled } };
+const RoutePatternType surveyPatternSnail = { "mavlink_survey_snail",
+                                              TR_ROUTE("Survey snail"),
+                                              "qrc:/icons/snail_pattern.svg",
+                                              { &altitude, &heading, &spacing } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",
@@ -73,7 +78,7 @@ const RouteType mavlinkRouteType = { "mavlink_route",
                                      { &waypoint, &takeoff, &landing, &loiterTurns, &loiterAlt,
                                        &loiterUnlim, &loiterTime, &setTriggerDist, &setTriggerInt,
                                        &landStart },
-                                     { &surveyPattern } };
+                                     { &surveyPatternGrid, &surveyPatternSnail } };
 } // namespace route
 
 // Mission

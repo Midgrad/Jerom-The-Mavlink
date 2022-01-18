@@ -51,7 +51,10 @@ void ModuleJeromTheMavlink::init()
     auto routeService = Locator::get<domain::IRoutesService>();
     Q_ASSERT(routeService);
     routeService->registerRouteType(&domain::route::mavlinkRouteType);
-    routeService->registerRoutePatternFactory(domain::route::surveyPattern.id, &m_patternFactory);
+    routeService->registerRoutePatternFactory(domain::route::surveyPatternGrid.id,
+                                              &m_patternFactory);
+    routeService->registerRoutePatternFactory(domain::route::surveyPatternSnail.id,
+                                              &m_patternFactory);
 
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
@@ -87,7 +90,8 @@ void ModuleJeromTheMavlink::done()
     auto routeService = Locator::get<domain::IRoutesService>();
     Q_ASSERT(routeService);
     routeService->unregisterRouteType(&domain::route::mavlinkRouteType);
-    routeService->unregisterRoutePatternFactory(domain::route::surveyPattern.id);
+    routeService->unregisterRoutePatternFactory(domain::route::surveyPatternGrid.id);
+    routeService->unregisterRoutePatternFactory(domain::route::surveyPatternSnail.id);
 
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
