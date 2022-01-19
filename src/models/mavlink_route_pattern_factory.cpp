@@ -10,9 +10,9 @@ using namespace md::domain;
 RoutePattern* MavlinkRoutePatternFactory::create(const QString& routePatternId)
 {
     if (routePatternId == route::surveyPatternGrid.id)
-        return new SurveyRoutePattern(new RoutePatternAlgorithmGrid());
+        return new SurveyRoutePattern(&route::surveyPatternGrid, new RoutePatternAlgorithmGrid());
     else if (routePatternId == route::surveyPatternSnail.id)
-        return new SurveyRoutePattern(new RoutePatternAlgorithmSnail());
+        return new SurveyRoutePattern(&route::surveyPatternSnail, new RoutePatternAlgorithmSnail());
 
     return nullptr;
 }

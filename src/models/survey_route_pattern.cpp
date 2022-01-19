@@ -6,8 +6,9 @@
 
 using namespace md::domain;
 
-SurveyRoutePattern::SurveyRoutePattern(IRoutePatternAlgorithm* algorithm, QObject* parent) :
-    RoutePattern(&route::surveyPatternGrid, parent),
+SurveyRoutePattern::SurveyRoutePattern(const RoutePatternType* type,
+                                       IRoutePatternAlgorithm* algorithm, QObject* parent) :
+    RoutePattern(type, parent),
     m_algorithm(algorithm)
 {
 }

@@ -12,7 +12,8 @@ class SurveyRoutePattern : public RoutePattern
     Q_OBJECT
 
 public:
-    explicit SurveyRoutePattern(IRoutePatternAlgorithm* algorithm, QObject* parent = nullptr);
+    explicit SurveyRoutePattern(const RoutePatternType* type, IRoutePatternAlgorithm* algorithm,
+                                QObject* parent = nullptr);
     ~SurveyRoutePattern() override;
 
     void calculate() override;
