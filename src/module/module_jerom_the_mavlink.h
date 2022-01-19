@@ -25,7 +25,7 @@ public:
     void done() override;
 
 private:
-    domain::ICommunicationProtocol* m_protocol = nullptr;
+    data_source::ICommunicationProtocol* m_protocol = nullptr;
     domain::MavlinkRoutePatternFactory m_patternFactory;
 };
 } // namespace md::app

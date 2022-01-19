@@ -9,7 +9,7 @@
 
 namespace md::data_source
 {
-class MavlinkProtocol : public domain::ICommunicationProtocol
+class MavlinkProtocol : public ICommunicationProtocol
 {
     Q_OBJECT
 public:
@@ -24,7 +24,7 @@ private slots:
 
 private:
     void parseMessage(const QByteArray& data);
-    
+
     domain::MavlinkHandlerContext m_context;
     QVector<domain::IMavlinkHandler*> const m_handlers;
 };

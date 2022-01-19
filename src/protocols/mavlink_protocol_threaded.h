@@ -7,7 +7,7 @@
 
 namespace md::data_source
 {
-class MavlinkProtocolThreaded : public domain::ICommunicationProtocol
+class MavlinkProtocolThreaded : public ICommunicationProtocol
 {
     Q_OBJECT
 
