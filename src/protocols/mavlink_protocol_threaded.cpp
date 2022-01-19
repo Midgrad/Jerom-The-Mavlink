@@ -26,7 +26,7 @@ MavlinkProtocolThreaded::MavlinkProtocolThreaded(ICommunicationProtocol* worker,
     QObject::connect(m_worker, &ICommunicationProtocol::finished, this,
                      &ICommunicationProtocol::finished);
 
-    QObject::connect(this, &MavlinkProtocolThreaded::resendData, m_worker,
+    QObject::connect(this, &MavlinkProtocolThreaded::dataReceived, m_worker,
                      &ICommunicationProtocol::receiveData);
 
     QObject::connect(m_worker, &ICommunicationProtocol::sendData, this,
@@ -49,5 +49,5 @@ MavlinkProtocolThreaded::~MavlinkProtocolThreaded()
 
 void MavlinkProtocolThreaded::receiveData(const QByteArray& data)
 {
-    emit resendData(data);
+    emit dataReceived(data);
 }

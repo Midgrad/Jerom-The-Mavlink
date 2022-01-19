@@ -18,11 +18,7 @@ MavlinkProtocol::MavlinkProtocol(domain::IMavlinkHandlerFactory* factory, QObjec
 
 MavlinkProtocol::~MavlinkProtocol()
 {
-    for (domain::IMavlinkHandler* handler : qAsConst(m_handlers))
-    {
-        delete handler;
-    }
-
+    qDeleteAll(m_handlers);
     emit finished();
 }
 

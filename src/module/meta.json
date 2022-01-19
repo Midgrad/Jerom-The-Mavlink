@@ -1,8 +1,5 @@
 {
   "name": "Jerom-The-Mavlink",
   "version": "0.0.1",
-  "description": "Mavlink communication protocol module",
-  "dependencies": [
-    "Vegur"
-  ]
+  "description": "Mavlink protocol and domain logic module"
 }
