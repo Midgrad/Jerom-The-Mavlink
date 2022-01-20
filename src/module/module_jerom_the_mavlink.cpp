@@ -28,7 +28,6 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 
 ModuleJeromTheMavlink::~ModuleJeromTheMavlink()
 {
-
 }
 
 void ModuleJeromTheMavlink::init()
@@ -94,6 +93,4 @@ void ModuleJeromTheMavlink::done()
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
     missionService->unregisterMissionType(&domain::mission::mavlinkMissionType);
-
-    delete m_protocol;
 }
