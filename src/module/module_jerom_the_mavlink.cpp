@@ -4,18 +4,18 @@
 
 #include "locator.h"
 
+#include "communication_service.h"
 #include "i_routes_service.h"
 #include "i_vehicles_features.h"
-#include "link_configuration.h"
 #include "mavlink_handlers_factory.h"
 #include "mavlink_mission_traits.h"
-#include "mavlink_transceiver.h"
-#include "mavlink_transceiver_threaded.h"
+#include "mavlink_protocol.h"
+#include "mavlink_protocol_threaded.h"
 #include "mavlink_vehicle_traits.h"
 
 namespace
 {
-constexpr char linksFileName[] = "./link_config.json";
+constexpr char protocolName[] = "Mavlink";
 
 constexpr char mavlinkDashboard[] = "MavlinkDashboard.qml";
 } // namespace
@@ -28,7 +28,6 @@ ModuleJeromTheMavlink::ModuleJeromTheMavlink()
 
 ModuleJeromTheMavlink::~ModuleJeromTheMavlink()
 {
-    delete m_transceiver;
 }
 
 void ModuleJeromTheMavlink::init()
@@ -62,20 +61,22 @@ void ModuleJeromTheMavlink::init()
     auto commandsService = Locator::get<domain::ICommandsService>();
     Q_ASSERT(commandsService);
 
+    auto communicationService = Locator::get<CommunicationService>();
+    Q_ASSERT(communicationService);
+
     missionService->registerMissionType(&domain::mission::mavlinkMissionType);
 
     domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
 
-    auto configuration = new data_source::LinkConfiguration(::linksFileName);
-    m_transceiver =
-        new domain::MavlinkTranscieverThreaded(new domain::MavlinkTransceiver(configuration,
-                                                                              &factory, nullptr),
-                                               this);
+    m_protocol = new data_source::MavlinkProtocolThreaded(new data_source::MavlinkProtocol(&factory,
+                                                                                           nullptr),
+                                                          this);
+
+    communicationService->registerProtocol(protocolName, m_protocol);
 }
 
 void ModuleJeromTheMavlink::start()
 {
-    m_transceiver->start();
 }
 
 void ModuleJeromTheMavlink::done()
@@ -96,6 +97,4 @@ void ModuleJeromTheMavlink::done()
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
     missionService->unregisterMissionType(&domain::mission::mavlinkMissionType);
-
-    m_transceiver->stop();
 }

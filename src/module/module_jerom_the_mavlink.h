@@ -1,7 +1,7 @@
 #ifndef MODULE_JEROM_THE_MAVLINK_H
 #define MODULE_JEROM_THE_MAVLINK_H
 
-#include "i_mavlink_transceiver.h"
+#include "i_communication_protocol.h"
 #include "i_module.h"
 
 #include "mavlink_route_pattern_factory.h"
@@ -25,7 +25,7 @@ public:
     void done() override;
 
 private:
-    domain::IMavlinkTransceiver* m_transceiver = nullptr;
+    data_source::ICommunicationProtocol* m_protocol = nullptr;
     domain::MavlinkRoutePatternFactory m_patternFactory;
 };
 } // namespace md::app
