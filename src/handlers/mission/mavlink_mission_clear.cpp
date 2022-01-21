@@ -34,20 +34,21 @@ void MavlinkMissionClear::processMissionAck(const mavlink_message_t& message,
     mavlink_msg_mission_ack_decode(&message, &ack);
 
     // clear mission in db after vehicle accepted
+    MissionOperation::State state;
     if (ack.type == MAV_MISSION_ACCEPTED)
     {
         Mission* mission = operation->mission();
         mission->clear();
         m_missionsService->saveMission(mission);
-        operation->state = MissionOperation::Succeeded;
+        state = MissionOperation::Succeeded;
     }
     else
     {
         qWarning() << "Vehicle" << vehicleId << " denied clear mission with ack" << ack.type;
-        operation->state = MissionOperation::Failed;
+        state = MissionOperation::Failed;
     }
 
-    m_missionsService->endOperation(operation);
+    m_missionsService->endOperation(operation, state);
 }
 
 void MavlinkMissionClear::sendMissionClear(const QVariant& vehicleId)

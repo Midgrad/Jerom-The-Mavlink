@@ -35,6 +35,7 @@ protected slots:
     virtual void onOperationEnded(MissionOperation* operation);
 
 protected:
+    // TODO: Wrap m_missionsService wuth thread-safe
     IMissionsService* const m_missionsService;
 
     QMap<QVariant, MissionOperation*> m_vehicleOperations;

@@ -78,17 +78,17 @@ void MavlinkMissionUpload::processMissionAck(const mavlink_message_t& message,
     mavlink_mission_ack_t ack;
     mavlink_msg_mission_ack_decode(&message, &ack);
 
+    MissionOperation::State state;
     if (ack.type == MAV_MISSION_ACCEPTED)
     {
-        operation->state = MissionOperation::Succeeded;
+        state = MissionOperation::Succeeded;
     }
     else
     {
         qWarning() << "Vehicle" << vehicleId << " denied upload mission with ack" << ack.type;
-        operation->state = MissionOperation::Failed;
+        state = MissionOperation::Failed;
     }
-
-    m_missionsService->endOperation(operation);
+    m_missionsService->endOperation(operation, state);
 }
 
 void MavlinkMissionUpload::sendMissionCount(const QVariant& vehicleId, int count)

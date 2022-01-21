@@ -116,9 +116,7 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
 
         this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);
         m_missionsService->saveMission(mission);
-
-        operation->state = MissionOperation::Succeeded;
-        m_missionsService->endOperation(operation);
+        m_missionsService->endOperation(operation, MissionOperation::Succeeded);
     }
     else
     {
