@@ -63,14 +63,20 @@ const RouteItemType landStart = {
 };
 
 // Route pattens
+const Parameter surveyType = { "survey_type",
+                               TR_ROUTE("Survey type"),
+                               { TR_ROUTE("None"), setTriggerDist.name, setTriggerInt.name },
+                               TR_ROUTE("None") };
+
 const RoutePatternType surveyPatternGrid = { "mavlink_survey_grid",
                                              TR_ROUTE("Survey grid"),
                                              "qrc:/icons/grid_pattern.svg",
-                                             { &altitude, &heading, &spacing, &doubled } };
+                                             { &surveyType, &altitude, &heading, &spacing,
+                                               &doubled } };
 const RoutePatternType surveyPatternSnail = { "mavlink_survey_snail",
                                               TR_ROUTE("Survey snail"),
                                               "qrc:/icons/snail_pattern.svg",
-                                              { &altitude, &heading, &spacing } };
+                                              { &surveyType, &altitude, &heading, &spacing } };
 
 // Routes
 const RouteType mavlinkRouteType = { "mavlink_route",

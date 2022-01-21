@@ -17,7 +17,7 @@ public:
     ~MavlinkRoutePattern() override;
 
     bool isReady() const override;
-    QList<RouteItem*> items() override;
+    QList<RouteItem*> createItems() override;
 
     void calculate() override;
 
