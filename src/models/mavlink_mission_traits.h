@@ -8,18 +8,18 @@ namespace md::domain
 namespace route
 {
 // Params
-const Parameter abortAltitude = { "abort_altitude", TR_ROUTE("Abort alt."),
-                                  Parameter::Real,  50.0,
+const ParameterType abortAltitude = { "abort_altitude", TR_ROUTE("Abort alt."),
+                                  ParameterType::Real,  50.0,
                                   minAltitude,      maxAltitude };
-const Parameter passRadius = { "pass_radius", TR_ROUTE("Pass radius"), Parameter::Real, 0, 0,
+const ParameterType passRadius = { "pass_radius", TR_ROUTE("Pass radius"), ParameterType::Real, 0, 0,
                                maxRadius };
-const Parameter turns = { "turns", TR_ROUTE("Turns"), Parameter::Int, 1, 1, 100 };
-const Parameter clockwise = { "clockwise", TR_ROUTE("Clockwise"), true };
-const Parameter headingRequired{ "heading_required", TR_ROUTE("Hdg req."), false };
-const Parameter xtrack{ "xtrack", TR_ROUTE("XTrack"), Parameter::Real, 0, 0, 360 };
-const Parameter shutter = { "shutter", TR_ROUTE("Shutter"), Parameter::Int, 0, 0, 1000 };
-const Parameter trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
-const Parameter interval = { "interval", TR_ROUTE("Interval"), Parameter::Int, 0, 0, 1000 };
+const ParameterType turns = { "turns", TR_ROUTE("Turns"), ParameterType::Int, 1, 1, 100 };
+const ParameterType clockwise = { "clockwise", TR_ROUTE("Clockwise"), true };
+const ParameterType headingRequired{ "heading_required", TR_ROUTE("Hdg req."), false };
+const ParameterType xtrack{ "xtrack", TR_ROUTE("XTrack"), ParameterType::Real, 0, 0, 360 };
+const ParameterType shutter = { "shutter", TR_ROUTE("Shutter"), ParameterType::Int, 0, 0, 1000 };
+const ParameterType trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
+const ParameterType interval = { "interval", TR_ROUTE("Interval"), ParameterType::Int, 0, 0, 1000 };
 
 // Route Items
 const RouteItemType home = { "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), { &yaw } };
@@ -63,7 +63,7 @@ const RouteItemType landStart = {
 };
 
 // Route pattens
-const Parameter surveyType = { "survey_type",
+const ParameterType surveyType = { "survey_type",
                                TR_ROUTE("Survey type"),
                                { TR_ROUTE("None"), setTriggerDist.name, setTriggerInt.name },
                                TR_ROUTE("None") };
