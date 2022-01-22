@@ -8,11 +8,12 @@ namespace md::domain
 namespace route
 {
 // Params
-const ParameterType abortAltitude = { "abort_altitude", TR_ROUTE("Abort alt."),
-                                  ParameterType::Real,  50.0,
-                                  minAltitude,      maxAltitude };
-const ParameterType passRadius = { "pass_radius", TR_ROUTE("Pass radius"), ParameterType::Real, 0, 0,
-                               maxRadius };
+const ParameterType abortAltitude = { "abort_altitude",    TR_ROUTE("Abort alt."),
+                                      ParameterType::Real, 50.0,
+                                      minAltitude,         maxAltitude };
+const ParameterType passRadius = {
+    "pass_radius", TR_ROUTE("Pass radius"), ParameterType::Real, 0, 0, maxRadius
+};
 const ParameterType turns = { "turns", TR_ROUTE("Turns"), ParameterType::Int, 1, 1, 100 };
 const ParameterType clockwise = { "clockwise", TR_ROUTE("Clockwise"), true };
 const ParameterType headingRequired{ "heading_required", TR_ROUTE("Hdg req."), false };
@@ -64,9 +65,9 @@ const RouteItemType landStart = {
 
 // Route pattens
 const ParameterType surveyType = { "survey_type",
-                               TR_ROUTE("Survey type"),
-                               { TR_ROUTE("None"), setTriggerDist.name, setTriggerInt.name },
-                               TR_ROUTE("None") };
+                                   TR_ROUTE("Survey type"),
+                                   { TR_ROUTE("None"), setTriggerDist.name, setTriggerInt.name },
+                                   TR_ROUTE("None") };
 
 const RoutePatternType surveyPatternGrid = { "mavlink_survey_grid",
                                              TR_ROUTE("Survey grid"),
