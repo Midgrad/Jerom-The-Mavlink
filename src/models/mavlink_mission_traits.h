@@ -23,45 +23,56 @@ const ParameterType trgOnce = { "trg_once", TR_ROUTE("Trigger"), false };
 const ParameterType interval = { "interval", TR_ROUTE("Interval"), ParameterType::Int, 0, 0, 1000 };
 
 // Route Items
-const RouteItemType home = { "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), { &yaw } };
+const RouteItemType home = {
+    "mavlink_home", TR_ROUTE("Home"), TR_ROUTE("HOME"), Positioned::Required, { &yaw }
+};
 const RouteItemType waypoint = { "mavlink_waypoint",
                                  TR_ROUTE("Waypoint"),
                                  TR_ROUTE("WPT"),
+                                 Positioned::Required,
                                  { &time, &acceptRadius, &passRadius, &yaw } };
 const RouteItemType takeoff = {
-    "mavlink_takeoff", TR_ROUTE("Takeoff"), TR_ROUTE("TKFF"), { &pitch, &yaw }
+    "mavlink_takeoff", TR_ROUTE("Takeoff"), TR_ROUTE("TKFF"), Positioned::Required, { &pitch, &yaw }
 };
-const RouteItemType landing = {
-    "mavlink_landing", TR_ROUTE("Landing"), TR_ROUTE("LANDING"), { &yaw, &abortAltitude }
-};
+const RouteItemType landing = { "mavlink_landing",
+                                TR_ROUTE("Landing"),
+                                TR_ROUTE("LANDING"),
+                                Positioned::Required,
+                                { &yaw, &abortAltitude } };
 const RouteItemType loiterTurns = { "mavlink_loiter_turns",
                                     TR_ROUTE("Loiter turns"),
                                     TR_ROUTE("LTR TRN"),
+                                    Positioned::Required,
                                     { &radius, &clockwise, &turns, &headingRequired, &xtrack } };
 const RouteItemType loiterAlt = { "mavlink_loiter_alt",
                                   TR_ROUTE("Loiter alt"),
                                   TR_ROUTE("LTR ALT"),
+                                  Positioned::Required,
                                   { &radius, &clockwise, &headingRequired, &xtrack } };
 const RouteItemType loiterUnlim = { "mavlink_loiter_unlim",
                                     TR_ROUTE("Loiter unlim"),
                                     TR_ROUTE("LTR UNL"),
+                                    Positioned::Required,
                                     { &radius, &clockwise, &yaw } };
 const RouteItemType loiterTime = { "mavlink_loiter_time",
                                    TR_ROUTE("Loiter time"),
                                    TR_ROUTE("LTR TM"),
+                                   Positioned::Required,
                                    { &radius, &clockwise, &time, &headingRequired, &xtrack } };
 
 const RouteItemType setTriggerDist = { "mavlink_cam_tg_dist",
                                        TR_ROUTE("Camera tg. dist."),
                                        TR_ROUTE("CAM DST"),
+                                       Positioned::No,
                                        { &distance, &shutter, &trgOnce } };
-const RouteItemType setTriggerInt = {
-    "mavlink_cam_tg_int", TR_ROUTE("Camera tg. int"), TR_ROUTE("CAM INT"), { &interval, &shutter }
-};
+const RouteItemType setTriggerInt = { "mavlink_cam_tg_int",
+                                      TR_ROUTE("Camera tg. int"),
+                                      TR_ROUTE("CAM INT"),
+                                      Positioned::No,
+                                      { &interval, &shutter } };
 
-const RouteItemType landStart = {
-    "mavlink_landing_start", TR_ROUTE("Landing start"), TR_ROUTE("LND SRT"), {}
-};
+const RouteItemType landStart = { "mavlink_landing_start", TR_ROUTE("Landing start"),
+                                  TR_ROUTE("LND SRT"), Positioned::Optional };
 
 // Route pattens
 const ParameterType surveyType = { "survey_type",
