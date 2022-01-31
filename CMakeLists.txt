@@ -3,9 +3,9 @@ project(Jerom-The-Mavlink)
 
 # MAVLink version option
 option(MAVLINK_V2_ENABLE "MAVLink version 2 includes" ON)
-if (MAVLINK_V2_ENABLE)
+if(MAVLINK_V2_ENABLE)
     add_definitions(-DMAVLINK_V2)
-endif (MAVLINK_V2_ENABLE)
+endif(MAVLINK_V2_ENABLE)
 
 # Mavlink 3rdparty
 add_subdirectory(3rdparty)
@@ -15,9 +15,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MODULE_OUTPUT_DIRECTORY})
 
 # Find Qt libraries
 find_package(Qt5 ${QT_REQUIRED_VERSION} COMPONENTS Core REQUIRED)
-
-# Copy resources
-copy_post_cmake("../../app/link_config.json" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 # Qt plugin definition
 add_definitions(-DQT_PLUGIN)
@@ -44,8 +41,8 @@ target_sources(${PROJECT_NAME} PRIVATE ${QRC_SOURCES})
 target_link_libraries(${PROJECT_NAME} PUBLIC kjarni loodsman mavlink Qt5::Core)
 
 # Tests
-if (TESTS_ENABLED)
+if(TESTS_ENABLED)
     #    add_subdirectory(tests)
-endif (TESTS_ENABLED)
+endif(TESTS_ENABLED)
 
 
