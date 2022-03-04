@@ -1,30 +1,30 @@
-#ifndef MAVLINK_ROUTE_PATTERN_H
-#define MAVLINK_ROUTE_PATTERN_H
+//#ifndef MAVLINK_ROUTE_PATTERN_H
+//#define MAVLINK_ROUTE_PATTERN_H
 
-#include "route_pattern.h"
+//#include "route_pattern.h"
 
-#include "i_route_pattern_algorithm.h"
+//#include "i_route_pattern_algorithm.h"
 
-namespace md::domain
-{
-class MavlinkRoutePattern : public RoutePattern
-{
-    Q_OBJECT
+//namespace md::domain
+//{
+//class MavlinkRoutePattern : public RoutePattern
+//{
+//    Q_OBJECT
 
-public:
-    explicit MavlinkRoutePattern(const RoutePatternType* type, IRoutePatternAlgorithm* algorithm,
-                                 QObject* parent = nullptr);
-    ~MavlinkRoutePattern() override;
+//public:
+//    explicit MavlinkRoutePattern(const RoutePatternType* type, IRoutePatternAlgorithm* algorithm,
+//                                 QObject* parent = nullptr);
+//    ~MavlinkRoutePattern() override;
 
-    bool isReady() const override;
-    QList<RouteItem*> createItems() override;
+//    bool isReady() const override;
+//    QList<RouteItem*> createItems() override;
 
-    void calculate() override;
+//    void calculate() override;
 
-private:
-    const QScopedPointer<IRoutePatternAlgorithm> m_algorithm;
-};
+//private:
+//    const QScopedPointer<IRoutePatternAlgorithm> m_algorithm;
+//};
 
-} // namespace md::domain
+//} // namespace md::domain
 
-#endif // MAVLINK_ROUTE_PATTERN_H
+//#endif // MAVLINK_ROUTE_PATTERN_H

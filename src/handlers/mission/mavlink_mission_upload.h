@@ -22,7 +22,7 @@ protected:
     void processMissionAck(const mavlink_message_t& message, const QVariant& vehicleId);
 
     void sendMissionCount(const QVariant& vehicleId, int count);
-    void sendMissionItem(const QVariant& vehicleId, RouteItem* routeItem, int index);
+    void sendMissionItem(const QVariant& vehicleId, MissionRouteItem *routeItem, int index);
 
 protected slots:
     void onOperationStarted(MissionOperation* operation) override;

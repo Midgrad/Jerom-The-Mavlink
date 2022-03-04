@@ -46,7 +46,7 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     mavlink_msg_mission_request_decode(&message, &request);
 
     Mission* mission = operation->mission();
-    RouteItem* item = mission->item(request.seq);
+    MissionRouteItem* item = mission->route()->item(request.seq);
 
     if (!item)
     {
@@ -58,7 +58,7 @@ void MavlinkMissionUpload::processMissionRequest(const mavlink_message_t& messag
     operation->progress = request.seq + 1;
 
     // Waiting ack after last waypoint send
-    if (request.seq == mission->count() - 1)
+    if (request.seq == mission->route()->count() - 1)
         m_operationStates[operation] = WaitingAck;
 
     // Send reqested waypoint
@@ -115,7 +115,7 @@ void MavlinkMissionUpload::sendMissionCount(const QVariant& vehicleId, int count
     emit sendMessage(message);
 }
 
-void MavlinkMissionUpload::sendMissionItem(const QVariant& vehicleId, RouteItem* routeItem,
+void MavlinkMissionUpload::sendMissionItem(const QVariant& vehicleId, MissionRouteItem* routeItem,
                                            int index)
 {
     qDebug() << "sendMissionItem" << vehicleId << index;
@@ -124,8 +124,7 @@ void MavlinkMissionUpload::sendMissionItem(const QVariant& vehicleId, RouteItem*
     if (!mavId)
         return;
 
-    auto convertor = index ? m_convertors.convertor(routeItem->type()->id)
-                           : m_convertors.homeConvertor();
+    auto convertor = m_convertors.convertor(routeItem->type()->id);
     if (!convertor)
     {
         qWarning() << "Unhandled waypoint type" << routeItem->type()->name;
@@ -160,7 +159,7 @@ void MavlinkMissionUpload::onOperationStarted(MissionOperation* operation)
     QVariant vehicleId = operation->mission()->vehicleId;
     m_vehicleOperations.insert(vehicleId, operation);
     m_operationStates[operation] = WaitingRequest;
-    int count = operation->mission()->count();
+    int count = operation->mission()->route()->count();
     operation->total = count;
 
     this->sendMissionCount(vehicleId, count);

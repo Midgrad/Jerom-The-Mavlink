@@ -4,7 +4,7 @@
 #include "i_communication_protocol.h"
 #include "i_module.h"
 
-#include "mavlink_route_pattern_factory.h"
+#include "mavlink_missions_factory.h"
 
 namespace md::app
 {
@@ -26,7 +26,7 @@ public:
 
 private:
     data_source::ICommunicationProtocol* m_protocol = nullptr;
-    domain::MavlinkRoutePatternFactory m_patternFactory;
+    domain::MavlinkMissionsFactory m_missionFactory;
 };
 } // namespace md::app
 
