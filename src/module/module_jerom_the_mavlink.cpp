@@ -5,7 +5,6 @@
 #include "locator.h"
 
 #include "communication_service.h"
-#include "i_routes_service.h"
 #include "i_vehicles_features.h"
 #include "mavlink_handlers_factory.h"
 #include "mavlink_mission_traits.h"
@@ -47,24 +46,20 @@ void ModuleJeromTheMavlink::init()
         vehiclesFeatures->addFeature(type->id, domain::features::dashboard, ::mavlinkDashboard);
     }
 
-    auto routeService = Locator::get<domain::IRoutesService>();
-    Q_ASSERT(routeService);
-    routeService->registerRouteType(&domain::route::mavlinkRouteType);
-    routeService->registerRoutePatternFactory(domain::route::surveyPatternGrid.id,
-                                              &m_patternFactory);
-    routeService->registerRoutePatternFactory(domain::route::surveyPatternSnail.id,
-                                              &m_patternFactory);
-
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
+
+    missionService->registerMissionType(&domain::mission::mavlinkMission);
+    missionService->registerRoutePatternFactory(domain::mission::surveyPatternGrid.id,
+                                                &m_patternFactory);
+    missionService->registerRoutePatternFactory(domain::mission::surveyPatternSnail.id,
+                                                &m_patternFactory);
 
     auto commandsService = Locator::get<domain::ICommandsService>();
     Q_ASSERT(commandsService);
 
     auto communicationService = Locator::get<CommunicationService>();
     Q_ASSERT(communicationService);
-
-    missionService->registerMissionType(&domain::mission::mavlinkMissionType);
 
     domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
 
@@ -88,13 +83,10 @@ void ModuleJeromTheMavlink::done()
         vehiclesFeatures->removeFeatures(type->id);
     }
 
-    auto routeService = Locator::get<domain::IRoutesService>();
-    Q_ASSERT(routeService);
-    routeService->unregisterRouteType(&domain::route::mavlinkRouteType);
-    routeService->unregisterRoutePatternFactory(domain::route::surveyPatternGrid.id);
-    routeService->unregisterRoutePatternFactory(domain::route::surveyPatternSnail.id);
-
     auto missionService = Locator::get<domain::IMissionsService>();
     Q_ASSERT(missionService);
-    missionService->unregisterMissionType(&domain::mission::mavlinkMissionType);
+
+    missionService->unregisterMissionType(&domain::mission::mavlinkMission);
+    missionService->unregisterRoutePatternFactory(domain::mission::surveyPatternGrid.id);
+    missionService->unregisterRoutePatternFactory(domain::mission::surveyPatternSnail.id);
 }

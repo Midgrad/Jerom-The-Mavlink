@@ -69,34 +69,27 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
     qDebug() << "processMissionItem" << vehicleId << item.seq;
 
     Mission* mission = operation->mission();
+    MissionRoute* route = mission->route();
 
-    // Home point
-    if (item.seq == 0)
+    auto convertor = m_convertors.convertor(item.command);
+    if (convertor)
     {
-        auto convertor = m_convertors.homeConvertor();
-        convertor->toItem(item, mission->home());
+        MissionRouteItem* routeItem = route->item(item.seq - 1);
+        if (!routeItem)
+        {
+            routeItem = new MissionRouteItem(&mission::waypoint,
+                                        mission::waypoint.shortName); // TODO: type by convertor
+            route->addItem(routeItem);
+        }
 
-        m_convertors.setHomeAltitude(mission->home()->position().altitude);
+        convertor->toItem(item, routeItem);
+
+        if (item.seq == 0) // HOME item
+            m_convertors.setHomeAltitude(routeItem->position().altitude);
     }
     else
     {
-        auto convertor = m_convertors.convertor(item.command);
-
-        if (convertor && mission->route())
-        {
-            RouteItem* routeItem = mission->route()->item(item.seq - 1);
-            if (!routeItem)
-            {
-                routeItem = new RouteItem(&route::waypoint); // TODO: type by convertor
-                mission->route()->addItem(routeItem);
-            }
-
-            convertor->toItem(item, routeItem);
-        }
-        else
-        {
-            qWarning() << "Unhandled mission item type" << item.command;
-        }
+        qWarning() << "Unhandled mission item type" << item.command;
     }
 
     // Update mission progress
@@ -105,13 +98,10 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
     if (operation->isComplete())
     {
         // Clear extra items in route
-        if (mission->route())
+
+        while (route->count() > operation->total - 1)
         {
-            Route* route = mission->route();
-            while (route->count() > operation->total - 1)
-            {
-                route->removeItem(route->item(route->count() - 1));
-            }
+            route->removeItem(route->item(route->count() - 1));
         }
 
         this->sendAck(vehicleId, MAV_MISSION_ACCEPTED);

@@ -49,10 +49,8 @@ void MavlinkMissionCommon::onVehicleObtained(Vehicle* vehicle)
         return;
 
     // Autocrete mission for new vehicle
-    mission = new Mission(&mission::mavlinkMissionType, tr("%1 mission").arg(vehicle->name),
+    mission = new Mission(&mission::mavlinkMission, tr("%1 mission").arg(vehicle->name),
                           vehicle->id);
-    mission->assignRoute(
-        new Route(mission::mavlinkMissionType.routeType, tr("%1 route").arg(vehicle->name)));
     m_missionsService->saveMission(mission);
 
     // Automaticaly download mission TODO: to settings
@@ -69,7 +67,7 @@ void MavlinkMissionCommon::processMissionCurrent(const mavlink_message_t& messag
     mavlink_mission_current_t mission_current;
     mavlink_msg_mission_current_decode(&message, &mission_current);
 
-    mission->setCurrentItem(mission_current.seq);
+    mission->route()->setCurrent(mission_current.seq);
 }
 
 void MavlinkMissionCommon::processMissionReached(const mavlink_message_t& message,
@@ -82,7 +80,7 @@ void MavlinkMissionCommon::processMissionReached(const mavlink_message_t& messag
     mavlink_mission_item_reached_t reached;
     mavlink_msg_mission_item_reached_decode(&message, &reached);
 
-    mission->setReached(reached.seq);
+    mission->route()->setReached(reached.seq);
 }
 
 void MavlinkMissionCommon::processHomePosition(const mavlink_message_t& message,
@@ -92,12 +90,16 @@ void MavlinkMissionCommon::processHomePosition(const mavlink_message_t& message,
     if (!mission)
         return;
 
+    MissionRouteItem* home = mission->route()->firstItem();
+    if (!home)
+        return;
+
     mavlink_home_position_t homePosition;
     mavlink_msg_home_position_decode(&message, &homePosition);
 
-    mission->home()->position.set(Geodetic(utils::decodeLatLon(homePosition.latitude),
-                                           utils::decodeLatLon(homePosition.longitude),
-                                           utils::decodeAltitude(homePosition.altitude)));
+    home->position.set(Geodetic(utils::decodeLatLon(homePosition.latitude),
+                                utils::decodeLatLon(homePosition.longitude),
+                                utils::decodeAltitude(homePosition.altitude)));
 }
 
 void MavlinkMissionCommon::processTargetPosition(const mavlink_message_t& message,
@@ -110,9 +112,10 @@ void MavlinkMissionCommon::processTargetPosition(const mavlink_message_t& messag
     mavlink_position_target_global_int_t position;
     mavlink_msg_position_target_global_int_decode(&message, &position);
 
-    mission->target()->position.set(Geodetic(utils::decodeLatLon(position.lat_int),
-                                             utils::decodeLatLon(position.lon_int), position.alt));
-    mission->target()->current.set(true);
+    // TODO: trerget vehicle
+    //    mission->target()->position.set(Geodetic(utils::decodeLatLon(position.lat_int),
+    //                                             utils::decodeLatLon(position.lon_int), position.alt));
+    //    mission->target()->current.set(true);
 }
 
 void MavlinkMissionCommon::sendMissionSetCurrent(const QVariant& vehicleId, int index)
@@ -170,7 +173,7 @@ void MavlinkMissionCommon::onMissionAdded(Mission* mission)
 {
     m_vehicleMissions.insert(mission->vehicleId, mission);
 
-    connect(mission, &Mission::goTo, this, [this, mission](int index) {
+    connect(mission->route, &MissionRoute::goTo, this, [this, mission](int index) {
         this->sendMissionSetCurrent(mission->vehicleId, index);
     });
     connect(mission, &Mission::navTo, this,

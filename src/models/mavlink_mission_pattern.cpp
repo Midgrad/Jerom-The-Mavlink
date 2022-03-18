@@ -1,4 +1,4 @@
-#include "mavlink_route_pattern.h"
+#include "mavlink_mission_pattern.h"
 
 #include <QDebug>
 
@@ -8,49 +8,49 @@ using namespace md::domain;
 
 namespace
 {
-const RouteItemType* typeByName(const QString& typeName)
+const MissionItemType* typeByName(const QString& typeName)
 {
-    if (typeName == route::setTriggerDist.name)
-        return &route::setTriggerDist;
-    if (typeName == route::setTriggerInt.name)
-        return &route::setTriggerInt;
+    if (typeName == mission::setTriggerDist.name)
+        return &mission::setTriggerDist;
+    if (typeName == mission::setTriggerInt.name)
+        return &mission::setTriggerInt;
 
-    return &route::waypoint;
+    return &mission::waypoint;
 }
 } // namespace
 
-MavlinkRoutePattern::MavlinkRoutePattern(const RoutePatternType* type,
+MavlinkMissionPattern::MavlinkMissionPattern(const RoutePatternType* type,
                                          IRoutePatternAlgorithm* algorithm, QObject* parent) :
     RoutePattern(type, parent),
     m_algorithm(algorithm)
 {
 }
 
-MavlinkRoutePattern::~MavlinkRoutePattern()
+MavlinkMissionPattern::~MavlinkMissionPattern()
 {
 }
 
-bool MavlinkRoutePattern::isReady() const
+bool MavlinkMissionPattern::isReady() const
 {
     return m_path.positions().length();
 }
 
-QList<RouteItem*> MavlinkRoutePattern::createItems()
+QList<MissionRouteItem*> MavlinkMissionPattern::createItems()
 {
-    const RouteItemType* payloadType = ::typeByName(
-        this->parameter(route::surveyType.id).toString());
+    const MissionItemType* payloadType = ::typeByName(
+        this->parameter(mission::surveyType.id).toString());
 
-    QList<RouteItem*> items;
+    QList<MissionRouteItem*> items;
     for (const Geodetic& position : m_path.positions())
     {
-        RouteItem* item = new RouteItem(payloadType, payloadType->shortName);
+        MissionRouteItem* item = new MissionRouteItem(payloadType, payloadType->shortName);
         item->position.set(position);
         items.append(item);
     }
     return items;
 }
 
-void MavlinkRoutePattern::calculate()
+void MavlinkMissionPattern::calculate()
 {
     if (m_area.positions().length() < 3)
     {
