@@ -1,6 +1,6 @@
 <RCC>
-    <qresource prefix="/">
-        <file>Vehicles/MavlinkDashboard.qml</file>
-        <file>Vehicles/MavlinkPreflight.qml</file>
+    <qresource prefix="/Vehicles/Dashboard">
+        <file>MavlinkInstruments.qml</file>
+        <file>MavlinkPreflight.qml</file>
     </qresource>
 </RCC> 

@@ -16,7 +16,7 @@ namespace
 {
 constexpr char protocolName[] = "Mavlink";
 
-constexpr char mavlinkDashboard[] = "MavlinkDashboard.qml";
+constexpr char MavlinkInstruments[] = "MavlinkInstruments.qml";
 } // namespace
 
 using namespace md::app;
@@ -43,7 +43,7 @@ void ModuleJeromTheMavlink::init()
     for (const domain::VehicleType* type : domain::vehicle::allMavlinkTypes)
     {
         vehiclesService->addVehicleType(type);
-        vehiclesFeatures->addFeature(type->id, domain::features::dashboard, ::mavlinkDashboard);
+        vehiclesFeatures->addFeature(type->id, domain::features::instruments, ::MavlinkInstruments);
     }
 
     auto missionService = Locator::get<domain::IMissionsService>();
