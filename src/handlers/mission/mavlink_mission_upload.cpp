@@ -124,8 +124,8 @@ void MavlinkMissionUpload::sendMissionItem(const QVariant& vehicleId, MissionRou
     if (!mavId)
         return;
 
-    auto convertor = index ? m_convertors.convertor(routeItem->type()->id)
-                           : m_convertors.homeConvertor();
+    auto convertor = index ? m_convertorsPool.convertor(routeItem->type()->id)
+                           : m_convertorsPool.homeConvertor();
     if (!convertor)
     {
         qWarning() << "Unhandled waypoint type" << routeItem->type()->name;

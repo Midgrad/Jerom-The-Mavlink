@@ -71,21 +71,21 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
     Mission* mission = operation->mission();
     MissionRoute* route = mission->route();
 
-    auto convertor = m_convertors.convertor(item.command);
+    auto convertor = item.seq ? m_convertorsPool.convertor(item.command) : m_convertorsPool.homeConvertor();
     if (convertor)
     {
-        MissionRouteItem* routeItem = route->item(item.seq - 1);
+        MissionRouteItem* routeItem = route->item(item.seq);
         if (!routeItem)
         {
             routeItem = new MissionRouteItem(&mission::waypoint,
-                                        mission::waypoint.shortName); // TODO: type by convertor
+                                             mission::waypoint.shortName); // TODO: type by convertor
             route->addItem(routeItem);
         }
 
         convertor->toItem(item, routeItem);
 
         if (item.seq == 0) // HOME item
-            m_convertors.setHomeAltitude(routeItem->position().altitude);
+            m_convertorsPool.setHomeAltitude(routeItem->position().altitude);
     }
     else
     {
@@ -99,7 +99,7 @@ void MavlinkMissionDownload::processMissionItem(const mavlink_message_t& message
     {
         // Clear extra items in route
 
-        while (route->count() > operation->total - 1)
+        while (route->count() > operation->total)
         {
             route->removeItem(route->item(route->count() - 1));
         }
