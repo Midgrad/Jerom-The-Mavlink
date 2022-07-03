@@ -28,7 +28,7 @@ protected slots:
     void onOperationStarted(MissionOperation* operation) override;
 
 private:
-    MavlinkItemConvertorsPool m_convertors;
+    MavlinkItemConvertorsPool m_convertorsPool;
 };
 } // namespace md::domain
 

@@ -8,15 +8,15 @@
 using namespace md::domain;
 
 MavlinkMissionCommon::MavlinkMissionCommon(MavlinkHandlerContext* context,
-                                           IMissionsService* missionsService, QObject* parent) :
+                                           IVehicleMissions* vehicleMissions, QObject* parent) :
     IMavlinkHandler(context, parent),
-    m_missionsService(missionsService)
+    m_vehicleMissions(vehicleMissions)
 {
-    Q_ASSERT(missionsService);
+    Q_ASSERT(vehicleMissions);
 
-    connect(missionsService, &IMissionsService::missionAdded, this,
+    connect(vehicleMissions, &IVehicleMissions::missionAdded, this,
             &MavlinkMissionCommon::onMissionAdded);
-    connect(missionsService, &IMissionsService::missionRemoved, this,
+    connect(vehicleMissions, &IVehicleMissions::missionRemoved, this,
             &MavlinkMissionCommon::onMissionRemoved);
 }
 
@@ -41,26 +41,10 @@ void MavlinkMissionCommon::parse(const mavlink_message_t& message)
     }
 }
 
-void MavlinkMissionCommon::onVehicleObtained(Vehicle* vehicle)
-{
-    // Check we already have mission
-    Mission* mission = m_missionsService->missionForVehicle(vehicle->id);
-    if (mission)
-        return;
-
-    // Autocrete mission for new vehicle
-    mission = new Mission(&mission::mavlinkMission, tr("%1 mission").arg(vehicle->name),
-                          vehicle->id);
-    m_missionsService->saveMission(mission);
-
-    // Automaticaly download mission TODO: to settings
-    m_missionsService->startOperation(mission, MissionOperation::Download);
-}
-
 void MavlinkMissionCommon::processMissionCurrent(const mavlink_message_t& message,
                                                  const QVariant& vehicleId)
 {
-    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
+    Mission* mission = m_vehicleMissions->missionForVehicle(vehicleId);
     if (!mission)
         return;
 
@@ -73,7 +57,7 @@ void MavlinkMissionCommon::processMissionCurrent(const mavlink_message_t& messag
 void MavlinkMissionCommon::processMissionReached(const mavlink_message_t& message,
                                                  const QVariant& vehicleId)
 {
-    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
+    Mission* mission = m_vehicleMissions->missionForVehicle(vehicleId);
     if (!mission)
         return;
 
@@ -86,7 +70,7 @@ void MavlinkMissionCommon::processMissionReached(const mavlink_message_t& messag
 void MavlinkMissionCommon::processHomePosition(const mavlink_message_t& message,
                                                const QVariant& vehicleId)
 {
-    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
+    Mission* mission = m_vehicleMissions->missionForVehicle(vehicleId);
     if (!mission)
         return;
 
@@ -105,7 +89,7 @@ void MavlinkMissionCommon::processHomePosition(const mavlink_message_t& message,
 void MavlinkMissionCommon::processTargetPosition(const mavlink_message_t& message,
                                                  const QVariant& vehicleId)
 {
-    Mission* mission = m_vehicleMissions.value(vehicleId, nullptr);
+    Mission* mission = m_vehicleMissions->missionForVehicle(vehicleId);
     if (!mission)
         return;
 
@@ -171,8 +155,6 @@ void MavlinkMissionCommon::sendNavTo(const QVariant& vehicleId, double latitude,
 
 void MavlinkMissionCommon::onMissionAdded(Mission* mission)
 {
-    m_vehicleMissions.insert(mission->vehicleId, mission);
-
     connect(mission->route, &MissionRoute::goTo, this, [this, mission](int index) {
         this->sendMissionSetCurrent(mission->vehicleId, index);
     });
@@ -184,7 +166,6 @@ void MavlinkMissionCommon::onMissionAdded(Mission* mission)
 
 void MavlinkMissionCommon::onMissionRemoved(Mission* mission)
 {
-    m_vehicleMissions.remove(mission->vehicleId);
-
+    disconnect(mission->route, nullptr, this, nullptr);
     disconnect(mission, nullptr, this, nullptr);
 }

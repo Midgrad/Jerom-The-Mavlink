@@ -16,7 +16,7 @@ namespace
 {
 constexpr char protocolName[] = "Mavlink";
 
-constexpr char mavlinkDashboard[] = "MavlinkDashboard.qml";
+constexpr char MavlinkInstruments[] = "MavlinkInstruments.qml";
 } // namespace
 
 using namespace md::app;
@@ -40,10 +40,16 @@ void ModuleJeromTheMavlink::init()
     auto vehiclesFeatures = Locator::get<domain::IVehiclesFeatures>();
     Q_ASSERT(vehiclesFeatures);
 
+    auto vehicleMissions = Locator::get<domain::IVehicleMissions>();
+    Q_ASSERT(vehicleMissions);
+
     for (const domain::VehicleType* type : domain::vehicle::allMavlinkTypes)
     {
         vehiclesService->addVehicleType(type);
-        vehiclesFeatures->addFeature(type->id, domain::features::dashboard, ::mavlinkDashboard);
+        vehiclesFeatures->addFeature(type->id, domain::features::instruments, ::MavlinkInstruments);
+
+        vehicleMissions->registerMissionTypeForVehicleType(type->id,
+                                                           domain::mission::mavlinkMission.id);
     }
 
     auto missionService = Locator::get<domain::IMissionsService>();
@@ -61,7 +67,8 @@ void ModuleJeromTheMavlink::init()
     auto communicationService = Locator::get<CommunicationService>();
     Q_ASSERT(communicationService);
 
-    domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, commandsService);
+    domain::MavlinkHandlerFactory factory(pTree, missionService, vehiclesService, vehicleMissions,
+                                          commandsService);
 
     m_protocol = new data_source::MavlinkProtocolThreaded(new data_source::MavlinkProtocol(&factory,
                                                                                            nullptr),
@@ -78,9 +85,14 @@ void ModuleJeromTheMavlink::done()
 {
     auto vehiclesFeatures = Locator::get<domain::IVehiclesFeatures>();
     Q_ASSERT(vehiclesFeatures);
+
+    auto vehicleMissions = Locator::get<domain::IVehicleMissions>();
+    Q_ASSERT(vehicleMissions);
+
     for (const domain::VehicleType* type : domain::vehicle::allMavlinkTypes)
     {
         vehiclesFeatures->removeFeatures(type->id);
+        vehicleMissions->unregisterMissionTypeForVehicleType(type->id);
     }
 
     auto missionService = Locator::get<domain::IMissionsService>();

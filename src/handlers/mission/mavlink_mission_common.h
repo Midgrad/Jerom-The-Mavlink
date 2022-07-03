@@ -2,7 +2,7 @@
 #define MAVLINK_MISSION_COMMON_H
 
 #include "i_mavlink_handler.h"
-#include "i_missions_service.h"
+#include "i_vehicle_missions.h"
 
 namespace md::domain
 {
@@ -11,13 +11,10 @@ class MavlinkMissionCommon : public IMavlinkHandler
     Q_OBJECT
 
 public:
-    MavlinkMissionCommon(MavlinkHandlerContext* context, IMissionsService* missionsService,
+    MavlinkMissionCommon(MavlinkHandlerContext* context, IVehicleMissions* vehicleMissions,
                          QObject* parent = nullptr);
 
     void parse(const mavlink_message_t& message) final;
-
-public slots:
-    void onVehicleObtained(Vehicle* vehicle);
 
 protected:
     void processMissionCurrent(const mavlink_message_t& message, const QVariant& vehicleId);
@@ -33,8 +30,7 @@ private slots:
     void onMissionRemoved(Mission* mission);
 
 private:
-    IMissionsService* const m_missionsService;
-    QMap<QVariant, Mission*> m_vehicleMissions;
+    IVehicleMissions* const m_vehicleMissions;
 };
 } // namespace md::domain
 

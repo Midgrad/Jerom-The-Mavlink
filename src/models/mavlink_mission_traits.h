@@ -93,6 +93,7 @@ const RoutePatternType surveyPatternSnail = { "mavlink_survey_snail",
 // Mission
 const MissionType mavlinkMission = { "mavlink_mission",
                                      TR_MISSION("Mavlink Mission"),
+                                     &mission::home,
                                      { &mission::home, &waypoint, &takeoff, &landing, &loiterTurns,
                                        &loiterAlt, &loiterUnlim, &loiterTime, &setTriggerDist,
                                        &setTriggerInt, &landStart },
